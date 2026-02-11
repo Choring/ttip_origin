@@ -14,6 +14,7 @@
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
+        라라벨 + Vue.js 시작 Ttip 첫 삽을 뜨다.
     </head>
     <body class="font-sans antialiased">
         @inertia
