@@ -1,0 +1,27 @@
+# --- 기본 설정 ---
+.env
+.env.backup
+.env.production
+*.sqlite
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+node_modules/
+__pycache__/
+*.pyc
+
+# --- 라라벨 11 표준 설정 추가 ---
+/vendor/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/bootstrap/cache/*.php
+
+# --- Vite 빌드 결과물 ---
+/public/build/
