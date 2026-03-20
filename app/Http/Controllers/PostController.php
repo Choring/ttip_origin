@@ -25,7 +25,15 @@ class PostController extends Controller
     {
         $validated = $request->validated();
 
-        $validated['summary'] = ['요약 1', '요약 2']; // 임시 요약
+        // 본문을 줄바꿈(\n) 단위로 나누고 빈 줄은 제거한 뒤 최대 3줄까지만 요약으로 추출합니다.
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $validated['content']))));
+        $summary = array_slice($lines, 0, 3);
+
+        if (empty($summary)) {
+            $summary = [mb_substr($validated['content'], 0, 50) . '...']; // 한 줄로 너무 길게 쓴 경우 첫 50자만 사용
+        }
+
+        $validated['summary'] = $summary;
         $validated['user_id'] = auth()->id();
         $validated['type'] = 'general';
 
