@@ -21,6 +21,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'current_points',
+        'tier_id',
+        'is_banned',
+        'last_login_at',
     ];
 
     /**
@@ -43,6 +47,23 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_banned' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    public function tier()
+    {
+        return $this->belongsTo(Tier::class);
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function pointHistories()
+    {
+        return $this->hasMany(PointHistory::class);
     }
 }
