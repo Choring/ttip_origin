@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
@@ -23,9 +24,7 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, Post $post)
     {
-        if ($post->user_id !== auth()->id()) {
-            abort(403);
-        }
+        Gate::authorize('update', $post);
 
         $validated = $request->validated();
 
@@ -36,9 +35,7 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {
-        if ($post->user_id !== auth()->id()) {
-            abort(403);
-        }
+        Gate::authorize('delete', $post);
 
         $post->delete();
 
