@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
-    public function store(StorePostRequest $request)
+    public function store(StorePostRequest $request, \App\Services\PointService $pointService)
     {
         $validated = $request->validated();
 
@@ -17,9 +17,12 @@ class PostController extends Controller
         $validated['user_id'] = auth()->id();
         $validated['type'] = 'general';
 
-        Post::create($validated);
+        $post = Post::create($validated);
 
-        return redirect()->route('home')->with('success', '게시글이 작성되었습니다.');
+        // 글 작성 시 10 포인트 지급
+        $pointService->addPoints(auth()->user(), 10, 'earn_post', 'posts', $post->id);
+
+        return redirect()->route('home')->with('success', '게시글이 작성되었습니다. (+10 포인트)');
     }
 
     public function update(UpdatePostRequest $request, Post $post)
