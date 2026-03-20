@@ -19,9 +19,11 @@
       </div>
 
       <!-- Title -->
-      <h2 class="text-lg font-bold text-gray-900 mb-4 leading-snug hover:text-primary cursor-pointer transition-colors line-clamp-2">
-        {{ title }}
-      </h2>
+      <Link :href="route('posts.show', id)">
+        <h2 class="text-lg font-bold text-gray-900 mb-4 leading-snug hover:text-primary cursor-pointer transition-colors line-clamp-2">
+          {{ title }}
+        </h2>
+      </Link>
 
       <!-- 3-line summary -->
       <div class="bg-gray-50 rounded-xl p-4 space-y-3.5 border border-gray-100/80">
@@ -58,7 +60,10 @@
 </template>
 
 <script setup>
+import { Link } from '@inertiajs/vue3';
+
 defineProps({
+  id: { type: [Number, String], required: true },
   authorName: { type: String, required: true },
   authorAvatar: { type: String, required: true },
   timeAgo: { type: String, required: true },

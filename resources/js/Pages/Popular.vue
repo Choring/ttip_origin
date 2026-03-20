@@ -16,6 +16,7 @@ defineProps({
       <SummaryCard
         v-for="post in posts"
         :key="post.id"
+        :id="post.id"
         :author-name="post.authorName"
         :author-avatar="post.authorAvatar"
         :time-ago="post.timeAgo"

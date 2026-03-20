@@ -9,6 +9,18 @@ use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
+    public function create()
+    {
+        return \Inertia\Inertia::render('Post/Create');
+    }
+
+    public function show(Post $post)
+    {
+        return \Inertia\Inertia::render('Post/Show', [
+            'post' => $post->load('user')
+        ]);
+    }
+
     public function store(StorePostRequest $request, \App\Services\PointService $pointService)
     {
         $validated = $request->validated();

@@ -53,10 +53,10 @@ function isActive(routeName) {
 
         <!-- Right Side Nav -->
         <div class="flex items-center space-x-4">
-          <button class="bg-primary hover:bg-[#E65300] text-white px-4 py-2 rounded-full text-sm font-bold shadow-sm flex items-center transition-colors">
+          <Link :href="route('posts.create')" class="bg-primary hover:bg-[#E65300] text-white px-4 py-2 rounded-full text-sm font-bold shadow-sm flex items-center transition-colors">
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
             글쓰기
-          </button>
+          </Link>
           
           <button class="text-gray-400 hover:text-gray-500 rounded-full p-2">
             <!-- bell icon -->
