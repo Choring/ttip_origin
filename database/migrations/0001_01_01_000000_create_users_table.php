@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
+            $table->comment('서비스에 가입한 사용자(회원) 정보를 저장하는 메인 테이블');
             $table->id();
             $table->string('name');
             $table->string('email')->unique();

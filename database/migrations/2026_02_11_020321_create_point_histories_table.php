@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('point_histories', function (Blueprint $table) {
+            $table->comment('사용자의 포인트 획득 및 차감 내역을 기록하는 테이블');
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->integer('amount'); // +10, -50 등

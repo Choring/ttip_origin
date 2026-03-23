@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tiers', function (Blueprint $table) {
+            $table->comment('사용자의 등급(티어) 정보를 저장하는 테이블');
             $table->id();
             $table->string('name', 20);      // 씨앗, 고수 등
             $table->integer('min_points')->default(0)->index(); // 등급 달성 최소 포인트
