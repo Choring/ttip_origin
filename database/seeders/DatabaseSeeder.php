@@ -29,10 +29,11 @@ class DatabaseSeeder extends Seeder
         $testUser = \App\Models\User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
-                'name' => '테스트유저',
+                'name' => '테스트유저(관리자)',
                 'password' => bcrypt('password'),
                 'current_points' => 500,
                 'tier_id' => \App\Models\Tier::where('name', '잎새')->first()->id ?? 1,
+                'role' => 'master',
             ]
         );
 

@@ -25,6 +25,7 @@ class User extends Authenticatable
         'tier_id',
         'is_banned',
         'last_login_at',
+        'role',
     ];
 
     /**
