@@ -25,7 +25,10 @@ class DatabaseSeeder extends Seeder
             \App\Models\Tier::firstOrCreate(['name' => $tier['name']], $tier);
         }
 
-        // 2. 관리자 겸 테스트용 계정 생성
+        // 3. Category Data
+        $this->call(CategorySeeder::class);
+
+        // 4. Test User Data
         $testUser = \App\Models\User::firstOrCreate(
             ['email' => 'test@example.com'],
             [

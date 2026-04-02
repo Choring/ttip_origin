@@ -16,6 +16,9 @@ import { Link } from '@inertiajs/vue3';
                 <Link :href="route('admin.users.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/users'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/users')}">
                     회원 관리
                 </Link>
+                <Link :href="route('admin.categories.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/categories'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/categories')}">
+                    카테고리 관리
+                </Link>
                 <Link :href="route('home')" class="block px-4 py-2.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-200 transition-colors mt-12 text-sm">
                     &larr; 사이트로 돌아가기
                 </Link>
