@@ -37,10 +37,16 @@ class PostController extends Controller
         $validated['user_id'] = auth()->id();
         $validated['type'] = 'general';
 
+        if ($request->hasFile('image')) {
+            $validated['card_image_path'] = \App\Helpers\FileUploadHelper::upload($request->file('image'), 'posts');
+        }
+
         $post = Post::create($validated);
 
         // 글 작성 시 10 포인트 지급
-        $pointService->addPoints(auth()->user(), 10, 'earn_post', 'posts', $post->id);
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $pointService->addPoints($user, 10, 'earn_post', 'posts', $post->id);
 
         return redirect()->route('home')->with('success', '게시글이 작성되었습니다. (+10 포인트)');
     }

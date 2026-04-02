@@ -58,6 +58,11 @@ const submitComment = () => {
                 <span class="mx-2">조회수 {{ post.view_count || 0 }}</span>
             </div>
 
+            <!-- 대표 이미지 출력부 -->
+            <div v-if="post.card_image_path" class="mb-8 rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                <img :src="'/storage/' + post.card_image_path" :alt="post.title" class="w-full h-auto max-h-[500px] object-cover" />
+            </div>
+
             <div class="prose max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
                 {{ post.content }}
             </div>

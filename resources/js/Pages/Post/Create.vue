@@ -1,10 +1,11 @@
 <script setup>
-import { useForm, Head } from '@inertiajs/vue3';
+import { useForm, Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 
 const form = useForm({
     title: '',
     content: '',
+    image: null,
 });
 
 const submit = () => {
@@ -48,14 +49,25 @@ const submit = () => {
                     <div v-if="form.errors.content" class="text-red-500 text-sm mt-1">{{ form.errors.content }}</div>
                 </div>
 
+                <div>
+                    <label for="image" class="block text-sm font-medium text-gray-700">대표 이미지 (선택)</label>
+                    <input 
+                        id="image" 
+                        type="file" 
+                        accept="image/*"
+                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 focus:outline-none" 
+                        @input="e => form.image = e.target.files[0]"
+                    />
+                    <div v-if="form.errors.image" class="text-red-500 text-sm mt-1">{{ form.errors.image }}</div>
+                </div>
+
                 <div class="flex justify-end pt-4 space-x-3">
-                    <button 
-                        type="button"
+                    <Link 
+                        :href="route('home')"
                         class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        @click="() => window.history.back()"
                     >
                         취소
-                    </button>
+                    </Link>
                     <button 
                         type="submit" 
                         :disabled="form.processing"
