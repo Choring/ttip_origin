@@ -19,6 +19,9 @@ const toggleBan = (user) => {
     <AdminLayout>
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800">회원 관리</h1>
+            <Link :href="route('admin.users.create')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-bold shadow transition-colors">
+                + 신규 회원 추가
+            </Link>
         </div>
 
         <!-- Success or Error Messages -->
@@ -60,6 +63,14 @@ const toggleBan = (user) => {
                             <span v-else class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">정상</span>
                         </td>
                         <td class="p-4 text-center">
+                            <Link 
+                                v-if="user.role !== 'master'"
+                                :href="route('admin.users.edit', user.id)"
+                                class="inline-block bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors mr-2 shadow-sm"
+                            >
+                                수정
+                            </Link>
+
                             <button 
                                 v-if="user.role !== 'master'"
                                 @click="toggleBan(user)" 
