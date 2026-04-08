@@ -16,7 +16,9 @@ class HomeController extends Controller
             });
         }
 
-        $posts = $query->get()->map(function($post) {
+        $paginator = $query->paginate(10)->appends($request->query());
+
+        $posts = $paginator->getCollection()->map(function($post) {
             return [
                 'id' => $post->id,
                 'authorName' => $post->user->name ?? '탈퇴한 사용자',
@@ -30,10 +32,19 @@ class HomeController extends Controller
             ];
         });
 
+        $paginatedData = [
+            'data' => $posts,
+            'next_page_url' => $paginator->nextPageUrl(),
+        ];
+
+        if ($request->wantsJson() && !$request->header('X-Inertia')) {
+            return response()->json($paginatedData);
+        }
+
         $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
 
         return \Inertia\Inertia::render('Home', [
-            'posts' => $posts,
+            'posts' => $paginatedData,
             'categories' => $categories,
             'currentCategory' => $request->category ?? 'all'
         ]);
