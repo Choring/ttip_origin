@@ -1,3 +1,7 @@
+<script setup>
+import { Link } from '@inertiajs/vue3';
+</script>
+
 <template>
   <div class="flex flex-col gap-6">
     <!-- Hall of Fame (명예의 전당) -->
@@ -49,27 +53,23 @@
       </ul>
     </div>
 
-    <!-- Trending Keywords -->
+    <!-- Trending Posts -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
       <h3 class="text-[15px] font-bold text-gray-900 flex items-center mb-4">
-        <span class="text-blue-500 mr-2 text-lg">📊</span> 실시간 인기 키워드
+        <span class="text-red-500 mr-2 text-lg">🔥</span> 실시간 인기 게시글
       </h3>
       <ul class="space-y-3">
-        <li class="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors">
-          <div class="flex items-center space-x-3">
-            <span class="text-primary text-xs font-bold bg-orange-100 w-5 h-5 flex items-center justify-center rounded-md">1</span>
-            <span class="text-sm font-semibold text-gray-700 group-hover:text-primary transition-colors">ChatGPT 활용법</span>
+        <li v-for="(post, index) in $page.props.popular_posts" :key="post.id" class="flex items-center justify-between group p-2 -mx-2 rounded-lg transition-colors hover:bg-gray-50">
+          <div class="flex items-center space-x-3 overflow-hidden flex-1 pr-2">
+            <span class="flex-shrink-0 text-xs font-bold w-5 h-5 flex items-center justify-center rounded-md" :class="index === 0 ? 'bg-orange-100 text-orange-600' : (index === 1 ? 'bg-gray-200 text-gray-700' : 'bg-indigo-50 text-indigo-500')">{{ index + 1 }}</span>
+            <Link :href="route('posts.show', post.id)" class="text-sm font-semibold text-gray-700 group-hover:text-primary transition-colors truncate block w-full">
+                {{ post.title }}
+            </Link>
           </div>
-          <span class="text-xs font-medium text-gray-400">1.5k</span>
-        </li>
-        <li class="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors">
-          <div class="flex items-center space-x-3">
-            <span class="text-secondary text-xs font-bold bg-green-100 w-5 h-5 flex items-center justify-center rounded-md">2</span>
-            <span class="text-sm font-semibold text-gray-700 group-hover:text-secondary transition-colors">아이폰 설정 팁</span>
-          </div>
-          <span class="text-xs font-medium text-gray-400">1.1k</span>
+          <span class="flex-shrink-0 text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">점수 {{ post.score }}</span>
         </li>
       </ul>
+      <div v-if="!$page.props.popular_posts || $page.props.popular_posts.length === 0" class="text-xs text-gray-400 text-center py-4 font-medium">등록된 인기 게시글이 없습니다.</div>
     </div>
 
     <!-- Advertisement Outline Right -->
