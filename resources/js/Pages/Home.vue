@@ -45,7 +45,7 @@ defineProps({
             :author-avatar="post.authorAvatar"
             :time-ago="post.timeAgo"
             :category="post.category"
-            :tag="post.tag"
+            :tags="post.tags"
             :title="post.title"
             :summary="post.summary"
             :likes="post.likes"

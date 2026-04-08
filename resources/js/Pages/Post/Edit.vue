@@ -7,13 +7,31 @@ const props = defineProps({
     categories: Array
 });
 
+import { ref } from 'vue';
+
 const form = useForm({
     category_id: props.post.category_id || '',
     title: props.post.title || '',
     content: props.post.content || '',
+    tags: props.post.tags || [],
 });
 
+const tagInput = ref('');
+const addTag = () => {
+    const val = tagInput.value.trim();
+    if (val && !form.tags.includes(val) && form.tags.length < 3) {
+        form.tags.push(val);
+    }
+    tagInput.value = '';
+};
+const removeTag = (index) => {
+    form.tags.splice(index, 1);
+};
+
 const submit = () => {
+    if (tagInput.value.trim() && form.tags.length < 3) {
+        addTag();
+    }
     form.put(route('posts.update', props.post.id));
 };
 </script>
@@ -53,6 +71,27 @@ const submit = () => {
                         required
                     />
                     <div v-if="form.errors.title" class="text-red-500 text-sm mt-1">{{ form.errors.title }}</div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">해시태그 (필수, 최대 3개)</label>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        <span v-for="(t, index) in form.tags" :key="index" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold flex items-center shadow-sm">
+                            #{{ t }}
+                            <button type="button" @click="removeTag(index)" class="ml-1.5 text-indigo-400 hover:text-red-500 rounded-full focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </span>
+                    </div>
+                    <input 
+                        v-if="form.tags.length < 3"
+                        v-model="tagInput" 
+                        @keydown.enter.prevent="addTag"
+                        type="text" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                        placeholder="태그를 입력하고 엔터(Enter)를 누르세요"
+                    />
+                    <div v-if="form.errors.tags" class="text-red-500 text-sm mt-1">{{ form.errors.tags }}</div>
                 </div>
 
                 <div>

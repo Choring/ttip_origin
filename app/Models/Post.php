@@ -23,6 +23,7 @@ class Post extends Model
         'card_image_path',
         'view_count',
         'type',
+        'tags',
     ];
 
     /**
@@ -34,6 +35,7 @@ class Post extends Model
     {
         return [
             'summary' => 'array',
+            'tags' => 'array',
         ];
     }
 

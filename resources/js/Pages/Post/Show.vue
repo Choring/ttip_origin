@@ -48,8 +48,9 @@ const submitComment = () => {
 
     <MainLayout>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" v-if="post">
-            <div class="mb-4">
+            <div class="mb-4 flex items-center space-x-2">
                 <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold shadow-sm">{{ post.category?.name || '분류 없음' }}</span>
+                <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-gray-200">#{{ t }}</span>
             </div>
             <h1 class="text-3xl font-bold mb-4 text-gray-800">{{ post.title }}</h1>
             

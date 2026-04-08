@@ -13,9 +13,11 @@
             <p class="text-xs font-medium text-gray-500">{{ timeAgo }} · {{ category }}</p>
           </div>
         </div>
-        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-gray-50 text-gray-500 border border-gray-100 uppercase tracking-wider">
-          #{{ tag }}
-        </span>
+        <div class="flex space-x-1" v-if="tags && tags.length > 0">
+          <span v-for="t in tags" :key="t" class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-gray-50 text-gray-500 border border-gray-100 uppercase tracking-wider">
+            #{{ t }}
+          </span>
+        </div>
       </div>
 
       <!-- Title -->
@@ -68,7 +70,7 @@ defineProps({
   authorAvatar: { type: String, required: true },
   timeAgo: { type: String, required: true },
   category: { type: String, required: true },
-  tag: { type: String, required: true },
+  tags: { type: Array, default: () => [] },
   title: { type: String, required: true },
   summary: { type: Array, required: true },
   likes: { type: [Number, String], default: 0 },
