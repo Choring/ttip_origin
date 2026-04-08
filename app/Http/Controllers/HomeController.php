@@ -16,6 +16,24 @@ class HomeController extends Controller
             });
         }
 
+        if ($request->filled('search_keyword')) {
+            $keyword = $request->search_keyword;
+            $type = $request->input('search_type', 'title');
+
+            if ($type === 'title') {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('title', 'like', "%{$keyword}%");
+                });
+            } elseif ($type === 'tags') {
+                $cleanKeyword = ltrim($keyword, '#');
+                $query->whereRaw('LOWER(tags) like ?', ['%' . mb_strtolower($cleanKeyword) . '%']);
+            } elseif ($type === 'author') {
+                $query->whereHas('user', function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%");
+                });
+            }
+        }
+
         $paginator = $query->paginate(10)->appends($request->query());
 
         $posts = $paginator->getCollection()->map(function($post) {
@@ -46,7 +64,8 @@ class HomeController extends Controller
         return \Inertia\Inertia::render('Home', [
             'posts' => $paginatedData,
             'categories' => $categories,
-            'currentCategory' => $request->category ?? 'all'
+            'currentCategory' => $request->category ?? 'all',
+            'filters' => $request->only(['search_type', 'search_keyword'])
         ]);
     }
 

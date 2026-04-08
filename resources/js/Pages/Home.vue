@@ -4,13 +4,34 @@ import SummaryCard from '@/Components/SummaryCard.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
 import axios from 'axios';
 
 const props = defineProps({
   posts: Object,
   categories: Array,
-  currentCategory: String
+  currentCategory: String,
+  filters: Object,
 });
+
+const searchType = ref(props.filters?.search_type || 'title');
+const searchKeyword = ref(props.filters?.search_keyword || '');
+
+const executeSearch = () => {
+    let queryParams = {};
+    if (props.currentCategory && props.currentCategory !== 'all') {
+        queryParams.category = props.currentCategory;
+    }
+    if (searchKeyword.value.trim()) {
+        queryParams.search_type = searchType.value;
+        queryParams.search_keyword = searchKeyword.value.trim();
+    }
+    
+    router.get(route('home'), queryParams, {
+        preserveState: true,
+        replace: true,
+    });
+};
 
 const postList = ref(props.posts.data);
 const nextPageUrl = ref(props.posts.next_page_url);
@@ -81,6 +102,30 @@ watch(() => props.posts, (newPosts) => {
         >
             {{ cat.name }}
         </Link>
+      </div>
+
+      <!-- Search Area -->
+      <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row gap-3">
+          <select 
+             v-model="searchType" 
+             class="border-gray-200 text-gray-700 font-medium rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:w-40 text-sm"
+          >
+              <option value="title">제목</option>
+              <option value="tags">해시태그</option>
+              <option value="author">작성자</option>
+          </select>
+          <div class="flex-1 relative">
+              <input 
+                 v-model="searchKeyword" 
+                 @keydown.enter="executeSearch"
+                 type="text" 
+                 placeholder="검색어를 입력하세요..." 
+                 class="w-full border-gray-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-12 text-sm"
+              />
+              <button @click="executeSearch" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-600 hover:text-white transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </button>
+          </div>
       </div>
 
       <div v-if="postList && postList.length > 0" class="flex flex-col gap-6">
