@@ -46,7 +46,8 @@ class HomeController extends Controller
                 'tags' => $post->tags ?? [],
                 'title' => $post->title,
                 'summary' => $post->summary,
-                'likes' => $post->view_count,
+                'likes' => $post->likes_count ?? 0,
+                'views' => $post->view_count,
             ];
         });
 

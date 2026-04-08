@@ -5,7 +5,8 @@ import CommentItem from '@/Components/CommentItem.vue';
 import { computed } from 'vue';
 
 const props = defineProps({
-    post: Object
+    post: Object,
+    isLiked: Boolean
 });
 
 const page = usePage();
@@ -71,15 +72,28 @@ const submitComment = () => {
                 {{ post.content }}
             </div>
 
-            <div class="mt-8 flex justify-between items-center">
-                <Link :href="route('home')" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors">
+            <!-- Like Action Bar -->
+            <div class="mt-8 pb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <Link :href="route('home')" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors order-2 sm:order-1">
                     &larr; 목록으로 돌아가기
                 </Link>
                 
-                <div v-if="user && user.id === post.user_id" class="flex space-x-3">
+                <div class="order-1 sm:order-2 flex-1 flex justify-center">
+                    <Link v-if="user" :href="route('posts.like', post.id)" method="post" as="button" preserve-scroll class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-md border-2" :class="isLiked ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'">
+                        <span>띱 👍</span>
+                        <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border" :class="isLiked ? 'border-indigo-200' : 'border-gray-100'">{{ post.likes_count || 0 }}</span>
+                    </Link>
+                    <div v-else class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg bg-gray-50 border-2 border-gray-100 text-gray-400 cursor-not-allowed">
+                        <span>띱 👍</span>
+                        <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border border-gray-100">{{ post.likes_count || 0 }}</span>
+                    </div>
+                </div>
+
+                <div v-if="user && user.id === post.user_id" class="flex space-x-3 order-3">
                     <Link :href="route('posts.edit', post.id)" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-bold border border-gray-200 transition-colors shadow-sm">수정</Link>
                     <Link :href="route('posts.destroy', post.id)" method="delete" as="button" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm" preserve-scroll @click="(e) => { if(!confirm('이 게시글을 정말 삭제하시겠습니까?\n달려있는 댓글도 연쇄적으로 지워집니다.')) e.preventDefault() }">삭제</Link>
                 </div>
+                <div v-else class="order-3 w-[100px] hidden sm:block"></div>
             </div>
 
             <!-- Comments Section -->

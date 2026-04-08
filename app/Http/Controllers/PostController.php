@@ -19,8 +19,14 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
+        $isLiked = false;
+        if (auth()->check()) {
+            $isLiked = $post->likes()->where('user_id', auth()->id())->exists();
+        }
+
         return \Inertia\Inertia::render('Post/Show', [
-            'post' => $post->load(['user', 'comments.user', 'category'])
+            'post' => $post->load(['user', 'comments.user', 'category']),
+            'isLiked' => $isLiked
         ]);
     }
 
@@ -90,5 +96,26 @@ class PostController extends Controller
         $post->delete();
 
         return redirect()->route('home')->with('success', '게시글이 삭제되었습니다.');
+    }
+
+    public function toggleLike(Post $post)
+    {
+        $user = auth()->user();
+
+        $existingLike = $post->likes()->where('user_id', $user->id)->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
+            $post->decrement('likes_count');
+            $message = '게시글에 남긴 띱 👍을 슬그머니 취소했습니다.';
+        } else {
+            $post->likes()->create([
+                'user_id' => $user->id
+            ]);
+            $post->increment('likes_count');
+            $message = '이 글에 강렬한 띱 👍을 날렸습니다!';
+        }
+
+        return back()->with('success', $message);
     }
 }

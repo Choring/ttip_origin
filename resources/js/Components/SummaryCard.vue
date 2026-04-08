@@ -45,10 +45,14 @@
     <!-- Footer Actions -->
     <div class="px-5 py-3.5 bg-white border-t border-gray-50 flex items-center justify-between text-gray-400">
       <div class="flex space-x-5">
-        <button class="flex items-center space-x-1.5 hover:text-red-500 transition-colors group">
-          <svg class="w-5 h-5 group-hover:fill-red-50 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+        <div class="flex items-center space-x-1.5 text-indigo-500">
+          <span class="text-base leading-none translate-y-[-1px]">👍</span>
           <span class="text-xs font-bold">{{ likes }}</span>
-        </button>
+        </div>
+        <div class="flex items-center space-x-1.5 hover:text-gray-600 transition-colors">
+          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+          <span class="text-xs font-bold">{{ views }}</span>
+        </div>
         <button class="flex items-center space-x-1.5 hover:text-primary transition-colors group">
           <svg class="w-5 h-5 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
           <span class="text-xs font-bold">공유</span>
@@ -74,5 +78,6 @@ defineProps({
   title: { type: String, required: true },
   summary: { type: Array, required: true },
   likes: { type: [Number, String], default: 0 },
+  views: { type: [Number, String], default: 0 },
 });
 </script>
