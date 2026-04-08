@@ -47,13 +47,13 @@ class DatabaseSeeder extends Seeder
             $users = \App\Models\User::all();
         }
 
-        // 4. 랜덤 게시글 생성
-        foreach ($users as $user) {
-            if ($user->posts()->count() === 0) { // 이미 있으면 패스
-                \App\Models\Post::factory(rand(2, 5))->create([
-                    'user_id' => $user->id
-                ]);
-            }
-        }
+        // 4. 랜덤 게시글 생성 (주석 처리됨)
+        // foreach ($users as $user) {
+        //     if ($user->posts()->count() === 0) { // 이미 있으면 패스
+        //         \App\Models\Post::factory(rand(2, 5))->create([
+        //             'user_id' => $user->id
+        //         ]);
+        //     }
+        // }
     }
 }
