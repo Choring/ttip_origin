@@ -53,15 +53,34 @@ class PostController extends Controller
         return redirect()->route('home')->with('success', '게시글이 작성되었습니다. (+10 포인트)');
     }
 
+    public function edit(Post $post)
+    {
+        Gate::authorize('update', $post);
+
+        $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+        return \Inertia\Inertia::render('Post/Edit', [
+            'post' => $post,
+            'categories' => $categories
+        ]);
+    }
+
     public function update(UpdatePostRequest $request, Post $post)
     {
         Gate::authorize('update', $post);
 
         $validated = $request->validated();
 
+        // Update summary if content changed
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $validated['content']))));
+        $summary = array_slice($lines, 0, 3);
+        if (empty($summary)) {
+            $summary = [mb_substr($validated['content'], 0, 50) . '...'];
+        }
+        $validated['summary'] = $summary;
+
         $post->update($validated);
 
-        return redirect()->back()->with('success', '게시글이 수정되었습니다.');
+        return redirect()->route('posts.show', $post)->with('success', '게시글이 깔끔하게 수정되었습니다.');
     }
 
     public function destroy(Post $post)

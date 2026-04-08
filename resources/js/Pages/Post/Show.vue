@@ -75,8 +75,9 @@ const submitComment = () => {
                     &larr; 목록으로 돌아가기
                 </Link>
                 
-                <div v-if="user && user.id === post.user_id" class="space-x-4">
-                    <!-- edit / delete goes here later -->
+                <div v-if="user && user.id === post.user_id" class="flex space-x-3">
+                    <Link :href="route('posts.edit', post.id)" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-bold border border-gray-200 transition-colors shadow-sm">수정</Link>
+                    <Link :href="route('posts.destroy', post.id)" method="delete" as="button" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm" preserve-scroll @click="(e) => { if(!confirm('이 게시글을 정말 삭제하시겠습니까?\n달려있는 댓글도 연쇄적으로 지워집니다.')) e.preventDefault() }">삭제</Link>
                 </div>
             </div>
 

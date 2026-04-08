@@ -41,13 +41,13 @@ class HomeController extends Controller
 
     public function popular()
     {
-        $posts = \App\Models\Post::with('user')->orderBy('view_count', 'desc')->get()->map(function($post) {
+        $posts = \App\Models\Post::with(['user', 'category'])->orderBy('view_count', 'desc')->get()->map(function($post) {
             return [
                 'id' => $post->id,
                 'authorName' => $post->user->name ?? '탈퇴한 사용자',
                 'authorAvatar' => 'https://ui-avatars.com/api/?name='.urlencode($post->user->name ?? '?').'&background=random',
                 'timeAgo' => $post->created_at->diffForHumans(),
-                'category' => '일반',
+                'category' => $post->category->name ?? '일반',
                 'tag' => '인기',
                 'title' => $post->title,
                 'summary' => $post->summary,
