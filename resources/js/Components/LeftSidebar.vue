@@ -1,21 +1,37 @@
+<script setup>
+import { usePage, Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+const page = usePage();
+const categories = computed(() => page.props.categories || []);
+
+const currentCategory = computed(() => {
+    return page.props.currentCategory || 'all';
+});
+</script>
+
 <template>
   <div class="flex flex-col gap-6">
     <!-- Categories -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
       <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">카테고리</h3>
       <nav class="space-y-1">
-        <a href="#" class="bg-gray-50 border-l-4 border-primary text-gray-900 group flex items-center px-3 py-2 text-sm font-bold rounded-r-xl rounded-l-sm">
-          <span class="truncate">💻 IT/개발</span>
-        </a>
-        <a href="#" class="text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-semibold rounded-r-xl rounded-l-sm transition-colors">
-          <span class="truncate">💡 생활/꿀팁</span>
-        </a>
-        <a href="#" class="text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-semibold rounded-r-xl rounded-l-sm transition-colors">
-          <span class="truncate">🎨 디자인/기획</span>
-        </a>
-        <a href="#" class="text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-semibold rounded-r-xl rounded-l-sm transition-colors">
-          <span class="truncate">🎬 취미/문화</span>
-        </a>
+        <Link 
+          :href="route('home')" 
+          class="group flex items-center px-3 py-2 text-sm rounded-r-xl rounded-l-sm transition-colors"
+          :class="currentCategory === 'all' ? 'bg-gray-50 border-l-4 border-indigo-600 text-indigo-700 font-bold' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 font-semibold'"
+        >
+          <span class="truncate">전체 피드</span>
+        </Link>
+        <Link 
+          v-for="cat in categories" 
+          :key="cat.id" 
+          :href="route('home', { category: cat.slug })" 
+          class="group flex items-center px-3 py-2 text-sm rounded-r-xl rounded-l-sm transition-colors"
+          :class="currentCategory === cat.slug ? 'bg-gray-50 border-l-4 border-indigo-600 text-indigo-700 font-bold' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 font-semibold'"
+        >
+          <span class="truncate">{{ cat.name }}</span>
+        </Link>
       </nav>
     </div>
 

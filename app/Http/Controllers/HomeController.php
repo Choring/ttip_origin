@@ -6,24 +6,36 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $posts = \App\Models\Post::with('user')->latest()->get()->map(function($post) {
+        $query = \App\Models\Post::with(['user', 'category'])->latest();
+
+        if ($request->has('category') && $request->category !== 'all') {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('slug', $request->category);
+            });
+        }
+
+        $posts = $query->get()->map(function($post) {
             return [
                 'id' => $post->id,
                 'authorName' => $post->user->name ?? '탈퇴한 사용자',
                 'authorAvatar' => 'https://ui-avatars.com/api/?name='.urlencode($post->user->name ?? '?').'&background=random',
                 'timeAgo' => $post->created_at->diffForHumans(),
-                'category' => '일반',
-                'tag' => '일반',
+                'category' => $post->category->name ?? '일반',
+                'tag' => $post->category ? '' : '미분류',
                 'title' => $post->title,
                 'summary' => $post->summary,
-                'likes' => 0,
+                'likes' => $post->view_count,
             ];
         });
 
+        $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+
         return \Inertia\Inertia::render('Home', [
-            'posts' => $posts
+            'posts' => $posts,
+            'categories' => $categories,
+            'currentCategory' => $request->category ?? 'all'
         ]);
     }
 

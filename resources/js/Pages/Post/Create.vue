@@ -2,7 +2,12 @@
 import { useForm, Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 
+defineProps({
+    categories: Array
+});
+
 const form = useForm({
+    category_id: '',
     title: '',
     content: '',
     image: null,
@@ -24,12 +29,28 @@ const submit = () => {
             
             <form @submit.prevent="submit" class="space-y-6">
                 <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700">제목</label>
+                    <label for="category_id" class="block text-sm font-bold text-gray-700 mb-2">카테고리</label>
+                    <select 
+                        id="category_id" 
+                        v-model="form.category_id" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                        required
+                    >
+                        <option value="" disabled selected>게시글 분류를 선택하세요</option>
+                        <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                            {{ cat.name }}
+                        </option>
+                    </select>
+                    <div v-if="form.errors.category_id" class="text-red-500 text-sm mt-1">{{ form.errors.category_id }}</div>
+                </div>
+
+                <div>
+                    <label for="title" class="block text-sm font-bold text-gray-700 mb-2">제목</label>
                     <input 
                         id="title" 
                         v-model="form.title" 
                         type="text" 
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
                         placeholder="제목을 입력하세요"
                         required
                     />

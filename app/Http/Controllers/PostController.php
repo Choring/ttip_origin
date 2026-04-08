@@ -11,13 +11,16 @@ class PostController extends Controller
 {
     public function create()
     {
-        return \Inertia\Inertia::render('Post/Create');
+        $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+        return \Inertia\Inertia::render('Post/Create', [
+            'categories' => $categories
+        ]);
     }
 
     public function show(Post $post)
     {
         return \Inertia\Inertia::render('Post/Show', [
-            'post' => $post->load(['user', 'comments.user'])
+            'post' => $post->load(['user', 'comments.user', 'category'])
         ]);
     }
 
@@ -35,7 +38,6 @@ class PostController extends Controller
 
         $validated['summary'] = $summary;
         $validated['user_id'] = auth()->id();
-        $validated['type'] = 'general';
 
         if ($request->hasFile('image')) {
             $validated['card_image_path'] = \App\Helpers\FileUploadHelper::upload($request->file('image'), 'posts');

@@ -34,6 +34,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'categories' => \Illuminate\Support\Facades\Cache::remember('active_categories', 600, function () {
+                return \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+            }),
         ];
     }
 }
