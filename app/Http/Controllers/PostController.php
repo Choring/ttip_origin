@@ -19,6 +19,13 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
+        // 조회수 어뷰징 방지: 한 세션(브라우저 접속) 당 게시글별로 1회만 카운트되도록 처리
+        $sessionKey = 'post_viewed_' . $post->id;
+        if (!session()->has($sessionKey)) {
+            $post->increment('view_count');
+            session()->put($sessionKey, true);
+        }
+
         $isLiked = false;
         if (auth()->check()) {
             $isLiked = $post->likes()->where('user_id', auth()->id())->exists();
