@@ -10,6 +10,11 @@ const navItems = [
 function isActive(routeName) {
   return route().current(routeName);
 }
+
+import { ref } from 'vue';
+import LoginModal from '@/Components/LoginModal.vue';
+
+const showLoginModal = ref(false);
 </script>
 
 <template>
@@ -42,7 +47,7 @@ function isActive(routeName) {
         <div class="flex-1"></div>
 
         <!-- Right Side Nav -->
-        <div class="flex items-center space-x-4">
+        <div v-if="$page.props.auth.user" class="flex items-center space-x-4">
           <Link :href="route('posts.create')" class="bg-primary hover:bg-[#E65300] text-white px-4 py-2 rounded-full text-sm font-bold shadow-sm flex items-center transition-colors">
             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
             글쓰기
@@ -55,14 +60,29 @@ function isActive(routeName) {
             </svg>
           </button>
           
-          <div class="flex items-center bg-gray-50 border border-gray-100 rounded-full pr-3 pl-1 py-1 cursor-pointer hover:bg-gray-100 transition-colors">
+          <Link :href="route('profile.edit')" class="flex items-center bg-gray-50 border border-gray-100 rounded-full pr-3 pl-1 py-1 cursor-pointer hover:bg-gray-100 transition-colors">
             <div class="bg-red-100 rounded-full h-7 w-7 flex items-center justify-center text-red-500 font-bold mr-2 text-xs">
-              닉
+              {{ $page.props.auth.user.name.substring(0, 1) }}
             </div>
-            <span class="text-sm font-bold text-gray-700">닉네임</span>
-          </div>
+            <span class="text-sm font-bold text-gray-700">{{ $page.props.auth.user.name }}</span>
+          </Link>
+          
+          <Link :href="route('logout')" method="post" as="button" class="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors ml-2">
+            로그아웃
+          </Link>
+        </div>
+
+        <div v-else class="flex items-center space-x-3">
+          <button @click="showLoginModal = true" class="text-gray-600 hover:text-gray-900 font-semibold px-4 py-2 text-sm transition-colors">
+            로그인
+          </button>
+          <Link :href="route('register')" class="bg-primary hover:bg-[#E65300] text-white px-5 py-2 rounded-full text-sm font-bold shadow-sm transition-colors">
+            회원가입
+          </Link>
         </div>
       </div>
     </div>
+    
+    <LoginModal :show="showLoginModal" @close="showLoginModal = false" />
   </header>
 </template>

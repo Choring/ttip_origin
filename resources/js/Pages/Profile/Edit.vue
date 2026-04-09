@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import MainLayout from '@/Layouts/MainLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
@@ -16,22 +16,19 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Profile" />
+    <Head title="내 프로필 관리" />
 
-    <AuthenticatedLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Profile
-            </h2>
-        </template>
+    <MainLayout>
+        <div class="py-2 sm:py-6 text-left">
+            <div class="mb-6 px-4">
+                <h2 class="text-2xl font-extrabold text-gray-800">
+                    마이페이지
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">계정 정보 변경 및 보안 설정을 관리하세요.</p>
+            </div>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
+            <div class="space-y-6 px-2 sm:px-0">
+                <div class="bg-white p-6 shadow-md rounded-3xl border border-gray-50 sm:p-8 transition-shadow">
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
@@ -39,18 +36,14 @@ defineProps({
                     />
                 </div>
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
+                <div class="bg-white p-6 shadow-md rounded-3xl border border-gray-50 sm:p-8 transition-shadow">
                     <UpdatePasswordForm class="max-w-xl" />
                 </div>
 
-                <div
-                    class="bg-white p-4 shadow sm:rounded-lg sm:p-8"
-                >
+                <div class="bg-white p-6 shadow-md rounded-3xl border border-gray-50 sm:p-8 transition-shadow">
                     <DeleteUserForm class="max-w-xl" />
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </MainLayout>
 </template>

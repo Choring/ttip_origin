@@ -24,10 +24,12 @@ class HomeController extends Controller
                 $query->where(function ($q) use ($keyword) {
                     $q->where('title', 'like', "%{$keyword}%");
                 });
-            } elseif ($type === 'tags') {
+            }
+            elseif ($type === 'tags') {
                 $cleanKeyword = ltrim($keyword, '#');
                 $query->whereRaw('LOWER(tags) like ?', ['%' . mb_strtolower($cleanKeyword) . '%']);
-            } elseif ($type === 'author') {
+            }
+            elseif ($type === 'author') {
                 $query->whereHas('user', function ($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%");
                 });
@@ -36,18 +38,18 @@ class HomeController extends Controller
 
         $paginator = $query->paginate(10)->appends($request->query());
 
-        $posts = $paginator->getCollection()->map(function($post) {
+        $posts = $paginator->getCollection()->map(function ($post) {
             return [
-                'id' => $post->id,
-                'authorName' => $post->user->name ?? '탈퇴한 사용자',
-                'authorAvatar' => 'https://ui-avatars.com/api/?name='.urlencode($post->user->name ?? '?').'&background=random',
-                'timeAgo' => $post->created_at->diffForHumans(),
-                'category' => $post->category->name ?? '일반',
-                'tags' => $post->tags ?? [],
-                'title' => $post->title,
-                'summary' => $post->summary,
-                'likes' => $post->likes_count ?? 0,
-                'views' => $post->view_count,
+            'id' => $post->id,
+            'authorName' => $post->user->name ?? '탈퇴한 사용자',
+            'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
+            'timeAgo' => $post->created_at->diffForHumans(),
+            'category' => $post->category->name ?? '일반',
+            'tags' => $post->tags ?? [],
+            'title' => $post->title,
+            'summary' => $post->summary,
+            'likes' => $post->likes_count ?? 0,
+            'views' => $post->view_count,
             ];
         });
 
@@ -72,17 +74,17 @@ class HomeController extends Controller
 
     public function popular()
     {
-        $posts = \App\Models\Post::with(['user', 'category'])->orderBy('view_count', 'desc')->get()->map(function($post) {
+        $posts = \App\Models\Post::with(['user', 'category'])->orderBy('view_count', 'desc')->get()->map(function ($post) {
             return [
-                'id' => $post->id,
-                'authorName' => $post->user->name ?? '탈퇴한 사용자',
-                'authorAvatar' => 'https://ui-avatars.com/api/?name='.urlencode($post->user->name ?? '?').'&background=random',
-                'timeAgo' => $post->created_at->diffForHumans(),
-                'category' => $post->category->name ?? '일반',
-                'tags' => $post->tags ?? [],
-                'title' => $post->title,
-                'summary' => $post->summary,
-                'likes' => $post->view_count,
+            'id' => $post->id,
+            'authorName' => $post->user->name ?? '탈퇴한 사용자',
+            'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
+            'timeAgo' => $post->created_at->diffForHumans(),
+            'category' => $post->category->name ?? '일반',
+            'tags' => $post->tags ?? [],
+            'title' => $post->title,
+            'summary' => $post->summary,
+            'likes' => $post->view_count,
             ];
         });
 

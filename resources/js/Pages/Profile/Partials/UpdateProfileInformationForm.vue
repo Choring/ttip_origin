@@ -1,7 +1,6 @@
 <script setup>
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 
@@ -25,12 +24,12 @@ const form = useForm({
 <template>
     <section>
         <header>
-            <h2 class="text-lg font-medium text-gray-900">
-                Profile Information
+            <h2 class="text-xl font-bold text-gray-900">
+                기본 정보
             </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
-                Update your account's profile information and email address.
+            <p class="mt-1 text-sm text-gray-500">
+                사용하실 닉네임과 연락받을 이메일 주소를 변경할 수 있습니다.
             </p>
         </header>
 
@@ -39,12 +38,12 @@ const form = useForm({
             class="mt-6 space-y-6"
         >
             <div>
-                <InputLabel for="name" value="Name" />
+                <InputLabel for="name" value="닉네임" class="font-bold text-gray-700 mb-1" />
 
                 <TextInput
                     id="name"
                     type="text"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-xl border-gray-200 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm transition-all"
                     v-model="form.name"
                     required
                     autofocus
@@ -55,12 +54,12 @@ const form = useForm({
             </div>
 
             <div>
-                <InputLabel for="email" value="Email" />
+                <InputLabel for="email" value="이메일 주소" class="font-bold text-gray-700 mb-1" />
 
                 <TextInput
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-1 block w-full rounded-xl border-gray-200 focus:border-primary focus:ring-primary shadow-sm px-4 py-3 text-sm transition-all"
                     v-model="form.email"
                     required
                     autocomplete="username"
@@ -71,14 +70,14 @@ const form = useForm({
 
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
                 <p class="mt-2 text-sm text-gray-800">
-                    Your email address is unverified.
+                    이메일 인증이 완료되지 않았습니다.
                     <Link
                         :href="route('verification.send')"
                         method="post"
                         as="button"
-                        class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                        class="rounded-md text-sm text-primary underline hover:text-orange-700 focus:outline-none"
                     >
-                        Click here to re-send the verification email.
+                        인증 메일을 다시 보내려면 여기를 클릭하세요.
                     </Link>
                 </p>
 
@@ -86,12 +85,19 @@ const form = useForm({
                     v-show="status === 'verification-link-sent'"
                     class="mt-2 text-sm font-medium text-green-600"
                 >
-                    A new verification link has been sent to your email address.
+                    새로운 인증 링크가 이메일로 전송되었습니다.
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+                <button
+                    type="submit"
+                    class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-sm transition-all active:scale-[0.98]"
+                    :class="{ 'opacity-50 cursor-not-allowed': form.processing }"
+                    :disabled="form.processing"
+                >
+                    저장하기
+                </button>
 
                 <Transition
                     enter-active-class="transition ease-in-out"
@@ -101,9 +107,9 @@ const form = useForm({
                 >
                     <p
                         v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600"
+                        class="text-sm font-bold text-primary"
                     >
-                        Saved.
+                        저장되었습니다.
                     </p>
                 </Transition>
             </div>
