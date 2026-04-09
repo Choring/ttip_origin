@@ -12,45 +12,31 @@ import { Link } from '@inertiajs/vue3';
         </h3>
         <span class="text-xs text-gray-400 font-medium">Top 3</span>
       </div>
-      <ul class="space-y-4">
-        <li class="flex items-center justify-between">
+      <ul class="space-y-4" v-if="$page.props.hall_of_fame && $page.props.hall_of_fame.length > 0">
+        <li v-for="(user, index) in $page.props.hall_of_fame" :key="user.id" class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
              <div class="relative">
-               <img class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-50" src="https://ui-avatars.com/api/?name=User1&background=random" alt="">
-               <span class="absolute -top-1 -left-1 bg-yellow-400 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white shadow-sm">1</span>
+               <img class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-50" :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`" :alt="user.name">
+               <span 
+                 class="absolute -top-1 -left-1 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white shadow-sm"
+                 :class="{
+                   'bg-yellow-400': index === 0,
+                   'bg-gray-400': index === 1,
+                   'bg-yellow-700': index === 2
+                 }"
+               >
+                 {{ index + 1 }}
+               </span>
              </div>
              <div>
-               <p class="text-sm font-bold text-gray-900">IT 위스퍼</p>
-               <p class="text-xs font-semibold text-gray-500">12,400 P</p>
+               <p class="text-sm font-bold text-gray-900">{{ user.name }}</p>
+               <p class="text-xs font-semibold text-gray-500">{{ user.current_points.toLocaleString() }} P</p>
              </div>
           </div>
-          <span class="text-yellow-500 text-xl" title="Crown">👑</span>
-        </li>
-        <li class="flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-             <div class="relative">
-               <img class="h-10 w-10 rounded-full ring-2 ring-gray-50" src="https://ui-avatars.com/api/?name=User2&background=random" alt="">
-               <span class="absolute -top-1 -left-1 bg-gray-400 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white shadow-sm">2</span>
-             </div>
-             <div>
-               <p class="text-sm font-bold text-gray-900">김시니어</p>
-               <p class="text-xs font-semibold text-gray-500">10,210 P</p>
-             </div>
-          </div>
-        </li>
-        <li class="flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-             <div class="relative">
-               <img class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-50" src="https://ui-avatars.com/api/?name=User3&background=random" alt="">
-               <span class="absolute -top-1 -left-1 bg-yellow-700 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-white shadow-sm">3</span>
-             </div>
-             <div>
-               <p class="text-sm font-bold text-gray-900">FIN테크</p>
-               <p class="text-xs font-semibold text-gray-500">9,115 P</p>
-             </div>
-          </div>
+          <span v-if="index === 0" class="text-yellow-500 text-xl" title="Crown">👑</span>
         </li>
       </ul>
+      <div v-else class="text-xs text-gray-400 text-center py-4 font-medium">명예의 전당 데이터가 없습니다.</div>
     </div>
 
     <!-- Trending Posts -->

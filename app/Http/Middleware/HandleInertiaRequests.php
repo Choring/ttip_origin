@@ -50,6 +50,12 @@ class HandleInertiaRequests extends Middleware
                         ];
                     });
             }),
+            'hall_of_fame' => \Illuminate\Support\Facades\Cache::remember('hall_of_fame_sidebar', 60, function () {
+                return \App\Models\User::select('id', 'name', 'current_points')
+                    ->orderBy('current_points', 'desc')
+                    ->take(3)
+                    ->get();
+            }),
         ];
     }
 }
