@@ -28,7 +28,7 @@ function tryCatchRoute(name) {
                     카테고리 관리
                 </Link>
                 <Link :href="tryCatchRoute('admin.notices.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/notices'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/notices')}">
-                    📢 공지사항 관리
+                    공지사항 관리
                 </Link>
                 <Link :href="tryCatchRoute('admin.posts.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/posts'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/posts')}">
                     게시글 관리
