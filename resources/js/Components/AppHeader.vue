@@ -18,6 +18,14 @@ function isActive(routeName) {
   }
 }
 
+function tryCatchRoute(name) {
+  try {
+    return route(name);
+  } catch (e) {
+    return '#';
+  }
+}
+
 const showLoginModal = ref(false);
 </script>
 
@@ -27,14 +35,14 @@ const showLoginModal = ref(false);
       <div class="flex justify-between items-center h-16">
         <!-- Logo and Nav -->
         <div class="flex items-center space-x-8">
-          <Link :href="route('home')" class="flex-shrink-0 flex items-center pr-4">
+          <Link :href="tryCatchRoute('home')" class="flex-shrink-0 flex items-center pr-4">
             <span class="text-primary font-extrabold text-2xl tracking-tighter cursor-pointer">ttip</span>
           </Link>
           <nav class="hidden md:flex space-x-6 h-full">
             <Link
               v-for="item in navItems"
               :key="item.route"
-              :href="route(item.route)"
+              :href="tryCatchRoute(item.route)"
               :class="[
                 'inline-flex items-center px-1 pt-1 text-sm h-16 border-b-2 transition-colors',
                 isActive(item.route)
