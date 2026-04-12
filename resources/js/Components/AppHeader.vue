@@ -1,5 +1,7 @@
 <script setup>
+import { ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import LoginModal from '@/Components/LoginModal.vue';
 
 const navItems = [
   { name: '탐색', route: 'home' },
@@ -9,11 +11,12 @@ const navItems = [
 ];
 
 function isActive(routeName) {
-  return route().current(routeName);
+  try {
+    return route().current(routeName);
+  } catch (e) {
+    return false;
+  }
 }
-
-import { ref } from 'vue';
-import LoginModal from '@/Components/LoginModal.vue';
 
 const showLoginModal = ref(false);
 </script>
