@@ -25,6 +25,10 @@
         <meta property="twitter:description" content="당신의 일상에 특별한 팁을 더하는 커뮤니티 공간, ttip입니다.">
         <meta property="twitter:image" content="https://dopastation.com/og-image.png">
 
+        <!-- Google AdSense -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8069193438069319"
+             crossorigin="anonymous"></script>
+
         <!-- Favicon -->
         <link rel="shortcut icon" href="/favicon.ico">
 
