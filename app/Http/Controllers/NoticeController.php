@@ -13,7 +13,7 @@ class NoticeController extends Controller
      */
     public function index()
     {
-        $posts = Post::with(['user', 'category'])
+        $posts = Post::with(['user', 'category'])->withCount(['comments', 'likes'])
             ->notice()
             ->latest()
             ->paginate(15)
@@ -30,6 +30,7 @@ class NoticeController extends Controller
                     'is_pinned' => $post->is_pinned,
                     'views' => $post->view_count,
                     'likes' => $post->likes_count ?? 0,
+                    'comments' => $post->comments_count ?? 0,
                 ];
             });
 

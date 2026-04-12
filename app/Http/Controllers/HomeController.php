@@ -8,7 +8,7 @@ class HomeController extends Controller
 {
     public function index(\Illuminate\Http\Request $request)
     {
-        $query = \App\Models\Post::with(['user', 'category'])->latest();
+        $query = \App\Models\Post::with(['user', 'category'])->withCount(['comments', 'likes'])->latest();
 
         if ($request->has('category') && $request->category !== 'all') {
             $query->whereHas('category', function ($q) use ($request) {
@@ -50,6 +50,7 @@ class HomeController extends Controller
             'summary' => $post->summary,
             'summary' => $post->summary,
             'likes' => $post->likes_count ?? 0,
+            'comments' => $post->comments_count ?? 0,
             'views' => $post->view_count,
             'type' => $post->type,
             'isPinned' => $post->is_pinned,
@@ -57,6 +58,7 @@ class HomeController extends Controller
         });
 
         $pinnedNotices = \App\Models\Post::with(['user', 'category'])
+            ->withCount(['comments', 'likes'])
             ->notice()
             ->pinned()
             ->latest()
@@ -73,6 +75,7 @@ class HomeController extends Controller
                     'title' => $post->title,
                     'summary' => $post->summary,
                     'likes' => $post->likes_count ?? 0,
+                    'comments' => $post->comments_count ?? 0,
                     'views' => $post->view_count,
                     'type' => $post->type,
                     'isPinned' => $post->is_pinned,

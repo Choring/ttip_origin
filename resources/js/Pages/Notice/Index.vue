@@ -34,6 +34,7 @@ const props = defineProps({
             :title="post.title"
             :summary="post.summary"
             :likes="post.likes"
+            :comments="post.comments"
             :views="post.views"
             :type="'notice'"
             :is-pinned="post.is_pinned"

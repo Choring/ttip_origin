@@ -48,24 +48,51 @@
       </div>
     </div>
     
-    <!-- Footer Actions -->
     <div class="px-5 py-3.5 bg-white border-t border-gray-50 flex items-center justify-between text-gray-400">
       <div class="flex space-x-5">
-        <div class="flex items-center space-x-1.5 text-indigo-500">
-          <span class="text-base leading-none translate-y-[-1px]">👍</span>
-          <span class="text-xs font-bold">{{ likes }}</span>
+        <!-- Likes -->
+        <button class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
+          <svg class="w-[18px] h-[18px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+          </svg>
+          <span class="text-xs font-extrabold">{{ likes }}</span>
+        </button>
+
+        <!-- Comments -->
+        <button class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
+          <svg class="w-[18px] h-[18px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span class="text-xs font-extrabold">{{ comments }}</span>
+        </button>
+
+        <!-- Views -->
+        <div class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group cursor-default">
+          <svg class="w-[19px] h-[19px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span class="text-xs font-extrabold">{{ views }}</span>
         </div>
-        <div class="flex items-center space-x-1.5 hover:text-gray-600 transition-colors">
-          <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-          <span class="text-xs font-bold">{{ views }}</span>
-        </div>
-        <button class="flex items-center space-x-1.5 hover:text-primary transition-colors group">
-          <svg class="w-5 h-5 group-hover:scale-110 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-          <span class="text-xs font-bold">공유</span>
+
+        <!-- Share -->
+        <button class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
+          <svg class="w-[18px] h-[18px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span class="text-[11px] font-bold uppercase tracking-wider">공유</span>
         </button>
       </div>
-      <button class="hover:text-primary transition-colors hover:scale-110">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+
+      <!-- Bookmark -->
+      <button class="hover:text-amber-500 transition-colors hover:scale-110 group">
+        <svg class="w-5 h-5 group-hover:fill-amber-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
       </button>
     </div>
   </div>
@@ -84,6 +111,7 @@ defineProps({
   title: { type: String, required: true },
   summary: { type: Array, required: true },
   likes: { type: [Number, String], default: 0 },
+  comments: { type: [Number, String], default: 0 },
   views: { type: [Number, String], default: 0 },
   type: { type: String, default: 'general' },
   isPinned: { type: Boolean, default: false },
