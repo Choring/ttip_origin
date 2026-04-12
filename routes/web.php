@@ -11,6 +11,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
 Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');
 Route::get('/notices', [\App\Http\Controllers\NoticeController::class, 'index'])->name('notices.index');
+Route::inertia('/terms', 'Legal/Terms')->name('terms');
+Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
 
 // {post} 라우트가 'create' 문자열을 삼켜서 404 에러가 나지 않도록 숫자(ID)만 받게 제한합니다.
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post');

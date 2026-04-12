@@ -21,6 +21,9 @@
       </div>
     </div>
 
+    <!-- Global Footer -->
+    <AppFooter />
+
     <!-- Global Toast Notifications -->
     <ToastNotification />
   </div>
@@ -31,4 +34,5 @@ import AppHeader from '@/Components/AppHeader.vue';
 import LeftSidebar from '@/Components/LeftSidebar.vue';
 import RightSidebar from '@/Components/RightSidebar.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
+import AppFooter from '@/Components/AppFooter.vue';
 </script>
