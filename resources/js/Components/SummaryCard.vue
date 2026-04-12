@@ -76,7 +76,7 @@
         </div>
 
         <!-- Share -->
-        <button class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
+        <button @click="sharePost" class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
           <svg class="w-[18px] h-[18px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="18" cy="5" r="3"></circle>
             <circle cx="6" cy="12" r="3"></circle>
@@ -100,8 +100,11 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { useToast } from '@/Composables/useToast';
 
-defineProps({
+const { showToast } = useToast();
+
+const props = defineProps({
   id: { type: [Number, String], required: true },
   authorName: { type: String, required: true },
   authorAvatar: { type: String, required: true },
@@ -116,4 +119,28 @@ defineProps({
   type: { type: String, default: 'general' },
   isPinned: { type: Boolean, default: false },
 });
+
+const sharePost = async () => {
+    const shareData = {
+        title: props.title,
+        text: props.summary.join(' '),
+        url: route('posts.show', props.id),
+    };
+
+    try {
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            throw new Error('Web Share not supported');
+        }
+    } catch (err) {
+        // Fallback to Clipboard
+        try {
+            await navigator.clipboard.writeText(shareData.url);
+            showToast('공유 링크가 클립보드에 복사되었습니다! ✅');
+        } catch (copyErr) {
+            showToast('링크 복사에 실패했습니다. 직접 주소를 복사해 주세요. ⚠️', 'error');
+        }
+    }
+};
 </script>

@@ -20,6 +20,9 @@
         </div>
       </div>
     </div>
+
+    <!-- Global Toast Notifications -->
+    <ToastNotification />
   </div>
 </template>
 
@@ -27,4 +30,5 @@
 import AppHeader from '@/Components/AppHeader.vue';
 import LeftSidebar from '@/Components/LeftSidebar.vue';
 import RightSidebar from '@/Components/RightSidebar.vue';
+import ToastNotification from '@/Components/ToastNotification.vue';
 </script>
