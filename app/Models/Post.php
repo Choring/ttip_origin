@@ -24,6 +24,7 @@ class Post extends Model
         'view_count',
         'type',
         'tags',
+        'is_pinned',
     ];
 
     /**
@@ -36,7 +37,24 @@ class Post extends Model
         return [
             'summary' => 'array',
             'tags' => 'array',
+            'is_pinned' => 'boolean',
         ];
+    }
+
+    /**
+     * Scope a query to only include pinned posts.
+     */
+    public function scopePinned($query)
+    {
+        return $query->where('is_pinned', true);
+    }
+
+    /**
+     * Scope a query to only include notices.
+     */
+    public function scopeNotice($query)
+    {
+        return $query->where('type', 'notice');
     }
 
     /**

@@ -8,15 +8,21 @@
           <div>
             <p class="text-sm font-bold text-gray-900 flex items-center">
               {{ authorName }}
-              <svg class="w-4 h-4 ml-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              <svg v-if="type !== 'notice'" class="w-4 h-4 ml-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              <span v-else class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-tighter">운영공지</span>
             </p>
             <p class="text-xs font-medium text-gray-500">{{ timeAgo }} · {{ category }}</p>
           </div>
         </div>
-        <div class="flex space-x-1" v-if="tags && tags.length > 0">
-          <span v-for="t in tags" :key="t" class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-gray-50 text-gray-500 border border-gray-100 uppercase tracking-wider">
-            #{{ t }}
-          </span>
+        <div class="flex items-center space-x-2">
+            <span v-if="isPinned" class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-red-50 text-red-600 border border-red-100 uppercase tracking-wider">
+                📌 고정공지
+            </span>
+            <div class="flex space-x-1" v-if="tags && tags.length > 0">
+              <span v-for="t in tags" :key="t" class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-gray-50 text-gray-500 border border-gray-100 uppercase tracking-wider">
+                #{{ t }}
+              </span>
+            </div>
         </div>
       </div>
 
@@ -79,5 +85,7 @@ defineProps({
   summary: { type: Array, required: true },
   likes: { type: [Number, String], default: 0 },
   views: { type: [Number, String], default: 0 },
+  type: { type: String, default: 'general' },
+  isPinned: { type: Boolean, default: false },
 });
 </script>

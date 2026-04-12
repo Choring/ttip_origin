@@ -27,6 +27,8 @@ class UpdatePostRequest extends FormRequest
             'content' => 'required|string',
             'tags' => 'required|array|min:1|max:3',
             'tags.*' => 'required|string|max:15',
+            'type' => 'nullable|string|in:general,notice,ad',
+            'is_pinned' => 'nullable|boolean',
         ];
     }
 }

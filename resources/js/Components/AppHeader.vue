@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/vue3';
 
 const navItems = [
   { name: '탐색', route: 'home' },
+  { name: '공지사항', route: 'notices.index' },
   { name: '인기글', route: 'popular' },
   { name: '북마크', route: 'bookmarks' },
 ];

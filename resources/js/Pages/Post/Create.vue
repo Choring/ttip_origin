@@ -14,6 +14,8 @@ const form = useForm({
     content: '',
     tags: [],
     image: null,
+    type: 'general',
+    is_pinned: false,
 });
 
 const tagInput = ref('');
@@ -119,6 +121,28 @@ const submit = () => {
                         @input="e => form.image = e.target.files[0]"
                     />
                     <div v-if="form.errors.image" class="text-red-500 text-sm mt-1">{{ form.errors.image }}</div>
+                </div>
+
+                <!-- Admin Only Section -->
+                <div v-if="['admin', 'master'].includes($page.props.auth.user.role)" class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">관리자 전용 설정</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-6">
+                        <div class="flex-1">
+                            <label for="type" class="block text-sm font-bold text-gray-700 mb-2">게시글 타입</label>
+                            <select id="type" v-model="form.type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="general">일반 게시글 (General)</option>
+                                <option value="notice">공지사항 (Notice)</option>
+                                <option value="ad">광고/홍보 (Ad)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center pt-6">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" v-model="form.is_pinned" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                <span class="ml-2 text-sm font-bold text-gray-700">최상단 고정 (Pin to Top)</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex justify-end pt-4 space-x-3">

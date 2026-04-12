@@ -10,6 +10,7 @@ import axios from 'axios';
 const props = defineProps({
   posts: Object,
   categories: Array,
+  pinnedNotices: Array,
   currentCategory: String,
   filters: Object,
 });
@@ -128,7 +129,38 @@ watch(() => props.posts, (newPosts) => {
           </div>
       </div>
 
+      <!-- Pinned Notices -->
+      <div v-if="pinnedNotices && pinnedNotices.length > 0 && currentCategory === 'all'" class="space-y-4">
+          <div class="flex items-center space-x-2 px-1">
+              <span class="text-lg font-bold text-gray-900">🔔 중요 공지사항</span>
+              <div class="h-0.5 flex-1 bg-gray-100 rounded-full"></div>
+          </div>
+          <div class="grid gap-4">
+              <SummaryCard
+                v-for="notice in pinnedNotices"
+                :key="'pinned-' + notice.id"
+                :id="notice.id"
+                :author-name="notice.authorName"
+                :author-avatar="notice.authorAvatar"
+                :time-ago="notice.timeAgo"
+                :category="notice.category"
+                :tags="notice.tags"
+                :title="notice.title"
+                :summary="notice.summary"
+                :likes="notice.likes"
+                :views="notice.views"
+                :type="'notice'"
+                :is-pinned="true"
+                class="border-l-4 border-l-red-500"
+              />
+          </div>
+      </div>
+
       <div v-if="postList && postList.length > 0" class="flex flex-col gap-6">
+          <div v-if="currentCategory === 'all' && pinnedNotices && pinnedNotices.length > 0" class="flex items-center space-x-2 px-1 mt-4">
+              <span class="text-sm font-bold text-gray-400">전체 피드</span>
+              <div class="h-0.5 flex-1 bg-gray-50 rounded-full"></div>
+          </div>
           <SummaryCard
             v-for="post in postList"
             :key="post.id"
@@ -141,6 +173,9 @@ watch(() => props.posts, (newPosts) => {
             :title="post.title"
             :summary="post.summary"
             :likes="post.likes"
+            :views="post.views"
+            :type="post.type"
+            :is-pinned="post.isPinned"
           />
       </div>
 

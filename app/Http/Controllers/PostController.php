@@ -52,16 +52,28 @@ class PostController extends Controller
         $validated['summary'] = $summary;
         $validated['user_id'] = auth()->id();
 
+        // 관리자가 아닌 경우 type과 is_pinned 필드는 기본값으로 강제 고정
+        if (!in_array(auth()->user()->role, ['master', 'admin'])) {
+            $validated['type'] = 'general';
+            $validated['is_pinned'] = false;
+        } else {
+            // 관리자인 경우 요청받은 값을 사용 (null인 경우 기본값 처리)
+            $validated['type'] = $request->input('type', 'general');
+            $validated['is_pinned'] = $request->boolean('is_pinned', false);
+        }
+
         if ($request->hasFile('image')) {
             $validated['card_image_path'] = \App\Helpers\FileUploadHelper::upload($request->file('image'), 'posts');
         }
 
         $post = Post::create($validated);
 
-        // 글 작성 시 10 포인트 지급
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $pointService->addPoints($user, 10, 'earn_post', 'posts', $post->id);
+        // 글 작성 시 10 포인트 지급 (단, 공지사항은 포인트 지급 제외)
+        if ($post->type !== 'notice') {
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+            $pointService->addPoints($user, 10, 'earn_post', 'posts', $post->id);
+        }
 
         return redirect()->route('home')->with('success', '게시글이 작성되었습니다. (+10 포인트)');
     }
@@ -90,6 +102,14 @@ class PostController extends Controller
             $summary = [mb_substr($validated['content'], 0, 50) . '...'];
         }
         $validated['summary'] = $summary;
+
+        // 관리자가 아닌 경우 type과 is_pinned 수정 불가
+        if (!in_array(auth()->user()->role, ['master', 'admin'])) {
+            unset($validated['type'], $validated['is_pinned']);
+        } else {
+            $validated['type'] = $request->input('type', $post->type);
+            $validated['is_pinned'] = $request->boolean('is_pinned', $post->is_pinned);
+        }
 
         $post->update($validated);
 

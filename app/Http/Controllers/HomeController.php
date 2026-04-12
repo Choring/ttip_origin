@@ -48,10 +48,36 @@ class HomeController extends Controller
             'tags' => $post->tags ?? [],
             'title' => $post->title,
             'summary' => $post->summary,
+            'summary' => $post->summary,
             'likes' => $post->likes_count ?? 0,
             'views' => $post->view_count,
+            'type' => $post->type,
+            'isPinned' => $post->is_pinned,
             ];
         });
+
+        $pinnedNotices = \App\Models\Post::with(['user', 'category'])
+            ->notice()
+            ->pinned()
+            ->latest()
+            ->take(3)
+            ->get()
+            ->map(function ($post) {
+                return [
+                    'id' => $post->id,
+                    'authorName' => $post->user->name ?? '운영자',
+                    'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
+                    'timeAgo' => $post->created_at->diffForHumans(),
+                    'category' => $post->category->name ?? '공지',
+                    'tags' => $post->tags ?? [],
+                    'title' => $post->title,
+                    'summary' => $post->summary,
+                    'likes' => $post->likes_count ?? 0,
+                    'views' => $post->view_count,
+                    'type' => $post->type,
+                    'isPinned' => $post->is_pinned,
+                ];
+            });
 
         $paginatedData = [
             'data' => $posts,
@@ -67,6 +93,7 @@ class HomeController extends Controller
         return \Inertia\Inertia::render('Home', [
             'posts' => $paginatedData,
             'categories' => $categories,
+            'pinnedNotices' => $pinnedNotices,
             'currentCategory' => $request->category ?? 'all',
             'filters' => $request->only(['search_type', 'search_keyword'])
         ]);
