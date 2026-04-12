@@ -1,6 +1,9 @@
 <script setup>
 import MainLayout from '@/Layouts/MainLayout.vue';
 import SummaryCard from '@/Components/SummaryCard.vue';
+import PopularPostsWidget from '@/Components/PopularPostsWidget.vue';
+import HallOfFameWidget from '@/Components/HallOfFameWidget.vue';
+import PartnerSitesWidget from '@/Components/PartnerSitesWidget.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 import { ref, onMounted, onUnmounted, watch } from 'vue';
@@ -105,7 +108,36 @@ watch(() => props.posts, (newPosts) => {
         </Link>
       </div>
 
-      <!-- Search Area -->
+      <!-- Trending Now Horizontal Scroll - Mobile Only -->
+      <div v-if="$page.props.popular_posts && $page.props.popular_posts.length > 0" class="md:hidden space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-sm font-bold text-gray-900 flex items-center">
+            <span class="text-red-500 mr-1.5 text-base">🔥</span> 실시간 인기
+          </span>
+          <Link :href="route('popular')" class="text-[11px] font-bold text-gray-400 hover:text-indigo-600 transition-colors">전체보기 &rarr;</Link>
+        </div>
+        <div class="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 scrollbar-hide no-scrollbar">
+          <div 
+            v-for="(post, index) in $page.props.popular_posts" 
+            :key="'trending-' + post.id"
+            class="flex-shrink-0 w-64 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col justify-between"
+          >
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-lg" :class="index === 0 ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'">
+                {{ index + 1 }}
+              </span>
+              <span class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">{{ post.score }}점</span>
+            </div>
+            <Link :href="route('posts.show', post.id)" class="text-sm font-bold text-gray-800 line-clamp-2 hover:text-indigo-600 transition-colors leading-snug h-10 mb-2">
+              {{ post.title }}
+            </Link>
+            <div class="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
+              <span class="text-[10px] text-gray-400 font-medium whitespace-nowrap overflow-hidden truncate max-w-[80px]">Hot Topics</span>
+              <button class="text-indigo-600 text-[10px] font-bold">읽어보기 &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row gap-3">
           <select 
              v-model="searchType" 
@@ -162,23 +194,42 @@ watch(() => props.posts, (newPosts) => {
               <span class="text-sm font-bold text-gray-400">전체 피드</span>
               <div class="h-0.5 flex-1 bg-gray-50 rounded-full"></div>
           </div>
-          <SummaryCard
-            v-for="post in postList"
-            :key="post.id"
-            :id="post.id"
-            :author-name="post.authorName"
-            :author-avatar="post.authorAvatar"
-            :time-ago="post.timeAgo"
-            :category="post.category"
-            :tags="post.tags"
-            :title="post.title"
-            :summary="post.summary"
-            :likes="post.likes"
-            :comments="post.comments"
-            :views="post.views"
-            :type="post.type"
-            :is-pinned="post.isPinned"
-          />
+          
+          <template v-for="(post, index) in postList" :key="post.id">
+            <SummaryCard
+              :id="post.id"
+              :author-name="post.authorName"
+              :author-avatar="post.authorAvatar"
+              :time-ago="post.timeAgo"
+              :category="post.category"
+              :tags="post.tags"
+              :title="post.title"
+              :summary="post.summary"
+              :likes="post.likes"
+              :comments="post.comments"
+              :views="post.views"
+              :type="post.type"
+              :is-pinned="post.isPinned"
+            />
+
+            <!-- Mobile Injection: Hall of Fame (after index 4) -->
+            <div v-if="index === 4" class="md:hidden py-2">
+              <div class="flex items-center space-x-2 px-1 mb-4">
+                <span class="text-xs font-bold text-gray-400">오늘의 명예의 전당</span>
+                <div class="h-px flex-1 bg-gray-100"></div>
+              </div>
+              <HallOfFameWidget />
+            </div>
+
+            <!-- Mobile Injection: Partner Sites (after index 9) -->
+            <div v-if="index === 9" class="md:hidden py-2">
+              <div class="flex items-center space-x-2 px-1 mb-4">
+                <span class="text-xs font-bold text-gray-400">추천 커뮤니티</span>
+                <div class="h-px flex-1 bg-gray-100"></div>
+              </div>
+              <PartnerSitesWidget />
+            </div>
+          </template>
       </div>
 
       <!-- 무한 스크롤 옵저버 타겟 -->

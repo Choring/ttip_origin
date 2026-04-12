@@ -14,7 +14,7 @@
           <slot />
         </main>
 
-        <!-- Right Sidebar -->
+        <!-- Right Sidebar (Discovery Widgets) -->
         <div class="hidden md:block md:col-span-3 lg:col-span-3">
           <RightSidebar />
         </div>
