@@ -45,7 +45,12 @@ const submitComment = () => {
 </script>
 
 <template>
-    <Head :title="post?.title || '로딩 중'" />
+    <Head>
+        <title>{{ post?.title ? `${post.title} - ttip` : '로딩 중' }}</title>
+        <meta v-if="post?.summary" head-key="description" name="description" :content="Array.isArray(post.summary) ? post.summary.join(' ') : post.summary">
+        <meta property="og:title" :content="post?.title" />
+        <meta property="og:description" :content="Array.isArray(post.summary) ? post.summary.join(' ') : post.summary" />
+    </Head>
 
     <MainLayout>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" v-if="post">
