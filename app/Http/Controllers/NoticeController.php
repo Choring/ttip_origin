@@ -24,6 +24,7 @@ class NoticeController extends Controller
                     'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? 'A') . '&background=random',
                     'timeAgo' => $post->created_at->diffForHumans(),
                     'category' => $post->category->name ?? '공지',
+                    'categorySlug' => $post->category->slug ?? 'notice',
                     'tags' => $post->tags ?? [],
                     'title' => $post->title,
                     'summary' => $post->summary,
@@ -31,6 +32,8 @@ class NoticeController extends Controller
                     'views' => $post->view_count,
                     'likes' => $post->likes_count ?? 0,
                     'comments' => $post->comments_count ?? 0,
+                    'extra_info' => $post->extra_info,
+                    'card_image_path' => $post->card_image_path,
                 ];
             });
 

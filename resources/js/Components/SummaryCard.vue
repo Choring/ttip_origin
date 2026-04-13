@@ -1,99 +1,100 @@
 <template>
-  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-200">
-    <div class="p-5">
-      <!-- Header / Author -->
-      <div class="flex justify-between items-start mb-4">
-        <div class="flex items-center space-x-3">
-          <img class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-50" :src="authorAvatar" alt="Author avatar">
-          <div>
-            <p class="text-sm font-bold text-gray-900 flex items-center">
-              <span v-if="type === 'ad'" class="mr-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-red-500 text-white uppercase tracking-tighter">광고</span>
-              {{ authorName }}
-              <svg v-if="type !== 'notice' && type !== 'ad'" class="w-4 h-4 ml-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-              <span v-else-if="type === 'notice'" class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-tighter">운영공지</span>
-            </p>
-            <p class="text-xs font-medium text-gray-500">{{ timeAgo }} · {{ category }}</p>
-          </div>
-        </div>
-        <div class="flex items-center space-x-2">
-            <span v-if="isPinned" class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-red-50 text-red-600 border border-red-100 uppercase tracking-wider">
-                📌 고정공지
-            </span>
-            <div class="flex space-x-1" v-if="tags && tags.length > 0">
-              <span v-for="t in tags" :key="t" class="inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold bg-gray-50 text-gray-500 border border-gray-100 uppercase tracking-wider">
-                #{{ t }}
-              </span>
-            </div>
-        </div>
-      </div>
+  <!-- 고정공지 -->
+  <div
+    v-if="type === 'notice'"
+    class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-3 hover:bg-amber-100 transition-colors"
+  >
+    <span class="text-base flex-shrink-0">📌</span>
+    <Link :href="route('posts.show', id)" class="flex-1 min-w-0">
+      <span class="text-sm font-bold text-amber-800 line-clamp-1">{{ title }}</span>
+    </Link>
+    <span class="text-xs text-amber-500 flex-shrink-0 whitespace-nowrap">{{ timeAgo }}</span>
+  </div>
 
-      <!-- Title -->
+  <!-- 광고 카드 -->
+  <div
+    v-else-if="type === 'ad'"
+    class="bg-white border border-gray-100 rounded-2xl p-4 flex gap-4 items-start hover:shadow-md transition-shadow duration-200 opacity-80"
+  >
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1.5">
+        <span class="text-[10px] font-black bg-red-500 text-white px-1.5 py-0.5 rounded tracking-tight">광고</span>
+        <span class="text-xs text-gray-400">{{ category }}</span>
+      </div>
       <Link :href="route('posts.show', id)">
-        <h2 class="text-lg font-bold text-gray-900 mb-4 leading-snug hover:text-primary cursor-pointer transition-colors line-clamp-2">
-          {{ title }}
-        </h2>
+        <h2 class="text-base font-bold text-gray-700 leading-snug line-clamp-2 hover:text-gray-900 transition-colors mb-2">{{ title }}</h2>
       </Link>
-
-      <!-- 3-line summary -->
-      <div v-if="summary && summary.length > 0" class="bg-gray-50 rounded-xl p-4 space-y-3.5 border border-gray-100/80">
-        <div class="flex items-start" v-for="(line, index) in summary" :key="index">
-          <div class="flex-shrink-0 mt-0.5">
-            <svg class="h-5 w-5 text-secondary" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <p class="ml-2.5 text-sm text-gray-700 font-medium leading-relaxed">
-            {{ line }}
-          </p>
-        </div>
-      </div>
+      <p v-if="summary && summary.length > 0" class="text-xs text-gray-400 line-clamp-1">{{ summary[0] }}</p>
     </div>
-    
-    <div class="px-5 py-3.5 bg-white border-t border-gray-50 flex items-center justify-between text-gray-400">
-      <div class="flex space-x-5">
-        <!-- Likes -->
-        <button class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
-          <svg class="w-[18px] h-[18px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-          </svg>
-          <span class="text-xs font-extrabold">{{ likes }}</span>
-        </button>
+  </div>
 
-        <!-- Comments -->
-        <button class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
-          <svg class="w-[18px] h-[18px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <span class="text-xs font-extrabold">{{ comments }}</span>
-        </button>
-
-        <!-- Views -->
-        <div class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group cursor-default">
-          <svg class="w-[19px] h-[19px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          <span class="text-xs font-extrabold">{{ views }}</span>
+  <!-- 일반 게시글 카드 -->
+  <div
+    v-else
+    class="bg-white border border-gray-100 rounded-2xl hover:shadow-md transition-all duration-200 overflow-hidden group"
+  >
+    <Link :href="route('posts.show', id)" class="block p-4 sm:p-5">
+      <!-- 상단: 카테고리 + 태그 + 시간 -->
+      <div class="flex items-center justify-between mb-2.5">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded-full" :class="categoryStyle.badge">
+            {{ category }}
+          </span>
+          <span
+            v-for="t in (tags || []).slice(0, 2)"
+            :key="t"
+            class="text-[11px] text-gray-400 font-medium"
+          >#{{ t }}</span>
         </div>
-
-        <!-- Share -->
-        <button @click="sharePost" class="flex items-center space-x-1.5 hover:text-indigo-500 transition-colors group">
-          <svg class="w-[18px] h-[18px] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-          <span class="text-[11px] font-bold uppercase tracking-wider">공유</span>
-        </button>
+        <span class="text-[11px] text-gray-300 flex-shrink-0 ml-2">{{ timeAgo }}</span>
       </div>
 
-      <!-- Bookmark -->
-      <button class="hover:text-amber-500 transition-colors hover:scale-110 group">
-        <svg class="w-5 h-5 group-hover:fill-amber-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-        </svg>
+      <!-- 제목 -->
+      <h2 class="text-[15px] font-bold text-gray-900 leading-snug line-clamp-2 mb-2 group-hover:text-indigo-600 transition-colors">
+        {{ title }}
+      </h2>
+
+      <!-- 한줄 요약 (있을 때만) -->
+      <p v-if="summary && summary.length > 0" class="text-xs text-gray-400 line-clamp-1 mb-3">
+        {{ summary[0] }}
+      </p>
+
+      <!-- 하단: 작성자 + 통계 -->
+      <div class="flex items-center justify-between pt-3 border-t border-gray-50">
+        <!-- 작성자 -->
+        <div class="flex items-center gap-2">
+          <img :src="authorAvatar" class="w-5 h-5 rounded-full object-cover" alt="">
+          <span class="text-xs text-gray-400 font-medium">{{ authorName }}</span>
+        </div>
+
+        <!-- 통계 -->
+        <div class="flex items-center gap-3 text-gray-400">
+          <!-- 좋아요 -->
+          <span class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+            <span class="text-[11px] font-bold">{{ likes }}</span>
+          </span>
+          <!-- 댓글 -->
+          <span class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span class="text-[11px] font-bold">{{ comments }}</span>
+          </span>
+          <!-- 조회수 -->
+          <span class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span class="text-[11px] font-bold">{{ views }}</span>
+          </span>
+        </div>
+      </div>
+    </Link>
+
+    <!-- 액션 버튼 (공유 / 북마크) -->
+    <div class="px-4 sm:px-5 pb-3 flex justify-end gap-3 -mt-1">
+      <button @click.prevent="sharePost" class="text-gray-300 hover:text-indigo-400 transition-colors">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+      </button>
+      <button class="text-gray-300 hover:text-amber-400 transition-colors">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
       </button>
     </div>
   </div>
@@ -101,6 +102,7 @@
 
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 
 const { showToast } = useToast();
@@ -113,12 +115,25 @@ const props = defineProps({
   category: { type: String, required: true },
   tags: { type: Array, default: () => [] },
   title: { type: String, required: true },
-  summary: { type: Array, required: true },
+  summary: { type: Array, default: () => [] },
   likes: { type: [Number, String], default: 0 },
   comments: { type: [Number, String], default: 0 },
   views: { type: [Number, String], default: 0 },
   type: { type: String, default: 'general' },
   isPinned: { type: Boolean, default: false },
+  categorySlug: { type: String, default: 'general' },
+});
+
+const categoryStyle = computed(() => {
+  const map = {
+    'restaurant':  { badge: 'bg-orange-100 text-orange-600' },
+    'cafe':        { badge: 'bg-amber-100 text-amber-700' },
+    'solo-dining': { badge: 'bg-yellow-100 text-yellow-700' },
+    'gym':         { badge: 'bg-blue-100 text-blue-600' },
+    'part-time':   { badge: 'bg-green-100 text-green-700' },
+    'notice':      { badge: 'bg-amber-100 text-amber-700' },
+  };
+  return map[props.categorySlug] ?? { badge: 'bg-indigo-100 text-indigo-600' };
 });
 
 const sharePost = async () => {

@@ -6,9 +6,14 @@ import HallOfFameWidget from '@/Components/HallOfFameWidget.vue';
 import PartnerSitesWidget from '@/Components/PartnerSitesWidget.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+
+// Category Specialized Cards
+import PlaceCard from '@/Components/Categories/PlaceCard.vue';
+import JobCard from '@/Components/Categories/JobCard.vue';
+import GymCard from '@/Components/Categories/GymCard.vue';
 
 const props = defineProps({
   posts: Object,
@@ -80,6 +85,35 @@ watch(() => props.posts, (newPosts) => {
     postList.value = newPosts.data;
     nextPageUrl.value = newPosts.next_page_url;
 }, { deep: true });
+
+// 레이아웃 스위칭 로직
+const containerClass = computed(() => {
+    if (props.currentCategory === 'all') return 'flex flex-col gap-6';
+    
+    // 맛집, 카페 카테고리는 그리드로 노출
+    if (['restaurant', 'cafe', 'solo-dining'].includes(props.currentCategory)) {
+        return 'grid grid-cols-2 md:grid-cols-3 gap-4';
+    }
+    
+    // 그 외(알바 등)는 리스트 형태
+    return 'flex flex-col gap-3';
+});
+
+const getCardComponent = (post) => {
+    // 전체 피드일 때는 기본SummaryCard 사용
+    if (props.currentCategory === 'all') return SummaryCard;
+    
+    // 카테고리별 특화 컴포넌트 매핑
+    const componentMap = {
+        'restaurant': PlaceCard,
+        'cafe': PlaceCard,
+        'solo-dining': PlaceCard,
+        'part-time': JobCard,
+        'gym': GymCard,
+    };
+    
+    return componentMap[props.currentCategory] || SummaryCard;
+};
 </script>
 
 <template>
@@ -193,19 +227,21 @@ watch(() => props.posts, (newPosts) => {
           </div>
       </div>
 
-      <div v-if="postList && postList.length > 0" class="flex flex-col gap-6">
-          <div v-if="currentCategory === 'all' && pinnedNotices && pinnedNotices.length > 0" class="flex items-center space-x-2 px-1 mt-4">
+      <div v-if="postList && postList.length > 0" :class="containerClass">
+          <div v-if="currentCategory === 'all' && pinnedNotices && pinnedNotices.length > 0" class="flex items-center space-x-2 px-1 mt-4 w-full h-fit">
               <span class="text-sm font-bold text-gray-400">전체 피드</span>
               <div class="h-0.5 flex-1 bg-gray-50 rounded-full"></div>
           </div>
           
           <template v-for="(post, index) in postList" :key="post.id">
-            <SummaryCard
+            <component 
+              :is="getCardComponent(post)"
               :id="post.id"
               :author-name="post.authorName"
               :author-avatar="post.authorAvatar"
               :time-ago="post.timeAgo"
               :category="post.category"
+              :category-slug="post.categorySlug"
               :tags="post.tags"
               :title="post.title"
               :summary="post.summary"
@@ -214,25 +250,30 @@ watch(() => props.posts, (newPosts) => {
               :views="post.views"
               :type="post.type"
               :is-pinned="post.isPinned"
+              :extra_info="post.extra_info"
+              :card_image_path="post.card_image_path"
             />
 
-            <!-- Mobile Injection: Hall of Fame (after index 4) -->
-            <div v-if="index === 4" class="md:hidden py-2">
-              <div class="flex items-center space-x-2 px-1 mb-4">
-                <span class="text-xs font-bold text-gray-400">오늘의 명예의 전당</span>
-                <div class="h-px flex-1 bg-gray-100"></div>
-              </div>
-              <HallOfFameWidget />
-            </div>
-
-            <!-- Mobile Injection: Partner Sites (after index 9) -->
-            <div v-if="index === 9" class="md:hidden py-2">
-              <div class="flex items-center space-x-2 px-1 mb-4">
-                <span class="text-xs font-bold text-gray-400">추천 커뮤니티</span>
-                <div class="h-px flex-1 bg-gray-100"></div>
-              </div>
-              <PartnerSitesWidget />
-            </div>
+            <!-- Mobile Injection: Widgets only for 'all' or specific indices -->
+            <template v-if="currentCategory === 'all'">
+                <!-- Mobile Injection: Hall of Fame (after index 4) -->
+                <div v-if="index === 4" class="md:hidden py-2 col-span-full">
+                  <div class="flex items-center space-x-2 px-1 mb-4">
+                    <span class="text-xs font-bold text-gray-400">오늘의 명예의 전당</span>
+                    <div class="h-px flex-1 bg-gray-100"></div>
+                  </div>
+                  <HallOfFameWidget />
+                </div>
+    
+                <!-- Mobile Injection: Partner Sites (after index 9) -->
+                <div v-if="index === 9" class="md:hidden py-2 col-span-full">
+                  <div class="flex items-center space-x-2 px-1 mb-4">
+                    <span class="text-xs font-bold text-gray-400">추천 커뮤니티</span>
+                    <div class="h-px flex-1 bg-gray-100"></div>
+                  </div>
+                  <PartnerSitesWidget />
+                </div>
+            </template>
           </template>
       </div>
 
@@ -243,8 +284,14 @@ watch(() => props.posts, (newPosts) => {
         </div>
       </div>
 
-      <div v-if="!postList || postList.length === 0" class="text-center py-16 text-gray-500 bg-white border border-gray-200 rounded-3xl shadow-sm">
-        해당 카테고리에 작성된 게시글이 아직 없습니다.
+      <!-- Empty State -->
+      <div v-if="!postList || postList.length === 0" class="text-center py-20 bg-white border border-gray-100 rounded-2xl shadow-sm">
+        <div class="text-5xl mb-4">🗂️</div>
+        <p class="text-base font-bold text-gray-600 mb-1">아직 게시글이 없어요</p>
+        <p class="text-sm text-gray-400 mb-6">첫 번째 글을 작성해 보세요!</p>
+        <Link :href="route('posts.create')" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-full hover:bg-indigo-700 transition-colors">
+          ✏️ 글 쓰러 가기
+        </Link>
       </div>
     </div>
   </MainLayout>

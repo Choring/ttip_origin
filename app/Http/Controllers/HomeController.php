@@ -45,6 +45,7 @@ class HomeController extends Controller
             'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
             'timeAgo' => $post->created_at->diffForHumans(),
             'category' => $post->category->name ?? '일반',
+            'categorySlug' => $post->category->slug ?? 'general',
             'tags' => $post->tags ?? [],
             'title' => $post->title,
             'summary' => $post->summary,
@@ -53,6 +54,8 @@ class HomeController extends Controller
             'views' => $post->view_count,
             'type' => $post->type,
             'isPinned' => $post->is_pinned,
+            'extra_info' => $post->extra_info,
+            'card_image_path' => $post->card_image_path,
             ];
         });
 
@@ -70,6 +73,7 @@ class HomeController extends Controller
                     'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
                     'timeAgo' => $post->created_at->diffForHumans(),
                     'category' => $post->category->name ?? '공지',
+                    'categorySlug' => $post->category->slug ?? 'notice',
                     'tags' => $post->tags ?? [],
                     'title' => $post->title,
                     'summary' => $post->summary,
@@ -78,6 +82,8 @@ class HomeController extends Controller
                     'views' => $post->view_count,
                     'type' => $post->type,
                     'isPinned' => $post->is_pinned,
+                    'extra_info' => $post->extra_info,
+                    'card_image_path' => $post->card_image_path,
                 ];
             });
 
@@ -110,10 +116,13 @@ class HomeController extends Controller
             'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
             'timeAgo' => $post->created_at->diffForHumans(),
             'category' => $post->category->name ?? '일반',
+            'categorySlug' => $post->category->slug ?? 'general',
             'tags' => $post->tags ?? [],
             'title' => $post->title,
             'summary' => $post->summary,
             'likes' => $post->view_count,
+            'extra_info' => $post->extra_info,
+            'card_image_path' => $post->card_image_path,
             ];
         });
 
