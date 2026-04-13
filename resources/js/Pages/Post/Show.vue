@@ -6,8 +6,10 @@ import { computed } from 'vue';
 
 const props = defineProps({
     post: Object,
-    isLiked: Boolean
+    isLiked: Boolean,
+    isBookmarked: Boolean,
 });
+
 
 const page = usePage();
 const user = page.props.auth.user;
@@ -72,11 +74,37 @@ const getLabel = (key) => {
 
     <MainLayout>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" v-if="post">
-            <div class="mb-4 flex items-center space-x-2">
-                <span v-if="post.type === 'ad'" class="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-black shadow-sm mr-2 animate-pulse">[광고]</span>
-                <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold shadow-sm">{{ post.category?.name || '분류 없음' }}</span>
-                <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-gray-200">#{{ t }}</span>
+            <div class="mb-4 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span v-if="post.type === 'ad'" class="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-black shadow-sm mr-2 animate-pulse">[광고]</span>
+                    <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold shadow-sm">{{ post.category?.name || '분류 없음' }}</span>
+                    <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-gray-200">#{{ t }}</span>
+                </div>
+                
+                <!-- 상단 북마크 버튼 -->
+                <div v-if="user">
+                    <Link 
+                        :href="route('posts.bookmark', post.id)" 
+                        method="post" 
+                        as="button" 
+                        preserve-scroll
+                        class="p-2 transition-all rounded-full hover:bg-amber-50 group"
+                        :title="isBookmarked ? '북마크 취소' : '북마크 저장'"
+                    >
+                        <svg 
+                            class="w-6 h-6 transition-colors" 
+                            :class="isBookmarked ? 'text-amber-500' : 'text-gray-300 group-hover:text-amber-400'" 
+                            viewBox="0 0 24 24" 
+                            :fill="isBookmarked ? 'currentColor' : 'none'" 
+                            stroke="currentColor" 
+                            stroke-width="2"
+                        >
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </Link>
+                </div>
             </div>
+
             <h1 class="text-3xl font-bold mb-4 text-gray-800">{{ post.title }}</h1>
             
             <div class="flex items-center text-gray-500 text-sm mb-6 border-b pb-4">

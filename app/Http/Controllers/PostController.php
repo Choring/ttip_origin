@@ -26,15 +26,18 @@ class PostController extends Controller
             session()->put($sessionKey, true);
         }
 
-        $isLiked = false;
+        $isBookmarked = false;
         if (auth()->check()) {
             $isLiked = $post->likes()->where('user_id', auth()->id())->exists();
+            $isBookmarked = $post->bookmarks()->where('user_id', auth()->id())->exists();
         }
 
         return \Inertia\Inertia::render('Post/Show', [
             'post' => $post->load(['user', 'comments.user', 'category']),
-            'isLiked' => $isLiked
+            'isLiked' => $isLiked,
+            'isBookmarked' => $isBookmarked
         ]);
+
     }
 
     public function store(StorePostRequest $request, \App\Services\PointService $pointService)
@@ -138,4 +141,24 @@ class PostController extends Controller
 
         return back()->with('success', $message);
     }
+
+    public function toggleBookmark(Post $post)
+    {
+        $user = auth()->user();
+
+        $existingBookmark = $post->bookmarks()->where('user_id', $user->id)->first();
+
+        if ($existingBookmark) {
+            $existingBookmark->delete();
+            $message = '북마크 리스트에서 작별을 고했습니다. 🔖';
+        } else {
+            $post->bookmarks()->create([
+                'user_id' => $user->id
+            ]);
+            $message = '나중에 다시 만날 수 있도록 북마크에 담았습니다. 🔖';
+        }
+
+        return back()->with('success', $message);
+    }
 }
+

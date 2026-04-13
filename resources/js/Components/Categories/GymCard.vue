@@ -11,6 +11,17 @@
       <div v-else class="w-full h-full flex items-center justify-center text-3xl opacity-30">🏋️</div>
     </Link>
 
+    <!-- Bookmark Button (Absolute) -->
+    <button 
+      v-if="$page.props.auth.user"
+      @click.prevent="toggleBookmark" 
+      class="absolute top-4 right-4 p-2 rounded-xl transition-all shadow-sm"
+      :class="isBookmarked ? 'bg-amber-500 text-white' : 'bg-white border border-gray-100 text-gray-300 hover:text-amber-400'"
+    >
+      <svg class="w-4 h-4" viewBox="0 0 24 24" :fill="isBookmarked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+
+
     <!-- Right: Info -->
     <div class="flex-1 flex flex-col justify-between py-0.5">
       <div>
@@ -51,7 +62,11 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+import { useToast } from '@/Composables/useToast';
+
+const { showToast } = useToast();
+
 
 defineProps({
   id: { type: [Number, String], required: true },
@@ -61,5 +76,16 @@ defineProps({
   card_image_url: { type: String, default: null },
   extra_info: { type: Object, default: () => ({}) },
   views: { type: [Number, String], default: 0 },
+  isBookmarked: { type: Boolean, default: false },
 });
+
+const toggleBookmark = () => {
+    router.post(route('posts.bookmark', props.id), {}, {
+        preserveScroll: true,
+        onError: () => {
+            showToast('북마크 처리에 실패했습니다. 다시 시도해 주세요. ⚠️', 'error');
+        }
+    });
+};
 </script>
+

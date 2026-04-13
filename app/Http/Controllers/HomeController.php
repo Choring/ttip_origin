@@ -39,6 +39,7 @@ class HomeController extends Controller
         $paginator = $query->paginate(10)->appends($request->query());
 
         $posts = $paginator->getCollection()->map(function ($post) {
+            $isBookmarked = auth()->check() ? $post->bookmarks()->where('user_id', auth()->id())->exists() : false;
             return [
             'id' => $post->id,
             'authorName' => $post->user->name ?? '탈퇴한 사용자',
@@ -57,8 +58,10 @@ class HomeController extends Controller
             'extra_info' => $post->extra_info,
             'card_image_path' => $post->card_image_path,
             'card_image_url' => $post->card_image_url,
+            'isBookmarked' => $isBookmarked,
             ];
         });
+
 
         $pinnedNotices = \App\Models\Post::with(['user', 'category'])
             ->withCount(['comments', 'likes'])
@@ -112,6 +115,7 @@ class HomeController extends Controller
     public function popular()
     {
         $posts = \App\Models\Post::with(['user', 'category'])->orderBy('view_count', 'desc')->get()->map(function ($post) {
+            $isBookmarked = auth()->check() ? $post->bookmarks()->where('user_id', auth()->id())->exists() : false;
             return [
             'id' => $post->id,
             'authorName' => $post->user->name ?? '탈퇴한 사용자',
@@ -125,8 +129,11 @@ class HomeController extends Controller
             'likes' => $post->view_count,
             'extra_info' => $post->extra_info,
             'card_image_path' => $post->card_image_path,
+            'isBookmarked' => $isBookmarked,
             ];
         });
+
+
 
         return \Inertia\Inertia::render('Popular', [
             'posts' => $posts
@@ -135,8 +142,42 @@ class HomeController extends Controller
 
     public function bookmarks()
     {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        $userId = auth()->id();
+        $bookmarkedPosts = \App\Models\Post::whereHas('bookmarks', function($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })
+        ->with(['user', 'category'])
+        ->withCount(['comments', 'likes'])
+        ->latest()
+        ->get()
+        ->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'authorName' => $post->user->name ?? '탈퇴한 사용자',
+                'authorAvatar' => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
+                'timeAgo' => $post->created_at->diffForHumans(),
+                'category' => $post->category->name ?? '일반',
+                'categorySlug' => $post->category->slug ?? 'general',
+                'tags' => $post->tags ?? [],
+                'title' => $post->title,
+                'summary' => $post->summary,
+                'likes' => $post->likes_count ?? 0,
+                'comments' => $post->comments_count ?? 0,
+                'views' => $post->view_count,
+                'type' => $post->type,
+                'isPinned' => $post->is_pinned,
+                'isBookmarked' => true,
+                'card_image_url' => $post->card_image_url,
+            ];
+        });
+
         return \Inertia\Inertia::render('Bookmarks', [
-            'posts' => []
+            'posts' => $bookmarkedPosts
         ]);
     }
+
 }

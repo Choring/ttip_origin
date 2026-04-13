@@ -22,6 +22,17 @@
         </span>
       </div>
     </Link>
+    
+    <!-- Bookmark Button Overlay -->
+    <button 
+      v-if="$page.props.auth.user"
+      @click.prevent="toggleBookmark" 
+      class="absolute top-3 right-3 p-1.5 rounded-full backdrop-blur-md transition-all shadow-sm z-10"
+      :class="isBookmarked ? 'bg-amber-500 text-white' : 'bg-white/60 text-gray-400 hover:bg-white hover:text-amber-500'"
+    >
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" :fill="isBookmarked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="3"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+    </button>
+
 
     <!-- Info Section -->
     <div class="p-4">
@@ -57,8 +68,12 @@
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useToast } from '@/Composables/useToast';
+
+const { showToast } = useToast();
+
 
 const props = defineProps({
   id: { type: [Number, String], required: true },
@@ -70,7 +85,9 @@ const props = defineProps({
   comments: { type: [Number, String], default: 0 },
   card_image_url: { type: String, default: null },
   extra_info: { type: Object, default: () => ({}) },
+  isBookmarked: { type: Boolean, default: false },
 });
+
 
 const categoryIcon = computed(() => {
   const icons = {
@@ -89,4 +106,14 @@ const badgeClass = computed(() => {
   };
   return classes[props.categorySlug] || 'bg-gray-100 text-gray-600';
 });
+
+const toggleBookmark = () => {
+    router.post(route('posts.bookmark', props.id), {}, {
+        preserveScroll: true,
+        onError: () => {
+            showToast('북마크 처리에 실패했습니다. 다시 시도해 주세요. ⚠️', 'error');
+        }
+    });
+};
 </script>
+

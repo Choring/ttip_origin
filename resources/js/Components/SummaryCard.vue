@@ -93,15 +93,30 @@
       <button @click.prevent="sharePost" class="text-gray-300 hover:text-indigo-400 transition-colors">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
       </button>
-      <button class="text-gray-300 hover:text-amber-400 transition-colors">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+      <button 
+        @click.prevent="toggleBookmark" 
+        class="transition-all duration-200 transform active:scale-95"
+        :class="isBookmarked ? 'text-amber-500' : 'text-gray-300 hover:text-amber-400'"
+      >
+        <svg 
+          class="w-4 h-4" 
+          viewBox="0 0 24 24" 
+          :fill="isBookmarked ? '#f59e0b' : 'none'" 
+          stroke="currentColor" 
+          stroke-width="2.5"
+        >
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
       </button>
+
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
+
 import { computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 
@@ -120,9 +135,11 @@ const props = defineProps({
   comments: { type: [Number, String], default: 0 },
   views: { type: [Number, String], default: 0 },
   type: { type: String, default: 'general' },
-  isPinned: { type: Boolean, default: false },
-  categorySlug: { type: String, default: 'general' },
-});
+   isPinned: { type: Boolean, default: false },
+   categorySlug: { type: String, default: 'general' },
+   isBookmarked: { type: Boolean, default: false },
+ });
+
 
 const categoryStyle = computed(() => {
   const map = {
@@ -159,4 +176,13 @@ const sharePost = async () => {
         }
     }
 };
+const toggleBookmark = () => {
+    router.post(route('posts.bookmark', props.id), {}, {
+        preserveScroll: true,
+        onError: () => {
+            showToast('북마크 처리에 실패했습니다. 다시 시도해 주세요. ⚠️', 'error');
+        }
+    });
+};
 </script>
+

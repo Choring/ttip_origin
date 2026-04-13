@@ -89,6 +89,12 @@ class Post extends Model
         return $this->hasMany(PostLike::class);
     }
 
+    public function bookmarks()
+    {
+        return $this->hasMany(PostBookmark::class);
+    }
+
+
     /**
      * 전체 이미지 URL 반환 (NCP 또는 Local 환경에 따라 자동 대응)
      */
