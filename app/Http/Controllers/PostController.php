@@ -100,6 +100,10 @@ class PostController extends Controller
             $validated['is_pinned'] = $request->boolean('is_pinned', $post->is_pinned);
         }
 
+        if ($request->hasFile('image')) {
+            $validated['card_image_path'] = \App\Helpers\FileUploadHelper::upload($request->file('image'), 'posts');
+        }
+
         $post->update($validated);
 
         return redirect()->route('posts.show', $post)->with('success', '게시글이 깔끔하게 수정되었습니다.');

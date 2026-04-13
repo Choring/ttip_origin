@@ -107,13 +107,8 @@ const getLabel = (key) => {
                 </div>
             </div>
 
-            <!-- 대표 이미지 출력부 -->
-            <div v-if="post.card_image_path" class="mb-8 rounded-xl overflow-hidden shadow-sm border border-gray-100">
-                <img :src="'/storage/' + post.card_image_path" :alt="post.title" class="w-full h-auto max-h-[500px] object-cover" />
-            </div>
 
-            <div class="prose max-w-none text-gray-800 leading-relaxed whitespace-pre-wrap">
-                {{ post.content }}
+            <div class="prose prose-indigo max-w-none text-gray-800 leading-relaxed" v-html="post.content">
             </div>
 
             <!-- Like Action Bar -->

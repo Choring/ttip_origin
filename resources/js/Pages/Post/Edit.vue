@@ -1,6 +1,7 @@
 <script setup>
 import { useForm, Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import TiptapEditor from '@/Components/TiptapEditor.vue';
 
 const props = defineProps({
     post: Object,
@@ -17,6 +18,7 @@ const form = useForm({
     type: props.post.type || 'general',
     is_pinned: props.post.is_pinned || false,
     extra_info: props.post.extra_info || {}, // 기존 정형 데이터 로드
+    image: null, // 새 썸네일 이미지
 });
 
 // 카테고리별 필드 정의 (Create.vue와 동일)
@@ -78,7 +80,13 @@ const submit = () => {
     if (tagInput.value.trim() && form.tags.length < 3) {
         addTag();
     }
-    form.put(route('posts.update', props.post.id));
+    // 파일을 포함한 업데이트는 POST 요청에 _method: 'put'을 데이터 필드로 담아서 보내야 합니다 (Laravel/Inertia 표준)
+    form.transform((data) => ({
+        ...data,
+        _method: 'put',
+    })).post(route('posts.update', props.post.id), {
+        forceFormData: true,
+    });
 };
 </script>
 
@@ -164,15 +172,28 @@ const submit = () => {
 
                 <div>
                     <label for="content" class="block text-sm font-bold text-gray-700 mb-2">본문</label>
-                    <textarea 
+                    <TiptapEditor 
                         id="content" 
                         v-model="form.content" 
-                        rows="12" 
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
-                        placeholder="마크다운이나 텍스트로 내용을 수정해주세요."
                         required
-                    ></textarea>
+                    />
                     <div v-if="form.errors.content" class="text-red-500 text-sm mt-1">{{ form.errors.content }}</div>
+                </div>
+
+                <div>
+                    <label for="image" class="block text-sm font-bold text-gray-700 mb-2">썸네일 이미지 수정 (선택)</label>
+                    <div v-if="post.card_image_path" class="mb-3">
+                        <p class="text-xs text-gray-400 mb-1">현재 썸네일:</p>
+                        <img :src="'/storage/' + post.card_image_path" class="w-32 h-20 object-cover rounded-lg border border-gray-200" alt="Current thumbnail" />
+                    </div>
+                    <input 
+                        id="image" 
+                        type="file" 
+                        accept="image/*"
+                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 focus:outline-none" 
+                        @input="e => form.image = e.target.files[0]"
+                    />
+                    <div v-if="form.errors.image" class="text-red-500 text-sm mt-1">{{ form.errors.image }}</div>
                 </div>
 
                 <!-- Admin Only Section -->

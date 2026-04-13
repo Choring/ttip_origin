@@ -1,6 +1,7 @@
 <script setup>
 import { useForm, Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import TiptapEditor from '@/Components/TiptapEditor.vue';
 
 const props = defineProps({
     categories: Array
@@ -165,20 +166,17 @@ const submit = () => {
                 </div>
 
                 <div>
-                    <label for="content" class="block text-sm font-medium text-gray-700">본문</label>
-                    <textarea 
+                    <label for="content" class="block text-sm font-bold text-gray-700 mb-2">본문</label>
+                    <TiptapEditor 
                         id="content" 
                         v-model="form.content" 
-                        rows="12" 
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
-                        placeholder="마크다운이나 텍스트로 내용을 작성해주세요."
                         required
-                    ></textarea>
+                    />
                     <div v-if="form.errors.content" class="text-red-500 text-sm mt-1">{{ form.errors.content }}</div>
                 </div>
 
                 <div>
-                    <label for="image" class="block text-sm font-medium text-gray-700">대표 이미지 (선택)</label>
+                    <label for="image" class="block text-sm font-bold text-gray-700 mb-2">썸네일 이미지 (목록용, 선택)</label>
                     <input 
                         id="image" 
                         type="file" 
