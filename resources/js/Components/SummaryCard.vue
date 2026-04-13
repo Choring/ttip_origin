@@ -7,9 +7,10 @@
           <img class="h-10 w-10 rounded-full object-cover ring-2 ring-gray-50" :src="authorAvatar" alt="Author avatar">
           <div>
             <p class="text-sm font-bold text-gray-900 flex items-center">
+              <span v-if="type === 'ad'" class="mr-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black bg-red-500 text-white uppercase tracking-tighter">광고</span>
               {{ authorName }}
-              <svg v-if="type !== 'notice'" class="w-4 h-4 ml-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-              <span v-else class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-tighter">운영공지</span>
+              <svg v-if="type !== 'notice' && type !== 'ad'" class="w-4 h-4 ml-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              <span v-else-if="type === 'notice'" class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase tracking-tighter">운영공지</span>
             </p>
             <p class="text-xs font-medium text-gray-500">{{ timeAgo }} · {{ category }}</p>
           </div>
@@ -34,7 +35,7 @@
       </Link>
 
       <!-- 3-line summary -->
-      <div class="bg-gray-50 rounded-xl p-4 space-y-3.5 border border-gray-100/80">
+      <div v-if="summary && summary.length > 0" class="bg-gray-50 rounded-xl p-4 space-y-3.5 border border-gray-100/80">
         <div class="flex items-start" v-for="(line, index) in summary" :key="index">
           <div class="flex-shrink-0 mt-0.5">
             <svg class="h-5 w-5 text-secondary" viewBox="0 0 20 20" fill="currentColor">

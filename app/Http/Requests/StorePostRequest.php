@@ -30,6 +30,7 @@ class StorePostRequest extends FormRequest
             'image' => 'nullable|image|max:10240',
             'type' => 'nullable|string|in:general,notice,ad',
             'is_pinned' => 'nullable|boolean',
+            'extra_info' => 'nullable|array',
         ];
     }
 }

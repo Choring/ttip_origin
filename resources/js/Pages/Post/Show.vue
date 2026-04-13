@@ -42,6 +42,24 @@ const submitComment = () => {
         onSuccess: () => form.reset('content'),
     });
 };
+
+const getLabel = (key) => {
+    const labels = {
+        'location': '위치',
+        'price': '가격대',
+        'waiting': '웨이팅',
+        'parking': '주차',
+        'outlets': '콘센트',
+        'wifi': '와이파이',
+        'solo_seats': '1인석 여부',
+        'fee': '월회비',
+        'hours': '운영시간',
+        'facilities': '시설',
+        'wage': '시급',
+        'industry': '업종'
+    };
+    return labels[key] || key;
+};
 </script>
 
 <template>
@@ -55,17 +73,38 @@ const submitComment = () => {
     <MainLayout>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" v-if="post">
             <div class="mb-4 flex items-center space-x-2">
+                <span v-if="post.type === 'ad'" class="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-black shadow-sm mr-2 animate-pulse">[광고]</span>
                 <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold shadow-sm">{{ post.category?.name || '분류 없음' }}</span>
                 <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-gray-200">#{{ t }}</span>
             </div>
             <h1 class="text-3xl font-bold mb-4 text-gray-800">{{ post.title }}</h1>
             
-            <div class="flex items-center text-gray-500 text-sm mb-8 border-b pb-4">
+            <div class="flex items-center text-gray-500 text-sm mb-6 border-b pb-4">
                 <span class="font-bold text-gray-700 mr-2">{{ post.user?.name || '알 수 없음' }}</span>
                 <span>•</span>
                 <span class="mx-2">{{ new Date(post.created_at).toLocaleDateString() }}</span>
                 <span>•</span>
                 <span class="mx-2">조회수 {{ post.view_count || 0 }}</span>
+            </div>
+
+            <!-- 정형 정보 카드 (Information Card) -->
+            <div v-if="post.extra_info && Object.keys(post.extra_info).length > 0" class="mb-8 bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-6 border-2 border-indigo-100 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-100 rounded-full opacity-30 transform scale-150"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="text-indigo-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
+                        <h3 class="font-black text-indigo-900 tracking-tight">핵심 정보 요약</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                        <div v-for="(value, key) in post.extra_info" :key="key" class="flex flex-col">
+                            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{{ getLabel(key) }}</span>
+                            <span class="text-sm font-bold text-gray-800 break-words">{{ value || '-' }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- 대표 이미지 출력부 -->

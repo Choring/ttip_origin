@@ -13,11 +13,11 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['name' => 'IT/개발', 'slug' => 'tech', 'sort_order' => 1],
-            ['name' => '생활/꿀팁', 'slug' => 'life', 'sort_order' => 2],
-            ['name' => '디자인/기획', 'slug' => 'design', 'sort_order' => 3],
-            ['name' => '취미/문화', 'slug' => 'culture', 'sort_order' => 4],
-            ['name' => '여행', 'slug' => 'travel', 'sort_order' => 5],
+            ['name' => '맛집', 'slug' => 'restaurant', 'sort_order' => 1],
+            ['name' => '카페', 'slug' => 'cafe', 'sort_order' => 2],
+            ['name' => '혼밥 맛집', 'slug' => 'solo-dining', 'sort_order' => 3],
+            ['name' => '헬스장', 'slug' => 'gym', 'sort_order' => 4],
+            ['name' => '알바', 'slug' => 'part-time', 'sort_order' => 5],
         ];
 
         foreach ($categories as $category) {

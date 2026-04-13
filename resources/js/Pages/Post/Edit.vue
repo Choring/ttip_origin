@@ -7,7 +7,7 @@ const props = defineProps({
     categories: Array
 });
 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const form = useForm({
     category_id: props.post.category_id || '',
@@ -16,6 +16,50 @@ const form = useForm({
     tags: props.post.tags || [],
     type: props.post.type || 'general',
     is_pinned: props.post.is_pinned || false,
+    extra_info: props.post.extra_info || {}, // 기존 정형 데이터 로드
+});
+
+// 카테고리별 필드 정의 (Create.vue와 동일)
+const categoryFields = {
+    'restaurant': [
+        { key: 'location', label: '위치', placeholder: '예: 수성구 범어동' },
+        { key: 'price', label: '가격대', placeholder: '예: 1~2만원대' },
+        { key: 'waiting', label: '웨이팅', placeholder: '예: 보통 / 있음' },
+        { key: 'parking', label: '주차', placeholder: '예: 가능 / 불가' },
+    ],
+    'cafe': [
+        { key: 'location', label: '위치', placeholder: '예: 중구 동성로' },
+        { key: 'price', label: '가격대', placeholder: '예: 5천원~' },
+        { key: 'outlets', label: '콘센트', placeholder: '예: 많음 / 적음' },
+        { key: 'wifi', label: '와이파이', placeholder: '예: 빠름 / 보통' },
+    ],
+    'solo-dining': [
+        { key: 'location', label: '위치', placeholder: '예: 남구 대명동' },
+        { key: 'price', label: '가격대', placeholder: '예: 1만원 이하' },
+        { key: 'solo_seats', label: '1인석 여부', placeholder: '예: 있음 (바 테이블)' },
+        { key: 'waiting', label: '웨이팅', placeholder: '예: 거의 없음' },
+    ],
+    'gym': [
+        { key: 'location', label: '위치', placeholder: '예: 달서구 상인동' },
+        { key: 'fee', label: '월회비', placeholder: '예: 3개월 15만원' },
+        { key: 'hours', label: '운영시간', placeholder: '예: 06:00 - 24:00' },
+        { key: 'facilities', label: '시설', placeholder: '예: 샤워실 완비, 운동복 무료' },
+    ],
+    'part-time': [
+        { key: 'location', label: '위치', placeholder: '예: 북구 침산동' },
+        { key: 'wage', label: '시급', placeholder: '예: 10,030원' },
+        { key: 'hours', label: '근무시간', placeholder: '예: 주말 오전 09-15' },
+        { key: 'industry', label: '업종', placeholder: '예: 편의점 / 카페' },
+    ]
+};
+
+const currentCategorySlug = computed(() => {
+    const cat = props.categories.find(c => c.id === form.category_id);
+    return cat ? cat.slug : null;
+});
+
+const currentFields = computed(() => {
+    return categoryFields[currentCategorySlug.value] || [];
 });
 
 const tagInput = ref('');
@@ -60,6 +104,28 @@ const submit = () => {
                         </option>
                     </select>
                     <div v-if="form.errors.category_id" class="text-red-500 text-sm mt-1">{{ form.errors.category_id }}</div>
+                </div>
+
+                <!-- Dynamic Category Info Card Fields -->
+                <div v-if="currentFields.length > 0" class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100/50 space-y-4">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
+                        <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wider">주요 정보 수정</h3>
+                        <span class="text-xs text-indigo-500 font-medium">(정형 데이터)</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div v-for="field in currentFields" :key="field.key">
+                            <label :for="field.key" class="block text-xs font-bold text-indigo-700 mb-1.5 ml-1">{{ field.label }}</label>
+                            <input 
+                                :id="field.key" 
+                                v-model="form.extra_info[field.key]" 
+                                type="text" 
+                                class="w-full rounded-lg border-indigo-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white placeholder-gray-300 text-sm" 
+                                :placeholder="field.placeholder"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <div>

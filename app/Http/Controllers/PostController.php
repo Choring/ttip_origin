@@ -41,15 +41,9 @@ class PostController extends Controller
     {
         $validated = $request->validated();
 
-        // 본문을 줄바꿈(\n) 단위로 나누고 빈 줄은 제거한 뒤 최대 3줄까지만 요약으로 추출합니다.
-        $lines = array_values(array_filter(array_map('trim', explode("\n", $validated['content']))));
-        $summary = array_slice($lines, 0, 3);
-
-        if (empty($summary)) {
-            $summary = [mb_substr($validated['content'], 0, 50) . '...']; // 한 줄로 너무 길게 쓴 경우 첫 50자만 사용
-        }
-
-        $validated['summary'] = $summary;
+        // extra_info 처리 (카테고리별 정형 데이터)
+        $validated['extra_info'] = $request->input('extra_info', []);
+        
         $validated['user_id'] = auth()->id();
 
         // 관리자가 아닌 경우 type과 is_pinned 필드는 기본값으로 강제 고정
@@ -95,13 +89,8 @@ class PostController extends Controller
 
         $validated = $request->validated();
 
-        // Update summary if content changed
-        $lines = array_values(array_filter(array_map('trim', explode("\n", $validated['content']))));
-        $summary = array_slice($lines, 0, 3);
-        if (empty($summary)) {
-            $summary = [mb_substr($validated['content'], 0, 50) . '...'];
-        }
-        $validated['summary'] = $summary;
+        // extra_info 처리
+        $validated['extra_info'] = $request->input('extra_info', $post->extra_info);
 
         // 관리자가 아닌 경우 type과 is_pinned 수정 불가
         if (!in_array(auth()->user()->role, ['master', 'admin'])) {

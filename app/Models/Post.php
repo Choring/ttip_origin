@@ -20,6 +20,7 @@ class Post extends Model
         'title',
         'content',
         'summary',
+        'extra_info',
         'card_image_path',
         'view_count',
         'type',
@@ -36,6 +37,7 @@ class Post extends Model
     {
         return [
             'summary' => 'array',
+            'extra_info' => 'array',
             'tags' => 'array',
             'is_pinned' => 'boolean',
         ];
