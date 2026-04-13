@@ -3,8 +3,8 @@
     <!-- Left: Thumbnail (fixed size) -->
     <Link :href="route('posts.show', id)" class="w-24 sm:w-32 aspect-square flex-shrink-0 bg-blue-50 rounded-xl overflow-hidden relative">
       <img 
-        v-if="card_image_path" 
-        :src="'/storage/' + card_image_path" 
+        v-if="card_image_url" 
+        :src="card_image_url" 
         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
         alt="Gym image"
       >
@@ -58,7 +58,7 @@ defineProps({
   authorName: { type: String, required: true },
   authorAvatar: { type: String, required: true },
   title: { type: String, required: true },
-  card_image_path: { type: String, default: null },
+  card_image_url: { type: String, default: null },
   extra_info: { type: Object, default: () => ({}) },
   views: { type: [Number, String], default: 0 },
 });

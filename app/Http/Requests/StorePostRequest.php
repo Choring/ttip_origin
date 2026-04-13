@@ -27,7 +27,7 @@ class StorePostRequest extends FormRequest
             'content' => 'required|string',
             'tags' => 'required|array|min:1|max:3',
             'tags.*' => 'required|string|max:15',
-            'image' => 'nullable|image|max:10240',
+            'image' => 'nullable|image|max:5120',
             'type' => 'nullable|string|in:general,notice,ad',
             'is_pinned' => 'nullable|boolean',
             'extra_info' => 'nullable|array',

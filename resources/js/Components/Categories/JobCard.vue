@@ -9,6 +9,12 @@
 
       <!-- Center: Job Info -->
       <div class="flex-1 min-w-0">
+        <img 
+          v-if="card_image_url" 
+          :src="card_image_url" 
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+          alt="Post image"
+        >
         <h2 class="text-[14px] font-bold text-gray-900 leading-tight line-clamp-1 mb-1 group-hover:text-green-600 transition-colors">
           {{ title }}
         </h2>
@@ -53,6 +59,7 @@ defineProps({
   category: { type: String, required: true },
   title: { type: String, required: true },
   type: { type: String, default: 'general' },
+  card_image_url: { type: String, default: null },
   extra_info: { type: Object, default: () => ({}) },
 });
 </script>

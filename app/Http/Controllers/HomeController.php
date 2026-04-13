@@ -56,6 +56,7 @@ class HomeController extends Controller
             'isPinned' => $post->is_pinned,
             'extra_info' => $post->extra_info,
             'card_image_path' => $post->card_image_path,
+            'card_image_url' => $post->card_image_url,
             ];
         });
 
@@ -84,6 +85,7 @@ class HomeController extends Controller
                     'isPinned' => $post->is_pinned,
                     'extra_info' => $post->extra_info,
                     'card_image_path' => $post->card_image_path,
+                    'card_image_url' => $post->card_image_url,
                 ];
             });
 

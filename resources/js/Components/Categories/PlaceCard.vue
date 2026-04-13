@@ -3,8 +3,8 @@
     <!-- Image Section -->
     <Link :href="route('posts.show', id)" class="block relative aspect-[4/3] overflow-hidden">
       <img 
-        v-if="card_image_path" 
-        :src="'/storage/' + card_image_path" 
+        v-if="card_image_url" 
+        :src="card_image_url" 
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
         alt="Post image"
       >
@@ -68,7 +68,7 @@ const props = defineProps({
   categorySlug: { type: String, required: true },
   title: { type: String, required: true },
   comments: { type: [Number, String], default: 0 },
-  card_image_path: { type: String, default: null },
+  card_image_url: { type: String, default: null },
   extra_info: { type: Object, default: () => ({}) },
 });
 

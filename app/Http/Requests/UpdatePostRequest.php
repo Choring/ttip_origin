@@ -30,7 +30,7 @@ class UpdatePostRequest extends FormRequest
             'type' => 'nullable|string|in:general,notice,ad',
             'is_pinned' => 'nullable|boolean',
             'extra_info' => 'nullable|array',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ];
     }
 }

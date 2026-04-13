@@ -18,7 +18,8 @@ class FileUploadHelper
     {
         $filename = Str::random(10) . '_' . time() . '.' . $file->getClientOriginalExtension();
         
-        // storage/app/public 디렉토리 내 지정 폴더에 저장
-        return $file->storeAs($directory, $filename, 'public');
+        // .env의 FILESYSTEM_DISK 설정에 따라 저장 (local, public, s3 등)
+        $disk = config('filesystems.default');
+        return $file->storeAs($directory, $filename, $disk);
     }
 }

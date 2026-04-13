@@ -34,6 +34,7 @@ class NoticeController extends Controller
                     'comments' => $post->comments_count ?? 0,
                     'extra_info' => $post->extra_info,
                     'card_image_path' => $post->card_image_path,
+                    'card_image_url' => $post->card_image_url,
                 ];
             });
 

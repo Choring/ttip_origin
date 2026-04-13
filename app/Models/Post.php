@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
     use HasFactory;
+
+    protected $appends = ['card_image_url'];
 
     /**
      * The attributes that are mass assignable.
@@ -83,5 +87,17 @@ class Post extends Model
     public function likes()
     {
         return $this->hasMany(PostLike::class);
+    }
+
+    /**
+     * 전체 이미지 URL 반환 (NCP 또는 Local 환경에 따라 자동 대응)
+     */
+    protected function cardImageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => !empty($this->card_image_path)
+                ? Storage::disk(config('filesystems.default'))->url($this->card_image_path) 
+                : null,
+        );
     }
 }

@@ -205,7 +205,8 @@ const handleImageUpload = async (event) => {
     }
   } catch (error) {
     console.error('이미지 업로드 실패:', error);
-    alert('이미지 업로드에 실패했습니다. (최대 2MB)');
+    const message = error.response?.data?.error || '이미지 업로드에 실패했습니다. (최대 5MB)';
+    alert(message);
   } finally {
     event.target.value = ''; // Reset input
   }

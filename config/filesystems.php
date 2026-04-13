@@ -49,15 +49,19 @@ return [
 
         's3' => [
             'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
-            'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
-            'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
-            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
-            'throw' => false,
+            'key' => env('NCP_ACCESS_KEY', env('AWS_ACCESS_KEY_ID')),
+            'secret' => env('NCP_SECRET_KEY', env('AWS_SECRET_ACCESS_KEY')),
+            'region' => env('NCP_REGION', env('AWS_DEFAULT_REGION', 'kr-standard')),
+            'bucket' => env('NCP_BUCKET', env('AWS_BUCKET')),
+            'url' => env('NCP_URL', env('AWS_URL')),
+            'endpoint' => env('NCP_ENDPOINT', env('AWS_ENDPOINT', 'https://kr.object.ncloudstorage.com')),
+            'use_path_style_endpoint' => env('NCP_USE_PATH_STYLE_ENDPOINT', true),
+            'visibility' => 'public',
+            'throw' => true,
             'report' => false,
+            'http' => [
+                'verify' => env('NCP_VERIFY_SSL', false),
+            ],
         ],
 
     ],
