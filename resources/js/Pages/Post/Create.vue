@@ -80,6 +80,7 @@ const submit = () => {
         addTag();
     }
     form.post(route('posts.store'), {
+        forceFormData: true,
         onSuccess: () => form.reset(),
     });
 };

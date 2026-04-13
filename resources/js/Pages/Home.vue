@@ -252,6 +252,7 @@ const getCardComponent = (post) => {
               :is-pinned="post.isPinned"
               :extra_info="post.extra_info"
               :card_image_path="post.card_image_path"
+              :card_image_url="post.card_image_url"
             />
 
             <!-- Mobile Injection: Widgets only for 'all' or specific indices -->

@@ -182,9 +182,9 @@ const submit = () => {
 
                 <div>
                     <label for="image" class="block text-sm font-bold text-gray-700 mb-2">썸네일 이미지 수정 (선택)</label>
-                    <div v-if="post.card_image_path" class="mb-3">
+                    <div v-if="post.card_image_url" class="mb-3">
                         <p class="text-xs text-gray-400 mb-1">현재 썸네일:</p>
-                        <img :src="'/storage/' + post.card_image_path" class="w-32 h-20 object-cover rounded-lg border border-gray-200" alt="Current thumbnail" />
+                        <img :src="post.card_image_url" class="w-32 h-20 object-cover rounded-lg border border-gray-200" alt="Current thumbnail" />
                     </div>
                     <input 
                         id="image" 
