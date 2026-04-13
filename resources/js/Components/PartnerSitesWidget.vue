@@ -3,7 +3,7 @@ const partnerSites = [
   {
     name: 'DopaStation',
     url: 'https://dopastation.com/',
-    description: '도파민 가득한 커뮤니티 정거장',
+    description: '도파민 가득한 커뮤니티 충전소',
     icon: '⚡'
   }
 ];
