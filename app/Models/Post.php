@@ -10,6 +10,16 @@ use Illuminate\Support\Facades\Storage;
 class Post extends Model
 {
     use HasFactory;
+    
+    protected static function booted()
+    {
+        static::created(function ($post) {
+            \App\Models\DailyStatistic::updateOrCreate(
+                ['date' => now()->toDateString()],
+                ['new_posts_count' => \Illuminate\Support\Facades\DB::raw('new_posts_count + 1')]
+            );
+        });
+    }
 
     protected $appends = ['card_image_url'];
 

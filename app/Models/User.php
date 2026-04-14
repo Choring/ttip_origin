@@ -12,6 +12,16 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            \App\Models\DailyStatistic::updateOrCreate(
+                ['date' => now()->toDateString()],
+                ['new_users_count' => \Illuminate\Support\Facades\DB::raw('new_users_count + 1')]
+            );
+        });
+    }
+
     /**
      * The attributes that are mass assignable.
      *
