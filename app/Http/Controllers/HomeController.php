@@ -173,8 +173,14 @@ class HomeController extends Controller
 
 
 
+        $categories = \App\Models\Category::where('is_active', true)
+            ->where('slug', '!=', 'all')
+            ->orderBy('sort_order')
+            ->get();
+
         return \Inertia\Inertia::render('Popular', [
-            'posts' => $posts
+            'posts' => $posts,
+            'categories' => $categories
         ]);
     }
 
@@ -213,8 +219,14 @@ class HomeController extends Controller
             ];
         });
 
+        $categories = \App\Models\Category::where('is_active', true)
+            ->where('slug', '!=', 'all')
+            ->orderBy('sort_order')
+            ->get();
+
         return \Inertia\Inertia::render('Bookmarks', [
-            'posts' => $bookmarkedPosts
+            'posts' => $bookmarkedPosts,
+            'categories' => $categories
         ]);
     }
 

@@ -39,8 +39,14 @@ class NoticeController extends Controller
                 ];
             });
 
+        $categories = \App\Models\Category::where('is_active', true)
+            ->where('slug', '!=', 'all')
+            ->orderBy('sort_order')
+            ->get();
+
         return Inertia::render('Notice/Index', [
-            'posts' => $posts
+            'posts' => $posts,
+            'categories' => $categories
         ]);
     }
 }
