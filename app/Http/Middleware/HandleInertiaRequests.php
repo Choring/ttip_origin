@@ -34,6 +34,12 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+                'point_gain' => session('point_gain'),
+            ],
+
             'categories' => \Illuminate\Support\Facades\Cache::remember('active_categories', 600, function () {
                 return \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
             }),

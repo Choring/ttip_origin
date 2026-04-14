@@ -156,11 +156,16 @@ const categoryStyle = computed(() => {
 });
 
 const sharePost = async () => {
+    const summaryText = Array.isArray(props.summary) 
+        ? props.summary.join(' ') 
+        : (props.summary || '');
+
     const shareData = {
         title: props.title,
-        text: props.summary.join(' '),
+        text: summaryText,
         url: route('posts.show', props.id),
     };
+
 
     try {
         if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {

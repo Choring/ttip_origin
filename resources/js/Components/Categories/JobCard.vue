@@ -30,16 +30,26 @@
           </span>
         </div>
       </div>
-
-      <!-- Right: Meta (Always on the right) -->
-      <div class="flex flex-col items-end gap-1.5 ml-auto">
-        <span class="text-[10px] text-gray-300 font-medium whitespace-nowrap">{{ timeAgo }}</span>
-        <div class="flex items-center gap-1">
-           <img :src="authorAvatar" class="w-3.5 h-3.5 rounded-full" alt="">
-           <span class="text-[9px] text-gray-400 font-medium whitespace-nowrap">{{ authorName }}</span>
-        </div>
-      </div>
     </Link>
+
+    <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-50/50">
+      <div class="flex items-center gap-1.5 min-w-0">
+        <img :src="authorAvatar" class="w-3.5 h-3.5 rounded-full" alt="">
+        <span class="text-[9px] text-gray-400 font-medium whitespace-nowrap overflow-hidden truncate max-w-[60px]">{{ authorName }}</span>
+      </div>
+      <!-- 공유 및 시간 -->
+      <div class="flex items-center gap-2">
+        <span class="text-[9px] text-gray-300 font-medium whitespace-nowrap">{{ timeAgo }}</span>
+        <button 
+          @click.prevent="sharePost"
+          class="text-gray-300 hover:text-green-500 transition-colors"
+          title="공유하기"
+        >
+          <svg class="w-3.5 h-3.5 font-bold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        </button>
+      </div>
+    </div>
+
 
     <!-- Bookmark Button (Absolute) -->
     <button 
@@ -66,7 +76,7 @@ import { useToast } from '@/Composables/useToast';
 const { showToast } = useToast();
 
 
-defineProps({
+const props = defineProps({
   id: { type: [Number, String], required: true },
   authorName: { type: String, required: true },
   authorAvatar: { type: String, required: true },
@@ -87,5 +97,28 @@ const toggleBookmark = () => {
         }
     });
 };
+
+const sharePost = async () => {
+    const shareData = {
+        title: props.title,
+        url: route('posts.show', props.id),
+    };
+
+    try {
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            throw new Error('Web Share not supported');
+        }
+    } catch (err) {
+        try {
+            await navigator.clipboard.writeText(shareData.url);
+            showToast('공유 링크가 클립보드에 복사되었습니다! ✅');
+        } catch (copyErr) {
+            showToast('링크 복사에 실패했습니다. 직접 주소를 복사해 주세요. ⚠️', 'error');
+        }
+    }
+};
 </script>
+
 

@@ -30,9 +30,31 @@
 </template>
 
 <script setup>
+import { watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { useToast } from '@/Composables/useToast';
 import AppHeader from '@/Components/AppHeader.vue';
 import LeftSidebar from '@/Components/LeftSidebar.vue';
 import RightSidebar from '@/Components/RightSidebar.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
 import AppFooter from '@/Components/AppFooter.vue';
+
+const { showToast } = useToast();
+const page = usePage();
+
+// 포인트 적립 알림 감시
+watch(() => page.props.flash?.point_gain, (gain) => {
+    if (gain) {
+        showToast(`포인트 +${gain}P 적립! 🎉`, 'success');
+    }
+}, { immediate: true });
+
+// 일반 성공/에러 메시지도 토스트로 연동 (기존 페이지 내 인라인 표시와 병행 가능)
+watch(() => page.props.flash?.success, (msg) => {
+    if (msg) showToast(msg, 'success');
+});
+watch(() => page.props.flash?.error, (msg) => {
+    if (msg) showToast(msg, 'error');
+});
 </script>
+

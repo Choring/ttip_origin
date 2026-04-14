@@ -141,7 +141,9 @@ class PostController extends Controller
             // 띱 수신 시 작성자 포인트 적립 (본인 글 제외)
             if ($postAuthor && $postAuthor->id !== $user->id) {
                 $pointService->addPoints($postAuthor, 5, 'receive_like', 'posts', $post->id);
+                session()->flash('point_gain', 5);
             }
+
 
             $message = '이 글에 강렬한 띱 👍을 날렸습니다!';
         }

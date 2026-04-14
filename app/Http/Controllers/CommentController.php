@@ -29,12 +29,15 @@ class CommentController extends Controller
         // 1. 질 높은 댓글 유도를 위해 10자 이상 작성 시 본인에게 1 포인트 지급
         if (mb_strlen($validated['content']) >= 10) {
             $pointService->addPoints($user, 1, 'earn_comment_effort', 'comments', $comment->id);
+            session()->flash('point_gain', 1); // 토스트 알림용
         }
 
         // 2. 내 글에 댓글이 달렸을 때 원글 작성자에게 3 포인트 지급 (본인 댓글 제외)
         $postAuthor = $post->user;
         if ($postAuthor && $postAuthor->id !== $user->id) {
             $pointService->addPoints($postAuthor, 3, 'receive_comment', 'comments', $comment->id);
+            // 원글 작성자가 현재 접속 중인 경우 Inertia를 통해 알림이 전달되도록 세션 플래시
+            session()->flash('point_gain', 3);
         }
 
         return redirect()->back();

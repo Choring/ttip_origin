@@ -55,6 +55,14 @@
                 <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 {{ views }}
             </span>
+            <!-- 공유 버튼 -->
+            <button 
+              @click.prevent="sharePost"
+              class="text-gray-300 hover:text-blue-500 transition-colors ml-1"
+              title="공유하기"
+            >
+              <svg class="w-3 h-3 font-bold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            </button>
         </div>
       </div>
     </div>
@@ -68,7 +76,7 @@ import { useToast } from '@/Composables/useToast';
 const { showToast } = useToast();
 
 
-defineProps({
+const props = defineProps({
   id: { type: [Number, String], required: true },
   authorName: { type: String, required: true },
   authorAvatar: { type: String, required: true },
@@ -87,5 +95,28 @@ const toggleBookmark = () => {
         }
     });
 };
+
+const sharePost = async () => {
+    const shareData = {
+        title: props.title,
+        url: route('posts.show', props.id),
+    };
+
+    try {
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            throw new Error('Web Share not supported');
+        }
+    } catch (err) {
+        try {
+            await navigator.clipboard.writeText(shareData.url);
+            showToast('공유 링크가 클립보드에 복사되었습니다! ✅');
+        } catch (copyErr) {
+            showToast('링크 복사에 실패했습니다. 직접 주소를 복사해 주세요. ⚠️', 'error');
+        }
+    }
+};
 </script>
+
 

@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import CommentItem from '@/Components/CommentItem.vue';
 import { computed } from 'vue';
+import { useToast } from '@/Composables/useToast';
 
 const props = defineProps({
     post: Object,
@@ -62,6 +63,31 @@ const getLabel = (key) => {
     };
     return labels[key] || key;
 };
+
+const { showToast } = useToast();
+
+const sharePost = async () => {
+    const shareData = {
+        title: props.post.title,
+        text: Array.isArray(props.post.summary) ? props.post.summary.join(' ') : props.post.summary,
+        url: route('posts.show', props.post.id),
+    };
+
+    try {
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+        } else {
+            throw new Error('Web Share not supported');
+        }
+    } catch (err) {
+        try {
+            await navigator.clipboard.writeText(shareData.url);
+            showToast('공유 링크가 클립보드에 복사되었습니다! ✅');
+        } catch (copyErr) {
+            showToast('링크 복사에 실패했습니다. 직접 주소를 복사해 주세요. ⚠️', 'error');
+        }
+    }
+};
 </script>
 
 <template>
@@ -81,27 +107,36 @@ const getLabel = (key) => {
                     <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-gray-200">#{{ t }}</span>
                 </div>
                 
-                <!-- 상단 북마크 버튼 -->
-                <div v-if="user">
-                    <Link 
-                        :href="route('posts.bookmark', post.id)" 
-                        method="post" 
-                        as="button" 
-                        preserve-scroll
-                        class="p-2 transition-all rounded-full hover:bg-amber-50 group"
-                        :title="isBookmarked ? '북마크 취소' : '북마크 저장'"
+                <!-- 상단 액션 버튼 (공개 / 북마크) -->
+                <div class="flex items-center gap-1">
+                    <button 
+                        @click="sharePost"
+                        class="p-2 transition-all rounded-full hover:bg-indigo-50 text-gray-300 hover:text-indigo-500"
+                        title="공유하기"
                     >
-                        <svg 
-                            class="w-6 h-6 transition-colors" 
-                            :class="isBookmarked ? 'text-amber-500' : 'text-gray-300 group-hover:text-amber-400'" 
-                            viewBox="0 0 24 24" 
-                            :fill="isBookmarked ? 'currentColor' : 'none'" 
-                            stroke="currentColor" 
-                            stroke-width="2"
+                        <svg class="w-6 h-6 font-bold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                    </button>
+                    <div v-if="user">
+                        <Link 
+                            :href="route('posts.bookmark', post.id)" 
+                            method="post" 
+                            as="button" 
+                            preserve-scroll
+                            class="p-2 transition-all rounded-full hover:bg-amber-50 group"
+                            :title="isBookmarked ? '북마크 취소' : '북마크 저장'"
                         >
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                    </Link>
+                            <svg 
+                                class="w-6 h-6 transition-colors" 
+                                :class="isBookmarked ? 'text-amber-500' : 'text-gray-300 group-hover:text-amber-400'" 
+                                viewBox="0 0 24 24" 
+                                :fill="isBookmarked ? 'currentColor' : 'none'" 
+                                stroke="currentColor" 
+                                stroke-width="2"
+                            >
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
