@@ -1,0 +1,161 @@
+<script setup>
+import { useForm, Head, Link } from '@inertiajs/vue3';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import TiptapEditor from '@/Components/TiptapEditor.vue';
+import { ref } from 'vue';
+
+const props = defineProps({
+    categories: Array
+});
+
+const form = useForm({
+    category_id: '',
+    title: '',
+    content: '',
+    tags: [],
+    image: null,
+    is_pinned: false,
+});
+
+const tagInput = ref('');
+const addTag = () => {
+    const val = tagInput.value.trim();
+    if (val && !form.tags.includes(val) && form.tags.length < 3) {
+        form.tags.push(val);
+    }
+    tagInput.value = '';
+};
+const removeTag = (index) => {
+    form.tags.splice(index, 1);
+};
+
+const submit = () => {
+    if (tagInput.value.trim() && form.tags.length < 3) {
+        addTag();
+    }
+    form.post(route('admin.notices.store'), {
+        forceFormData: true,
+        onSuccess: () => form.reset(),
+    });
+};
+</script>
+
+<template>
+    <Head title="공지사항 작성 - Admin" />
+
+    <AdminLayout>
+        <div class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 border-b-4 border-amber-500 inline-block pb-1">새 공지사항 작성</h1>
+                <p class="mt-2 text-sm text-gray-600">서비스 이용자들에게 전달할 중요한 소식을 작성합니다.</p>
+            </div>
+            <Link :href="route('admin.notices.index')" class="text-gray-500 hover:text-gray-700 font-bold flex items-center gap-1 transition-colors">
+                &larr; 목록으로 돌아가기
+            </Link>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+            <form @submit.prevent="submit" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="category_id" class="block text-sm font-bold text-gray-700 mb-2 font-black">공지 카테고리</label>
+                        <select 
+                            id="category_id" 
+                            v-model="form.category_id" 
+                            class="w-full rounded-xl border-gray-200 shadow-sm focus:border-amber-500 focus:ring-amber-500" 
+                            required
+                        >
+                            <option value="" disabled selected>공지 분류를 선택하세요</option>
+                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                                {{ cat.name }}
+                            </option>
+                        </select>
+                        <div v-if="form.errors.category_id" class="text-red-500 text-sm mt-1 font-bold">{{ form.errors.category_id }}</div>
+                    </div>
+
+                    <div class="flex items-center pt-6">
+                        <label class="inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" v-model="form.is_pinned" class="rounded-lg border-gray-300 text-amber-500 shadow-sm focus:ring-amber-500 w-5 h-5">
+                            <span class="ml-3 text-sm font-bold text-gray-700 group-hover:text-amber-600 transition-colors">홈 피드 최상단 고정 (Important Notice)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="title" class="block text-sm font-bold text-gray-700 mb-2 font-black">공지 제목</label>
+                    <input 
+                        id="title" 
+                        v-model="form.title" 
+                        type="text" 
+                        class="w-full rounded-xl border-gray-200 shadow-sm focus:border-amber-500 focus:ring-amber-500 font-bold" 
+                        placeholder="공지사항 제목을 입력하세요"
+                        required
+                    />
+                    <div v-if="form.errors.title" class="text-red-500 text-sm mt-1 font-bold">{{ form.errors.title }}</div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2 font-black">태그 (최대 3개)</label>
+                    <div class="flex flex-wrap gap-2 mb-2">
+                        <span v-for="(t, index) in form.tags" :key="index" class="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-sm font-bold flex items-center border border-amber-100 shadow-sm">
+                            #{{ t }}
+                            <button type="button" @click="removeTag(index)" class="ml-1.5 text-amber-300 hover:text-red-500 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </span>
+                    </div>
+                    <input 
+                        v-if="form.tags.length < 3"
+                        v-model="tagInput" 
+                        @keydown.enter.prevent="addTag"
+                        type="text" 
+                        class="w-full rounded-xl border-gray-200 shadow-sm focus:border-amber-500 focus:ring-amber-500" 
+                        placeholder="태그 입력 후 엔터 (예: 긴급, 업데이트)"
+                    />
+                </div>
+
+                <div>
+                    <label for="content" class="block text-sm font-bold text-gray-700 mb-2 font-black">공지 본문</label>
+                    <TiptapEditor 
+                        id="content" 
+                        v-model="form.content" 
+                        required
+                    />
+                    <div v-if="form.errors.content" class="text-red-500 text-sm mt-1 font-bold">{{ form.errors.content }}</div>
+                </div>
+
+                <div>
+                    <label for="image" class="block text-sm font-bold text-gray-700 mb-2 font-black">공지 썸네일 (필요 시)</label>
+                    <div class="flex items-center gap-4 border border-gray-100 p-4 rounded-xl bg-gray-50/50">
+                        <input 
+                            id="image" 
+                            type="file" 
+                            accept="image/*"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-6 file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all file:rounded-xl cursor-pointer" 
+                            @input="e => form.image = e.target.files[0]"
+                        />
+                    </div>
+                    <div v-if="form.errors.image" class="text-red-500 text-sm mt-1 font-bold">{{ form.errors.image }}</div>
+                </div>
+
+                <div class="flex justify-end pt-6 border-t border-gray-100 gap-4">
+                    <Link 
+                        :href="route('admin.notices.index')"
+                        class="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-all"
+                    >
+                        취소
+                    </Link>
+                    <button 
+                        type="submit" 
+                        :disabled="form.processing"
+                        class="px-10 py-2.5 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                        <span v-if="form.processing" class="animate-spin text-sm">⏳</span>
+                        {{ form.processing ? '등록 중...' : '등록하기' }}
+                    </button>
+
+                </div>
+            </form>
+        </div>
+    </AdminLayout>
+</template>

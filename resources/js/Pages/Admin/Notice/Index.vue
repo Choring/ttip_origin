@@ -12,11 +12,11 @@ const debounce = (fn, delay = 300) => {
 };
 
 const props = defineProps({
-    notices: Object,
-    filters: Object,
+    notices: { type: Object, default: () => ({ data: [], links: [], total: 0 }) },
+    filters: { type: Object, default: () => ({ search: '' }) },
 });
 
-const search = ref(props.filters.search || '');
+const search = ref(props.filters?.search || '');
 
 watch(search, debounce(function (value) {
     router.get(route('admin.notices.index'), { search: value }, {
@@ -24,6 +24,7 @@ watch(search, debounce(function (value) {
         replace: true,
     });
 }, 300));
+
 
 const togglePin = (id) => {
     router.patch(route('admin.notices.togglePin', id), {}, { preserveScroll: true });
@@ -40,15 +41,23 @@ const forceDelete = (id) => {
     <Head title="공지사항 관리 - Admin" />
 
     <AdminLayout>
+        <div v-if="$page.props.flash?.success" class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl font-bold flex items-center gap-2 shadow-sm animate-bounce">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {{ $page.props.flash.success }}
+        </div>
+
+
         <div class="mb-8 flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900 border-b-4 border-amber-500 inline-block pb-1">공지사항 관리</h1>
                 <p class="mt-2 text-sm text-gray-600">서비스의 중요한 소식을 관리하고 상단 고정 여부를 설정합니다.</p>
             </div>
-            <Link :href="route('posts.create')" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2">
+            <Link :href="route('admin.notices.create')" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2">
                 <span>➕ 새 공지 작성</span>
             </Link>
+
         </div>
+
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">

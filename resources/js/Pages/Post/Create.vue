@@ -197,9 +197,9 @@ const submit = () => {
                             <label for="type" class="block text-sm font-bold text-gray-700 mb-2">게시글 타입</label>
                             <select id="type" v-model="form.type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="general">일반 게시글 (General)</option>
-                                <option value="notice">공지사항 (Notice)</option>
                                 <option value="ad">광고/홍보 (Ad)</option>
                             </select>
+
                         </div>
                         <div class="flex items-center pt-6">
                             <label class="inline-flex items-center cursor-pointer">

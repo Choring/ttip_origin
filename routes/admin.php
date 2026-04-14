@@ -26,4 +26,7 @@ Route::delete('/posts/{post}', [\App\Http\Controllers\Admin\PostController::clas
 
 // Notice Management
 Route::get('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'index'])->name('notices.index');
+Route::get('/notices/create', [\App\Http\Controllers\Admin\NoticeController::class, 'create'])->name('notices.create');
+Route::post('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'store'])->name('notices.store');
 Route::patch('/notices/{post}/toggle-pin', [\App\Http\Controllers\Admin\NoticeController::class, 'togglePin'])->name('notices.togglePin');
+
