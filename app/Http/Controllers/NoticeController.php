@@ -13,8 +13,9 @@ class NoticeController extends Controller
      */
     public function index()
     {
-        $posts = Post::with(['user', 'category'])->withCount(['comments', 'likes'])
+        $posts = Post::with(['user.tier', 'category'])->withCount(['comments', 'likes'])
             ->notice()
+            ->orderBy('is_pinned', 'desc')
             ->latest()
             ->paginate(15)
             ->through(function ($post) {

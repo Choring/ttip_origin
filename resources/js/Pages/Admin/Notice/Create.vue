@@ -62,14 +62,15 @@ const submit = () => {
                         <select 
                             id="category_id" 
                             v-model="form.category_id" 
-                            class="w-full rounded-xl border-gray-200 shadow-sm focus:border-amber-500 focus:ring-amber-500" 
+                            class="w-full rounded-xl border-gray-200 shadow-sm focus:border-amber-500 focus:ring-amber-500 font-bold" 
                             required
                         >
-                            <option value="" disabled selected>공지 분류를 선택하세요</option>
-                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                            <option value="" disabled>공지 분류를 선택하세요</option>
+                            <option v-for="cat in categories" :key="cat.id" :value="cat.id" :class="cat.slug === 'all' ? 'text-indigo-600 font-bold bg-indigo-50' : ''">
                                 {{ cat.name }}
                             </option>
                         </select>
+
                         <div v-if="form.errors.category_id" class="text-red-500 text-sm mt-1 font-bold">{{ form.errors.category_id }}</div>
                     </div>
 
