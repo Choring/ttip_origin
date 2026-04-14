@@ -26,6 +26,7 @@ class PostController extends Controller
             session()->put($sessionKey, true);
         }
 
+        $isLiked = false;
         $isBookmarked = false;
         if (auth()->check()) {
             $isLiked = $post->likes()->where('user_id', auth()->id())->exists();
