@@ -33,10 +33,11 @@ class PostController extends Controller
         }
 
         return \Inertia\Inertia::render('Post/Show', [
-            'post' => $post->load(['user', 'comments.user', 'category']),
+            'post' => $post->load(['user.tier', 'comments.user.tier', 'category']),
             'isLiked' => $isLiked,
             'isBookmarked' => $isBookmarked
         ]);
+
 
     }
 
@@ -65,14 +66,7 @@ class PostController extends Controller
 
         $post = Post::create($validated);
 
-        // 글 작성 시 10 포인트 지급 (단, 공지사항은 포인트 지급 제외)
-        if ($post->type !== 'notice') {
-            /** @var \App\Models\User $user */
-            $user = auth()->user();
-            $pointService->addPoints($user, 10, 'earn_post', 'posts', $post->id);
-        }
-
-        return redirect()->route('home')->with('success', '게시글이 작성되었습니다. (+10 포인트)');
+        return redirect()->route('home')->with('success', '게시글이 깔끔하게 작성되었습니다.');
     }
 
     public function edit(Post $post)
@@ -121,21 +115,34 @@ class PostController extends Controller
         return redirect()->route('home')->with('success', '게시글이 삭제되었습니다.');
     }
 
-    public function toggleLike(Post $post)
+    public function toggleLike(Post $post, \App\Services\PointService $pointService)
     {
         $user = auth()->user();
+        $postAuthor = $post->user;
 
         $existingLike = $post->likes()->where('user_id', $user->id)->first();
 
         if ($existingLike) {
             $existingLike->delete();
             $post->decrement('likes_count');
+            
+            // 띱 취소 시 작성자 포인트 회수 (본인 글 제외)
+            if ($postAuthor && $postAuthor->id !== $user->id) {
+                $pointService->subtractPoints($postAuthor, 5, 'lost_like', 'posts', $post->id);
+            }
+            
             $message = '게시글에 남긴 띱 👍을 슬그머니 취소했습니다.';
         } else {
             $post->likes()->create([
                 'user_id' => $user->id
             ]);
             $post->increment('likes_count');
+            
+            // 띱 수신 시 작성자 포인트 적립 (본인 글 제외)
+            if ($postAuthor && $postAuthor->id !== $user->id) {
+                $pointService->addPoints($postAuthor, 5, 'receive_like', 'posts', $post->id);
+            }
+
             $message = '이 글에 강렬한 띱 👍을 날렸습니다!';
         }
 

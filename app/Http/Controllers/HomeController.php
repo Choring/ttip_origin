@@ -8,7 +8,7 @@ class HomeController extends Controller
 {
     public function index(\Illuminate\Http\Request $request)
     {
-        $query = \App\Models\Post::with(['user', 'category'])->withCount(['comments', 'likes'])->latest();
+        $query = \App\Models\Post::with(['user.tier', 'category'])->withCount(['comments', 'likes'])->latest();
 
         if ($request->has('category') && $request->category !== 'all') {
             $query->whereHas('category', function ($q) use ($request) {
@@ -59,11 +59,14 @@ class HomeController extends Controller
             'card_image_path' => $post->card_image_path,
             'card_image_url' => $post->card_image_url,
             'isBookmarked' => $isBookmarked,
+            'authorTierName' => $post->user->tier->name ?? '씨앗',
+            'authorTierIcon' => $post->user->tier->icon_url ?? '🌱',
             ];
+
         });
 
 
-        $pinnedNotices = \App\Models\Post::with(['user', 'category'])
+        $pinnedNotices = \App\Models\Post::with(['user.tier', 'category'])
             ->withCount(['comments', 'likes'])
             ->notice()
             ->pinned()
@@ -89,6 +92,8 @@ class HomeController extends Controller
                     'extra_info' => $post->extra_info,
                     'card_image_path' => $post->card_image_path,
                     'card_image_url' => $post->card_image_url,
+                    'authorTierName' => $post->user->tier->name ?? '운영자',
+                    'authorTierIcon' => $post->user->tier->icon_url ?? '🌱',
                 ];
             });
 
@@ -103,12 +108,29 @@ class HomeController extends Controller
 
         $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
 
+        // 명예의 전당 (포인트 랭킹 상위 5명)
+        $rankings = \App\Models\User::with('tier')
+            ->where('role', '!=', 'master')
+            ->orderBy('current_points', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'name' => $user->name,
+                    'points' => $user->current_points,
+                    'tierName' => $user->tier->name ?? '씨앗',
+                    'tierIcon' => $user->tier->icon_url ?? '🌱',
+                    'avatar' => 'https://ui-avatars.com/api/?name=' . urlencode($user->name) . '&background=random',
+                ];
+            });
+
         return \Inertia\Inertia::render('Home', [
             'posts' => $paginatedData,
             'categories' => $categories,
             'pinnedNotices' => $pinnedNotices,
             'currentCategory' => $request->category ?? 'all',
-            'filters' => $request->only(['search_type', 'search_keyword'])
+            'filters' => $request->only(['search_type', 'search_keyword']),
+            'rankings' => $rankings
         ]);
     }
 

@@ -71,7 +71,10 @@ const formatDate = (dateString) => {
             <div class="flex-grow max-w-full">
                 <div class="bg-gray-50 rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
                     <div class="flex items-center justify-between mb-1">
-                        <span class="font-bold text-sm text-gray-900">{{ comment.user?.name || '알 수 없음' }}</span>
+                        <div class="flex items-center space-x-1 font-bold text-sm text-gray-900">
+                            <span v-if="comment.user?.tier?.icon_url" :title="comment.user.tier.name" class="text-xs">{{ comment.user.tier.icon_url }}</span>
+                            <span>{{ comment.user?.name || '알 수 없음' }}</span>
+                        </div>
                         <span class="text-xs text-gray-500">{{ formatDate(comment.created_at) }}</span>
                     </div>
                     

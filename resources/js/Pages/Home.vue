@@ -220,6 +220,8 @@ const getCardComponent = (post) => {
                 :likes="notice.likes"
                 :comments="notice.comments"
                 :views="notice.views"
+                :author-tier-name="notice.authorTierName"
+                :author-tier-icon="notice.authorTierIcon"
                 :type="'notice'"
                 :is-pinned="true"
                 class="border-l-4 border-l-red-500"
@@ -250,6 +252,8 @@ const getCardComponent = (post) => {
               :views="post.views"
               :type="post.type"
               :is-pinned="post.isPinned"
+              :author-tier-name="post.authorTierName"
+              :author-tier-icon="post.authorTierIcon"
               :extra_info="post.extra_info"
               :card_image_path="post.card_image_path"
               :card_image_url="post.card_image_url"
@@ -263,7 +267,7 @@ const getCardComponent = (post) => {
                     <span class="text-xs font-bold text-gray-400">오늘의 명예의 전당</span>
                     <div class="h-px flex-1 bg-gray-100"></div>
                   </div>
-                  <HallOfFameWidget />
+                  <HallOfFameWidget :rankings="props.rankings || []" />
                 </div>
     
                 <!-- Mobile Injection: Partner Sites (after index 9) -->

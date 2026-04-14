@@ -33,6 +33,30 @@ class PointService
     }
 
     /**
+     * 사용자로부터 포인트를 회수하고 내역을 남긴 뒤 티어를 갱신합니다.
+     */
+    public function subtractPoints(User $user, int $amount, string $type, ?string $referenceTable = null, ?int $referenceId = null): void
+    {
+        DB::transaction(function () use ($user, $amount, $type, $referenceTable, $referenceId) {
+            // 1. 포인트 내역 생성 (음수로 기록)
+            PointHistory::create([
+                'user_id' => $user->id,
+                'amount' => -$amount,
+                'type' => $type,
+                'reference_table' => $referenceTable,
+                'reference_id' => $referenceId,
+            ]);
+
+            // 2. 유저 포인트 업데이트 (0 이하로 떨어지지 않게 처리)
+            $user->current_points = max(0, $user->current_points - $amount);
+            $user->save();
+
+            // 3. 티어 변동 체크
+            $this->updateUserTier($user);
+        });
+    }
+
+    /**
      * 사용자의 현재 포인트에 맞춰 티어를 갱신합니다.
      */
     public function updateUserTier(User $user): void

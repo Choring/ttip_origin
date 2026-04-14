@@ -108,7 +108,10 @@ const getLabel = (key) => {
             <h1 class="text-3xl font-bold mb-4 text-gray-800">{{ post.title }}</h1>
             
             <div class="flex items-center text-gray-500 text-sm mb-6 border-b pb-4">
-                <span class="font-bold text-gray-700 mr-2">{{ post.user?.name || '알 수 없음' }}</span>
+                <div class="flex items-center space-x-1 font-bold text-gray-700 mr-2">
+                    <span v-if="post.user?.tier?.icon_url" :title="post.user.tier.name" class="text-xs">{{ post.user.tier.icon_url }}</span>
+                    <span>{{ post.user?.name || '알 수 없음' }}</span>
+                </div>
                 <span>•</span>
                 <span class="mx-2">{{ new Date(post.created_at).toLocaleDateString() }}</span>
                 <span>•</span>

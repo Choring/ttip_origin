@@ -62,10 +62,10 @@
       <!-- 하단: 작성자 + 통계 -->
       <div class="flex items-center justify-between pt-3 border-t border-gray-50">
         <!-- 작성자 -->
-        <div class="flex items-center gap-2">
-          <img :src="authorAvatar" class="w-5 h-5 rounded-full object-cover" alt="">
-          <span class="text-xs text-gray-400 font-medium">{{ authorName }}</span>
-        </div>
+          <div class="flex items-center gap-1">
+            <span v-if="authorTierIcon" :title="authorTierName" class="text-[10px]">{{ authorTierIcon }}</span>
+            <span class="text-xs text-gray-400 font-medium">{{ authorName }}</span>
+          </div>
 
         <!-- 통계 -->
         <div class="flex items-center gap-3 text-gray-400">
@@ -138,6 +138,8 @@ const props = defineProps({
    isPinned: { type: Boolean, default: false },
    categorySlug: { type: String, default: 'general' },
    isBookmarked: { type: Boolean, default: false },
+   authorTierName: { type: String, default: '' },
+   authorTierIcon: { type: String, default: '' },
  });
 
 
