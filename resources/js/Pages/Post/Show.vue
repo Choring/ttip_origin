@@ -2,6 +2,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import CommentItem from '@/Components/CommentItem.vue';
+import ShareButtons from '@/Components/ShareButtons.vue';
 import { computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 
@@ -66,36 +67,34 @@ const getLabel = (key) => {
 
 const { showToast } = useToast();
 
-const sharePost = async () => {
-    const shareData = {
-        title: props.post.title,
-        text: Array.isArray(props.post.summary) ? props.post.summary.join(' ') : props.post.summary,
-        url: route('posts.show', props.post.id),
-    };
+// 게시글 절대 URL
+const postUrl = computed(() => {
+    try { return route('posts.show', props.post.id); }
+    catch { return typeof window !== 'undefined' ? window.location.href : ''; }
+});
 
-    try {
-        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-        } else {
-            throw new Error('Web Share not supported');
-        }
-    } catch (err) {
-        try {
-            await navigator.clipboard.writeText(shareData.url);
-            showToast('공유 링크가 클립보드에 복사되었습니다! ✅');
-        } catch (copyErr) {
-            showToast('링크 복사에 실패했습니다. 직접 주소를 복사해 주세요. ⚠️', 'error');
-        }
-    }
-};
+// OG description용 요약 텍스트
+const descriptionText = computed(() =>
+    Array.isArray(props.post.summary) ? props.post.summary.join(' ') : (props.post.summary || '')
+);
 </script>
 
 <template>
     <Head>
         <title>{{ post?.title ? `${post.title} - ttip` : '로딩 중' }}</title>
-        <meta v-if="post?.summary" head-key="description" name="description" :content="Array.isArray(post.summary) ? post.summary.join(' ') : post.summary">
-        <meta property="og:title" :content="post?.title" />
-        <meta property="og:description" :content="Array.isArray(post.summary) ? post.summary.join(' ') : post.summary" />
+        <meta v-if="post?.summary" head-key="description" name="description" :content="descriptionText">
+        <!-- Open Graph 태그 -->
+        <meta property="og:type"        content="article" />
+        <meta property="og:site_name"   content="ttip" />
+        <meta property="og:title"       :content="post?.title" />
+        <meta property="og:description" :content="descriptionText" />
+        <meta property="og:url"         :content="postUrl" />
+        <meta v-if="post?.card_image_url" property="og:image" :content="post.card_image_url" />
+        <!-- Twitter Card -->
+        <meta name="twitter:card"        :content="post?.card_image_url ? 'summary_large_image' : 'summary'" />
+        <meta name="twitter:title"       :content="post?.title" />
+        <meta name="twitter:description" :content="descriptionText" />
+        <meta v-if="post?.card_image_url" name="twitter:image" :content="post.card_image_url" />
     </Head>
 
     <MainLayout>
@@ -107,15 +106,8 @@ const sharePost = async () => {
                     <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-gray-200">#{{ t }}</span>
                 </div>
                 
-                <!-- 상단 액션 버튼 (공개 / 북마크) -->
+                <!-- 상단 액션 버튼 (공유 / 북마크) -->
                 <div class="flex items-center gap-1">
-                    <button 
-                        @click="sharePost"
-                        class="p-2 transition-all rounded-full hover:bg-indigo-50 text-gray-300 hover:text-indigo-500"
-                        title="공유하기"
-                    >
-                        <svg class="w-6 h-6 font-bold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                    </button>
                     <div v-if="user">
                         <Link 
                             :href="route('posts.bookmark', post.id)" 
@@ -199,6 +191,17 @@ const sharePost = async () => {
                     <Link :href="route('posts.destroy', post.id)" method="delete" as="button" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm" preserve-scroll @click="(e) => { if(!confirm('이 게시글을 정말 삭제하시겠습니까?\n달려있는 댓글도 연쇄적으로 지워집니다.')) e.preventDefault() }">삭제</Link>
                 </div>
                 <div v-else class="order-3 w-[100px] hidden sm:block"></div>
+            </div>
+
+            <!-- 공유 버튼 섹션 -->
+            <div class="py-5 border-t border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <span class="text-xs font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">이 글 공유하기</span>
+                <ShareButtons
+                    :post-id="post.id"
+                    :title="post.title"
+                    :summary="post.summary"
+                    :image-url="post.card_image_url"
+                />
             </div>
 
             <!-- Comments Section -->

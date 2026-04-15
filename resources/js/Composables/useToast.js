@@ -2,8 +2,9 @@ import { reactive } from 'vue';
 
 const state = reactive({
     message: null,
-    type: 'success', // 'success' | 'error' | 'info'
+    type: 'success', // 'success' | 'error' | 'info' | 'point'
     show: false,
+    pointAmount: null,
 });
 
 let timeout = null;
@@ -21,8 +22,23 @@ export function useToast() {
         }, duration);
     };
 
+    const showPointToast = (amount) => {
+        if (timeout) clearTimeout(timeout);
+
+        state.message = `+${amount}P 적립!`;
+        state.type = 'point';
+        state.pointAmount = amount;
+        state.show = true;
+
+        timeout = setTimeout(() => {
+            state.show = false;
+            state.pointAmount = null;
+        }, 4000);
+    };
+
     return {
         state,
         showToast,
+        showPointToast,
     };
 }

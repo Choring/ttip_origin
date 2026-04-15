@@ -39,13 +39,13 @@ import RightSidebar from '@/Components/RightSidebar.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 
-const { showToast } = useToast();
+const { showToast, showPointToast } = useToast();
 const page = usePage();
 
-// 포인트 적립 알림 감시
+// 포인트 적립 전용 황금 토스트
 watch(() => page.props.flash?.point_gain, (gain) => {
     if (gain) {
-        showToast(`포인트 +${gain}P 적립! 🎉`, 'success');
+        showPointToast(gain);
     }
 }, { immediate: true });
 

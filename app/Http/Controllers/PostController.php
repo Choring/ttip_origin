@@ -67,6 +67,12 @@ class PostController extends Controller
 
         $post = Post::create($validated);
 
+        // 글 작성 포인트 지급 (+50P)
+        /** @var \App\Models\User $author */
+        $author = auth()->user();
+        $pointService->addPoints($author, 50, 'create_post', 'posts', $post->id);
+        session()->flash('point_gain', 50);
+
         return redirect()->route('home')->with('success', '게시글이 깔끔하게 작성되었습니다.');
     }
 

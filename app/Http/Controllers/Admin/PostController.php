@@ -42,12 +42,19 @@ class PostController extends Controller
     public function update(Request $request, Post $post)
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:200',
+            'title'       => 'required|string|max:200',
             'category_id' => 'required|exists:categories,id',
-            'content' => 'required|string',
-            'tags' => 'nullable|array|max:3',
-            'tags.*' => 'string|max:15',
+            'content'     => 'required|string',
+            'tags'        => 'nullable|array|max:3',
+            'tags.*'      => 'string|max:15',
+            'type'        => 'required|in:general,notice,pinned',
+            'is_pinned'   => 'boolean',
         ]);
+
+        // pinned 타입이면 is_pinned 강제 true
+        if ($validated['type'] === 'pinned') {
+            $validated['is_pinned'] = true;
+        }
 
         $post->update($validated);
 

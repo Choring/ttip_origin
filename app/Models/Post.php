@@ -66,11 +66,19 @@ class Post extends Model
     }
 
     /**
-     * Scope a query to only include notices.
+     * Scope a query to only include notices (type: notice or pinned).
      */
     public function scopeNotice($query)
     {
-        return $query->where('type', 'notice');
+        return $query->whereIn('type', ['notice', 'pinned']);
+    }
+
+    /**
+     * Scope a query to only include pinned notices (type: notice AND is_pinned: true).
+     */
+    public function scopePinnedNotice($query)
+    {
+        return $query->whereIn('type', ['notice', 'pinned'])->where('is_pinned', true);
     }
 
     /**

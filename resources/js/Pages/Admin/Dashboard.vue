@@ -10,10 +10,11 @@ import {
   BarElement,
   Title, 
   Tooltip, 
-  Legend 
+  Legend,
+  Filler,
 } from 'chart.js';
 import { Line, Bar } from 'vue-chartjs';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 ChartJS.register(
   CategoryScale,
@@ -23,42 +24,54 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler,
 );
 
 const props = defineProps({
-    stats: Object,
-    chart: Object,
+    stats:   Object,
+    chart7:  Object,
+    chart30: Object,
 });
 
-// 차트 데이터 구성 (방문자 추이)
+// ── 탭 상태 ──────────────────────────────────────────────────
+const activeTab = ref('30'); // '7' | '30'
+const currentChart = computed(() => activeTab.value === '7' ? props.chart7 : props.chart30);
+const tabLabel = computed(() => activeTab.value === '7' ? '최근 7일' : '최근 30일');
+const totalVisitors = computed(() => activeTab.value === '7' ? props.stats.total_visitors_7 : props.stats.total_visitors_30);
+
+// ── 차트 데이터 ───────────────────────────────────────────────
 const visitorChartData = computed(() => ({
-  labels: props.chart.labels,
+  labels: currentChart.value.labels,
   datasets: [
     {
-      label: '일일 방문자 수',
-      backgroundColor: '#6366f1',
+      label: '일일 방문자',
+      backgroundColor: 'rgba(99,102,241,0.12)',
       borderColor: '#6366f1',
-      data: props.chart.visitors,
+      pointBackgroundColor: '#6366f1',
+      pointRadius: activeTab.value === '7' ? 5 : 3,
+      pointHoverRadius: 7,
+      data: currentChart.value.visitors,
       tension: 0.4,
-      fill: false,
+      fill: true,
     }
   ]
 }));
 
-// 차트 데이터 구성 (콘텐츠 및 가입자)
 const contentChartData = computed(() => ({
-  labels: props.chart.labels,
+  labels: currentChart.value.labels,
   datasets: [
     {
       label: '신규 게시글',
-      backgroundColor: '#f59e0b', // amber-500
-      data: props.chart.posts,
+      backgroundColor: '#f59e0b',
+      borderRadius: 6,
+      data: currentChart.value.posts,
     },
     {
       label: '신규 가입자',
-      backgroundColor: '#10b981', // emerald-500
-      data: props.chart.users,
+      backgroundColor: '#10b981',
+      borderRadius: 6,
+      data: currentChart.value.users,
     }
   ]
 }));
@@ -72,20 +85,31 @@ const chartOptions = {
       labels: {
         font: { size: 12, weight: 'bold' },
         usePointStyle: true,
+        padding: 16,
       }
+    },
+    tooltip: {
+      backgroundColor: '#1e1b4b',
+      titleFont: { size: 12, weight: 'bold' },
+      bodyFont:  { size: 12 },
+      padding: 12,
+      cornerRadius: 10,
     }
   },
   scales: {
     y: {
       beginAtZero: true,
-      grid: { color: '#f3f4f6' }
+      grid: { color: '#f3f4f6' },
+      ticks: { font: { size: 11 } }
     },
     x: {
-      grid: { display: false }
+      grid: { display: false },
+      ticks: { font: { size: 11 } }
     }
   }
 };
 
+// ── 추이 뱃지 ────────────────────────────────────────────────
 const getTrend = (today, yesterday) => {
     if (!yesterday) return today > 0 ? 100 : 0;
     return Math.round(((today - yesterday) / yesterday) * 100);
@@ -94,82 +118,173 @@ const getTrend = (today, yesterday) => {
 const userTrend = computed(() => getTrend(props.stats.new_users_today, props.stats.new_users_yesterday));
 const postTrend = computed(() => getTrend(props.stats.new_posts_today, props.stats.new_posts_yesterday));
 
+// ── 숫자 포맷 ────────────────────────────────────────────────
+const formatNum = (n) => n?.toLocaleString('ko-KR') ?? '0';
 </script>
 
 <template>
     <Head title="관리자 대시보드" />
 
     <AdminLayout>
-        <div class="mb-8">
-            <h1 class="text-3xl font-black text-gray-900 tracking-tight">대시보드 통계</h1>
-            <p class="text-gray-500 mt-1 font-medium">실시간 활동 지표 및 시계열 분석 데이터를 확인합니다.</p>
+        <!-- 헤더 -->
+        <div class="mb-8 flex items-end justify-between">
+            <div>
+                <h1 class="text-3xl font-black text-gray-900 tracking-tight">대시보드 통계</h1>
+                <p class="text-gray-500 mt-1 font-medium">실시간 활동 지표 및 시계열 분석 데이터</p>
+            </div>
+            <!-- 기간 탭 전환 -->
+            <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-2xl">
+                <button
+                    @click="activeTab = '7'"
+                    :class="activeTab === '7'
+                        ? 'bg-white text-indigo-600 shadow-sm font-black'
+                        : 'text-gray-500 font-bold hover:text-gray-700'"
+                    class="px-5 py-2 rounded-xl text-sm transition-all"
+                >
+                    최근 7일
+                </button>
+                <button
+                    @click="activeTab = '30'"
+                    :class="activeTab === '30'
+                        ? 'bg-white text-indigo-600 shadow-sm font-black'
+                        : 'text-gray-500 font-bold hover:text-gray-700'"
+                    class="px-5 py-2 rounded-xl text-sm transition-all"
+                >
+                    최근 30일
+                </button>
+            </div>
         </div>
         
         <!-- 핵심 지표 카드 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                <div class="text-gray-400 text-xs font-black uppercase tracking-widest mb-2">오늘 방문자</div>
-                <div class="flex items-end justify-between">
-                    <div class="text-3xl font-black text-gray-800">{{ stats.today_visitors }}</div>
-                    <div class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black italic">LIVE</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <!-- 오늘 방문자 -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-indigo-50 rounded-full"></div>
+                <div class="text-gray-400 text-xs font-black uppercase tracking-widest mb-2 relative z-10">오늘 방문자</div>
+                <div class="flex items-end justify-between relative z-10">
+                    <div class="text-3xl font-black text-gray-800">{{ formatNum(stats.today_visitors) }}</div>
+                    <div class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[10px] font-black animate-pulse">LIVE</div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-gray-50 text-xs text-gray-400 font-medium relative z-10">
+                    <span class="font-black text-gray-600">{{ formatNum(totalVisitors) }}</span>명 {{ tabLabel }}
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                <div class="text-gray-400 text-xs font-black uppercase tracking-widest mb-2">오늘 신입 회원</div>
-                <div class="flex items-end justify-between">
-                    <div class="text-3xl font-black text-gray-800">{{ stats.new_users_today }}</div>
-                    <div :class="userTrend >= 0 ? 'text-emerald-500' : 'text-rose-500'" class="text-xs font-bold leading-none mb-1">
-                        {{ userTrend > 0 ? '+' : '' }}{{ userTrend }}% <span class="text-[10px] text-gray-400 ml-0.5 font-medium">vs 어제</span>
+            <!-- 신규 회원 -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-emerald-50 rounded-full"></div>
+                <div class="text-gray-400 text-xs font-black uppercase tracking-widest mb-2 relative z-10">오늘 신규 회원</div>
+                <div class="flex items-end justify-between relative z-10">
+                    <div class="text-3xl font-black text-gray-800">{{ formatNum(stats.new_users_today) }}</div>
+                    <div
+                        :class="userTrend >= 0 ? 'text-emerald-500 bg-emerald-50' : 'text-rose-500 bg-rose-50'"
+                        class="px-2 py-1 rounded-lg text-xs font-black"
+                    >
+                        {{ userTrend > 0 ? '+' : '' }}{{ userTrend }}%
                     </div>
                 </div>
+                <div class="mt-3 pt-2 border-t border-gray-50 text-xs text-gray-400 font-medium relative z-10">vs 어제 {{ formatNum(stats.new_users_yesterday) }}명</div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-                <div class="text-gray-400 text-xs font-black uppercase tracking-widest mb-2">오늘 게시글</div>
-                <div class="flex items-end justify-between">
-                    <div class="text-3xl font-black text-gray-800">{{ stats.new_posts_today }}</div>
-                    <div :class="postTrend >= 0 ? 'text-emerald-500' : 'text-rose-500'" class="text-xs font-bold leading-none mb-1">
-                        {{ postTrend > 0 ? '+' : '' }}{{ postTrend }}% <span class="text-[10px] text-gray-400 ml-0.5 font-medium">vs 어제</span>
+            <!-- 오늘 게시글 -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full"></div>
+                <div class="text-gray-400 text-xs font-black uppercase tracking-widest mb-2 relative z-10">오늘 게시글</div>
+                <div class="flex items-end justify-between relative z-10">
+                    <div class="text-3xl font-black text-gray-800">{{ formatNum(stats.new_posts_today) }}</div>
+                    <div
+                        :class="postTrend >= 0 ? 'text-emerald-500 bg-emerald-50' : 'text-rose-500 bg-rose-50'"
+                        class="px-2 py-1 rounded-lg text-xs font-black"
+                    >
+                        {{ postTrend > 0 ? '+' : '' }}{{ postTrend }}%
                     </div>
                 </div>
+                <div class="mt-3 pt-2 border-t border-gray-50 text-xs text-gray-400 font-medium relative z-10">vs 어제 {{ formatNum(stats.new_posts_yesterday) }}건</div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-                <div>
-                    <div class="text-gray-400 text-xs font-black uppercase tracking-widest leading-none mb-1">총 회원</div>
-                    <div class="text-xl font-black text-gray-800">{{ stats.total_users }}</div>
+            <!-- 총 회원 / 총 게시글 -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-violet-50 rounded-full"></div>
+                <div class="text-gray-400 text-xs font-black uppercase tracking-widest mb-2 relative z-10">누적 데이터</div>
+                <div class="flex flex-col gap-2 relative z-10">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-400 font-bold">총 회원</span>
+                        <span class="text-xl font-black text-gray-800">{{ formatNum(stats.total_users) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-400 font-bold">총 게시글</span>
+                        <span class="text-xl font-black text-gray-800">{{ formatNum(stats.total_posts) }}</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- 메인 차트 영역 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- 차트 영역 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- 방문자 추이 차트 -->
             <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-black text-gray-800 flex items-center gap-2">
+                    <h3 class="text-base font-black text-gray-800 flex items-center gap-2">
                         <span class="w-2 h-6 bg-indigo-500 rounded-full"></span>
-                        방문자 활동 추이 (최근 30일)
+                        방문자 활동 추이
                     </h3>
+                    <span class="text-xs font-black text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full">
+                        {{ tabLabel }}
+                    </span>
                 </div>
-                <div class="h-[300px]">
-                    <Line :data="visitorChartData" :options="chartOptions" />
+                <div class="h-[280px]">
+                    <Line :data="visitorChartData" :options="chartOptions" :key="'visitor-' + activeTab" />
+                </div>
+                <!-- 합계 요약 -->
+                <div class="mt-4 pt-4 border-t border-gray-50 grid grid-cols-2 gap-3">
+                    <div class="bg-indigo-50 rounded-2xl px-4 py-3">
+                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">기간 총 방문자</div>
+                        <div class="text-xl font-black text-indigo-700">{{ formatNum(totalVisitors) }}</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-2xl px-4 py-3">
+                        <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">일 평균</div>
+                        <div class="text-xl font-black text-gray-700">
+                            {{ activeTab === '7'
+                                ? formatNum(Math.round(stats.total_visitors_7 / 7))
+                                : formatNum(Math.round(stats.total_visitors_30 / 30)) }}
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            <!-- 콘텐츠 & 가입자 차트 -->
             <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-black text-gray-800 flex items-center gap-2">
+                    <h3 class="text-base font-black text-gray-800 flex items-center gap-2">
                         <span class="w-2 h-6 bg-amber-500 rounded-full"></span>
-                        성장 지표 (콘텐츠 & 가입)
+                        성장 지표 (콘텐츠 &amp; 가입)
                     </h3>
+                    <span class="text-xs font-black text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
+                        {{ tabLabel }}
+                    </span>
                 </div>
-                <div class="h-[300px]">
-                    <Bar :data="contentChartData" :options="chartOptions" />
+                <div class="h-[280px]">
+                    <Bar :data="contentChartData" :options="chartOptions" :key="'content-' + activeTab" />
+                </div>
+                <!-- 합계 요약 -->
+                <div class="mt-4 pt-4 border-t border-gray-50 grid grid-cols-2 gap-3">
+                    <div class="bg-amber-50 rounded-2xl px-4 py-3">
+                        <div class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">기간 게시글 합계</div>
+                        <div class="text-xl font-black text-amber-700">
+                            {{ formatNum(currentChart.posts?.reduce((a, b) => a + b, 0)) }}
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 rounded-2xl px-4 py-3">
+                        <div class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">기간 신규 가입</div>
+                        <div class="text-xl font-black text-emerald-700">
+                            {{ formatNum(currentChart.users?.reduce((a, b) => a + b, 0)) }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- 하단 배너 -->
         <div class="bg-indigo-900 rounded-[32px] p-10 text-white relative overflow-hidden shadow-2xl shadow-indigo-200">
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
@@ -179,14 +294,16 @@ const postTrend = computed(() => getTrend(props.stats.new_posts_today, props.sta
                 <div class="flex gap-4">
                     <div class="px-6 py-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
                         <div class="text-[10px] text-indigo-300 font-black tracking-widest uppercase mb-1">전체 게시글</div>
-                        <div class="text-2xl font-black">{{ stats.total_posts }}</div>
+                        <div class="text-2xl font-black">{{ formatNum(stats.total_posts) }}</div>
+                    </div>
+                    <div class="px-6 py-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                        <div class="text-[10px] text-indigo-300 font-black tracking-widest uppercase mb-1">전체 회원</div>
+                        <div class="text-2xl font-black">{{ formatNum(stats.total_users) }}</div>
                     </div>
                 </div>
             </div>
-            <!-- 배경 데코 -->
             <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
             <div class="absolute -left-20 -top-20 w-60 h-60 bg-indigo-500/20 rounded-full blur-3xl"></div>
         </div>
     </AdminLayout>
 </template>
-

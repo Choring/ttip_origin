@@ -2,7 +2,7 @@
 import { useForm, Head, Link } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import TiptapEditor from '@/Components/TiptapEditor.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     categories: Array
@@ -15,6 +15,13 @@ const form = useForm({
     tags: [],
     image: null,
     is_pinned: false,
+});
+
+// 카테고리가 1개면 자동 선택
+onMounted(() => {
+    if (props.categories.length === 1) {
+        form.category_id = props.categories[0].id;
+    }
 });
 
 const tagInput = ref('');
@@ -58,18 +65,31 @@ const submit = () => {
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="category_id" class="block text-sm font-bold text-gray-700 mb-2 font-black">공지 카테고리</label>
-                        <select 
-                            id="category_id" 
-                            v-model="form.category_id" 
-                            class="w-full rounded-xl border-gray-200 shadow-sm focus:border-amber-500 focus:ring-amber-500 font-bold" 
+                        <label for="category_id" class="block text-sm font-bold text-gray-700 mb-2 font-black">공지 카테고리 <span class="text-amber-500 text-xs font-bold ml-1">· 공지 전용만 표시</span></label>
+
+                        <!-- 공지 카테고리가 있을 때 -->
+                        <select
+                            v-if="categories.length > 0"
+                            id="category_id"
+                            v-model="form.category_id"
+                            class="w-full rounded-xl border-gray-200 shadow-sm focus:border-amber-500 focus:ring-amber-500 font-bold"
                             required
                         >
                             <option value="" disabled>공지 분류를 선택하세요</option>
-                            <option v-for="cat in categories" :key="cat.id" :value="cat.id" :class="cat.slug === 'all' ? 'text-indigo-600 font-bold bg-indigo-50' : ''">
-                                {{ cat.name }}
+                            <option
+                                v-for="cat in categories"
+                                :key="cat.id"
+                                :value="cat.id"
+                            >
+                                {{ cat.slug === 'all' ? '📢 ' : '' }}{{ cat.name }}
                             </option>
                         </select>
+
+                        <!-- 공지 카테고리가 없을 때 경고 -->
+                        <div v-else class="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-bold">
+                            <span>⚠️</span>
+                            <span>공지 전용 카테고리(slug: 'all' 또는 'notice')가 없습니다. 카테고리를 먼저 추가해주세요.</span>
+                        </div>
 
                         <div v-if="form.errors.category_id" class="text-red-500 text-sm mt-1 font-bold">{{ form.errors.category_id }}</div>
                     </div>

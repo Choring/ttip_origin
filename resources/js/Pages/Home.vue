@@ -199,8 +199,8 @@ const getCardComponent = (post) => {
           </div>
       </div>
 
-      <!-- Pinned Notices -->
-      <div v-if="pinnedNotices && pinnedNotices.length > 0 && currentCategory === 'all'" class="space-y-4">
+      <!-- Pinned Notices (모든 카테고리에서 항상 표시) -->
+      <div v-if="pinnedNotices && pinnedNotices.length > 0" class="space-y-4">
           <div class="flex items-center space-x-2 px-1">
               <span class="text-lg font-bold text-gray-900">🔔 중요 공지사항</span>
               <div class="h-0.5 flex-1 bg-gray-100 rounded-full"></div>

@@ -14,6 +14,7 @@ class NoticeController extends Controller
      */
     public function index(Request $request)
     {
+        // notice() scope → type IN ('notice', 'pinned') 모두 포함
         $query = Post::with(['user', 'category'])
             ->notice()
             ->latest();
@@ -35,9 +36,17 @@ class NoticeController extends Controller
      */
     public function create()
     {
-        $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+        // 공지사항용 카테고리만 노출: slug가 'all'(전체공지) 또는 'notice'로 시작하는 것
+        $noticeCategories = \App\Models\Category::where('is_active', true)
+            ->where(function ($q) {
+                $q->where('slug', 'all')
+                  ->orWhere('slug', 'like', 'notice%');
+            })
+            ->orderBy('sort_order')
+            ->get();
+
         return Inertia::render('Admin/Notice/Create', [
-            'categories' => $categories
+            'categories' => $noticeCategories
         ]);
     }
 
@@ -47,12 +56,21 @@ class NoticeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'tags' => 'nullable|array',
+            'category_id' => [
+                'required',
+                'exists:categories,id',
+                function ($attribute, $value, $fail) {
+                    $cat = \App\Models\Category::find($value);
+                    if (!$cat || ($cat->slug !== 'all' && !str_starts_with($cat->slug, 'notice'))) {
+                        $fail('공지사항에는 공지 전용 카테고리만 선택할 수 있습니다.');
+                    }
+                },
+            ],
+            'title'     => 'required|string|max:255',
+            'content'   => 'required|string',
+            'tags'      => 'nullable|array',
             'is_pinned' => 'boolean',
-            'image' => 'nullable|image|max:5120',
+            'image'     => 'nullable|image|max:5120',
         ]);
 
         $post = new Post();

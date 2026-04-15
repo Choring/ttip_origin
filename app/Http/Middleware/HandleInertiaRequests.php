@@ -32,7 +32,12 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user()
+                    ? $request->user()->loadMissing('tier')->only([
+                        'id', 'name', 'email', 'role',
+                        'current_points', 'tier_id', 'tier',
+                    ])
+                    : null,
             ],
             'flash' => [
                 'success' => session('success'),
