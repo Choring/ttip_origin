@@ -56,7 +56,10 @@ const deleteComment = () => {
 };
 
 const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString()
+    return new Date(dateString).toLocaleDateString('ko-KR', {
+        year: 'numeric', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
 }
 </script>
 
@@ -70,12 +73,14 @@ const formatDate = (dateString) => {
             
             <div class="flex-grow max-w-full">
                 <div class="bg-gray-50 rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
-                    <div class="flex items-center justify-between mb-1">
+                    <div class="mb-1">
+                        <!-- 닉네임 -->
                         <div class="flex items-center space-x-1 font-bold text-sm text-gray-900">
                             <span v-if="comment.user?.tier?.icon_url" :title="comment.user.tier.name" class="text-xs">{{ comment.user.tier.icon_url }}</span>
                             <span>{{ comment.user?.name || '알 수 없음' }}</span>
                         </div>
-                        <span class="text-xs text-gray-500">{{ formatDate(comment.created_at) }}</span>
+                        <!-- 날짜 -->
+                        <span class="text-[11px] text-gray-400">{{ formatDate(comment.created_at) }}</span>
                     </div>
                     
                     <div v-if="!showEditForm" class="text-gray-800 text-sm whitespace-pre-wrap leading-relaxed break-words">
