@@ -132,19 +132,19 @@ const getCardComponent = (post) => {
       <!-- 웰컴 배너 (전체 피드 + 비로그인 시만 표시) -->
       <div
         v-if="currentCategory === 'all' && !$page.props.auth.user"
-        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-orange-400 px-6 py-5 text-white shadow-md"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 px-6 py-5 shadow-sm"
       >
         <!-- 배경 장식 원 -->
-        <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full"></div>
-        <div class="absolute -right-2 bottom-0 w-16 h-16 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-6 -top-6 w-28 h-28 bg-orange-100 rounded-full opacity-60"></div>
+        <div class="absolute -right-2 bottom-0 w-16 h-16 bg-amber-100 rounded-full opacity-60"></div>
 
-        <p class="text-xs font-bold uppercase tracking-widest text-orange-100 mb-1">대구 20-30대를 위한</p>
-        <h2 class="text-lg font-black leading-snug mb-3">
+        <p class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">대구 20-30대를 위한</p>
+        <h2 class="text-lg font-black leading-snug mb-3 text-orange-900">
           광고 없는 깔끔한<br>대구 생활 정보 커뮤니티 🎯
         </h2>
         <button
           @click="showLoginModal = true"
-          class="inline-flex items-center gap-1.5 bg-white text-orange-500 text-xs font-black px-4 py-2 rounded-full shadow-sm hover:bg-orange-50 transition-colors"
+          class="inline-flex items-center gap-1.5 bg-orange-500 text-white text-xs font-black px-4 py-2 rounded-full shadow-sm hover:bg-orange-600 transition-colors"
         >
           지금 시작하기 →
         </button>
