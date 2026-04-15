@@ -4,11 +4,14 @@ import SummaryCard from '@/Components/SummaryCard.vue';
 import PopularPostsWidget from '@/Components/PopularPostsWidget.vue';
 import HallOfFameWidget from '@/Components/HallOfFameWidget.vue';
 import PartnerSitesWidget from '@/Components/PartnerSitesWidget.vue';
+import LoginModal from '@/Components/LoginModal.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
+
+const showLoginModal = ref(false);
 
 // Category Specialized Cards
 import PlaceCard from '@/Components/Categories/PlaceCard.vue';
@@ -125,7 +128,28 @@ const getCardComponent = (post) => {
 
   <MainLayout>
     <div class="space-y-6">
-      
+
+      <!-- 웰컴 배너 (전체 피드 + 비로그인 시만 표시) -->
+      <div
+        v-if="currentCategory === 'all' && !$page.props.auth.user"
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-orange-400 px-6 py-5 text-white shadow-md"
+      >
+        <!-- 배경 장식 원 -->
+        <div class="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-2 bottom-0 w-16 h-16 bg-white/10 rounded-full"></div>
+
+        <p class="text-xs font-bold uppercase tracking-widest text-orange-100 mb-1">대구 20-30대를 위한</p>
+        <h2 class="text-lg font-black leading-snug mb-3">
+          광고 없는 깔끔한<br>대구 생활 정보 커뮤니티 🎯
+        </h2>
+        <button
+          @click="showLoginModal = true"
+          class="inline-flex items-center gap-1.5 bg-white text-orange-500 text-xs font-black px-4 py-2 rounded-full shadow-sm hover:bg-orange-50 transition-colors"
+        >
+          지금 시작하기 →
+        </button>
+      </div>
+
       <!-- Category Tabs (Horizontal Scroll) - Mobile Only -->
       <div v-if="categories && categories.length > 0" class="md:hidden -mx-4 px-4">
         <div class="flex overflow-x-auto gap-2 pb-1 no-scrollbar">
@@ -302,4 +326,6 @@ const getCardComponent = (post) => {
       </div>
     </div>
   </MainLayout>
+
+  <LoginModal :show="showLoginModal" @close="showLoginModal = false" />
 </template>

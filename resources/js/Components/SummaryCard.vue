@@ -31,7 +31,7 @@
   <!-- 일반 게시글 카드 -->
   <div
     v-else
-    class="bg-white border border-gray-100 rounded-2xl hover:shadow-md transition-all duration-200 overflow-hidden group"
+    class="bg-white border border-gray-100 rounded-2xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group"
   >
     <Link :href="route('posts.show', id)" class="block p-4 sm:p-5">
       <!-- 상단: 카테고리 + 태그 + 시간 -->
