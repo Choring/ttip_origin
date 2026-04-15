@@ -99,30 +99,29 @@ const descriptionText = computed(() =>
 
     <MainLayout>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" v-if="post">
-            <div class="mb-4 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <span v-if="post.type === 'ad'" class="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-black shadow-sm mr-2 animate-pulse">[광고]</span>
-                    <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold shadow-sm">{{ post.category?.name || '분류 없음' }}</span>
-                    <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-gray-200">#{{ t }}</span>
-                </div>
-                
-                <!-- 상단 액션 버튼 (공유 / 북마크) -->
-                <div class="flex items-center gap-1">
+            <div class="mb-4">
+                <!-- 카테고리 + 북마크 버튼 -->
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span v-if="post.type === 'ad'" class="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-black shadow-sm animate-pulse">[광고]</span>
+                        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-extrabold shadow-sm">{{ post.category?.name || '분류 없음' }}</span>
+                    </div>
+                    <!-- 북마크 버튼 -->
                     <div v-if="user">
-                        <Link 
-                            :href="route('posts.bookmark', post.id)" 
-                            method="post" 
-                            as="button" 
+                        <Link
+                            :href="route('posts.bookmark', post.id)"
+                            method="post"
+                            as="button"
                             preserve-scroll
                             class="p-2 transition-all rounded-full hover:bg-amber-50 group"
                             :title="isBookmarked ? '북마크 취소' : '북마크 저장'"
                         >
-                            <svg 
-                                class="w-6 h-6 transition-colors" 
-                                :class="isBookmarked ? 'text-amber-500' : 'text-gray-300 group-hover:text-amber-400'" 
-                                viewBox="0 0 24 24" 
-                                :fill="isBookmarked ? 'currentColor' : 'none'" 
-                                stroke="currentColor" 
+                            <svg
+                                class="w-6 h-6 transition-colors"
+                                :class="isBookmarked ? 'text-amber-500' : 'text-gray-300 group-hover:text-amber-400'"
+                                viewBox="0 0 24 24"
+                                :fill="isBookmarked ? 'currentColor' : 'none'"
+                                stroke="currentColor"
                                 stroke-width="2"
                             >
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
@@ -130,19 +129,34 @@ const descriptionText = computed(() =>
                         </Link>
                     </div>
                 </div>
+                <!-- 태그 (별도 줄, flex-wrap) -->
+                <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-1.5">
+                    <span v-for="t in post.tags" :key="t" class="bg-gray-100 text-gray-500 px-2.5 py-1 rounded-full text-xs font-semibold border border-gray-200">#{{ t }}</span>
+                </div>
             </div>
 
             <h1 class="text-3xl font-bold mb-4 text-gray-800">{{ post.title }}</h1>
             
-            <div class="flex items-center text-gray-500 text-sm mb-6 border-b pb-4">
-                <div class="flex items-center space-x-1 font-bold text-gray-700 mr-2">
-                    <span v-if="post.user?.tier?.icon_url" :title="post.user.tier.name" class="text-xs">{{ post.user.tier.icon_url }}</span>
-                    <span>{{ post.user?.name || '알 수 없음' }}</span>
+            <div class="mb-6 border-b pb-4">
+                <!-- 작성자 -->
+                <div class="flex items-center gap-1.5 mb-1.5">
+                    <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-red-500 font-bold text-xs flex-shrink-0">
+                        {{ (post.user?.name || '?').substring(0, 1) }}
+                    </div>
+                    <span class="text-sm font-bold text-gray-800">{{ post.user?.name || '알 수 없음' }}</span>
+                    <span v-if="post.user?.tier?.icon_url" class="text-xs" :title="post.user.tier.name">{{ post.user.tier.icon_url }}</span>
                 </div>
-                <span>•</span>
-                <span class="mx-2">{{ new Date(post.created_at).toLocaleDateString() }}</span>
-                <span>•</span>
-                <span class="mx-2">조회수 {{ post.view_count || 0 }}</span>
+                <!-- 날짜 + 조회수 -->
+                <div class="flex items-center justify-between text-xs text-gray-400 pl-0.5">
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        {{ new Date(post.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        {{ (post.view_count || 0).toLocaleString() }}
+                    </span>
+                </div>
             </div>
 
             <!-- 정형 정보 카드 (Information Card) -->
