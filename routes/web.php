@@ -19,7 +19,7 @@ Route::inertia('/terms', 'Legal/Terms')->name('terms');
 Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
 
 // 에디터 이미지 업로드
-Route::post('/api/upload-image', [ImageController::class, 'upload'])->middleware(['auth'])->name('image.upload');
+Route::post('/api/upload-image', [ImageController::class, 'upload'])->middleware(['auth', 'verified'])->name('image.upload');
 
 // {post} 라우트가 'create' 문자열을 삼켜서 404 에러가 나지 않도록 숫자(ID)만 받게 제한합니다.
 Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post');
@@ -28,11 +28,15 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// 로그인만 필요한 라우트 (이메일 인증 불필요)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
+// 이메일 인증 필요한 라우트
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');

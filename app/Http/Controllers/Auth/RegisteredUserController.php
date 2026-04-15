@@ -46,6 +46,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('home', absolute: false));
+        // 이메일 인증이 필요하므로 인증 안내 페이지로 리다이렉트
+        return redirect(route('verification.notice'));
     }
 }
