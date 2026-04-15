@@ -3,10 +3,18 @@ import { usePage, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const page = usePage();
-const categories = computed(() => page.props.categories || []);
+const categories = computed(() => (page.props.categories || []).filter(cat => cat.slug !== 'notice'));
 
 const currentCategory = computed(() => {
-    return page.props.currentCategory || 'all';
+    // 게시글 상세 페이지: 해당 게시글의 카테고리 slug
+    if (route().current('posts.show')) {
+        return page.props.post?.category?.slug || null;
+    }
+    // 홈 페이지: 선택된 카테고리
+    if (route().current('home')) {
+        return page.props.currentCategory || 'all';
+    }
+    return null;
 });
 
 const categoryIcons = {

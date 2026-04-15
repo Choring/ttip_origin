@@ -114,7 +114,7 @@ class HomeController extends Controller
         }
 
         $categories = \App\Models\Category::where('is_active', true)
-            ->where('slug', '!=', 'all')
+            ->whereNotIn('slug', ['all', 'notice'])
             ->orderBy('sort_order')
             ->get();
 
@@ -169,7 +169,7 @@ class HomeController extends Controller
 
 
         $categories = \App\Models\Category::where('is_active', true)
-            ->where('slug', '!=', 'all')
+            ->whereNotIn('slug', ['all', 'notice'])
             ->orderBy('sort_order')
             ->get();
 
@@ -215,7 +215,7 @@ class HomeController extends Controller
         });
 
         $categories = \App\Models\Category::where('is_active', true)
-            ->where('slug', '!=', 'all')
+            ->whereNotIn('slug', ['all', 'notice'])
             ->orderBy('sort_order')
             ->get();
 

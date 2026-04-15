@@ -161,7 +161,7 @@ const getCardComponent = (post) => {
               전체 피드
           </Link>
           <Link
-              v-for="cat in categories"
+              v-for="cat in categories.filter(c => c.slug !== 'notice')"
               :key="cat.id"
               :href="route('home', { category: cat.slug })"
               class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"

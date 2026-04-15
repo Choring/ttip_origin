@@ -46,7 +46,7 @@ class HandleInertiaRequests extends Middleware
             ],
 
             'categories' => \Illuminate\Support\Facades\Cache::remember('active_categories', 600, function () {
-                return \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+                return \App\Models\Category::where('is_active', true)->whereNotIn('slug', ['all', 'notice'])->orderBy('sort_order')->get();
             }),
             'popular_posts' => \Illuminate\Support\Facades\Cache::remember('popular_posts_sidebar', 60, function () {
                 return \App\Models\Post::select('id', 'title', 'view_count', 'likes_count')
