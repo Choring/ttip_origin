@@ -182,7 +182,7 @@ class HomeController extends Controller
     public function bookmarks()
     {
         if (!auth()->check()) {
-            return redirect()->route('login');
+            return redirect()->route('home', ['showLogin' => 1]);
         }
 
         $userId = auth()->id();

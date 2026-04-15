@@ -1,13 +1,15 @@
 <script setup>
-import { ref } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
 import LoginModal from '@/Components/LoginModal.vue';
 
+const page = usePage();
+
 const navItems = [
-  { name: '탐색', route: 'home' },
-  { name: '공지사항', route: 'notices.index' },
-  { name: '인기글', route: 'popular' },
-  { name: '북마크', route: 'bookmarks' },
+  { name: '탐색', route: 'home', requiresAuth: false },
+  { name: '공지사항', route: 'notices.index', requiresAuth: false },
+  { name: '인기글', route: 'popular', requiresAuth: false },
+  { name: '북마크', route: 'bookmarks', requiresAuth: true },
 ];
 
 function isActive(routeName) {
@@ -28,6 +30,16 @@ function tryCatchRoute(name) {
 
 const showLoginModal = ref(false);
 const showMobileMenu = ref(false);
+
+// 북마크 접근 시 리다이렉트된 경우 모달 자동 오픈
+onMounted(() => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('showLogin') === '1') {
+    showLoginModal.value = true;
+    // URL에서 쿼리 파라미터 제거
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+});
 </script>
 
 <template>
@@ -54,19 +66,32 @@ const showMobileMenu = ref(false);
 
           <!-- 데스크탑 네비게이션 -->
           <nav class="hidden md:flex space-x-6 h-full">
-            <Link
-              v-for="item in navItems"
-              :key="item.route"
-              :href="tryCatchRoute(item.route)"
-              :class="[
-                'inline-flex items-center px-1 pt-1 text-sm h-16 border-b-2 transition-colors',
-                isActive(item.route)
-                  ? 'border-primary text-gray-900 font-bold'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-semibold'
-              ]"
-            >
-              {{ item.name }}
-            </Link>
+            <template v-for="item in navItems" :key="item.route">
+              <!-- 인증 필요 + 비로그인 → 버튼으로 렌더링 -->
+              <button
+                v-if="item.requiresAuth && !page.props.auth.user"
+                @click="showLoginModal = true"
+                :class="[
+                  'inline-flex items-center px-1 pt-1 text-sm h-16 border-b-2 transition-colors',
+                  'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-semibold'
+                ]"
+              >
+                {{ item.name }}
+              </button>
+              <!-- 일반 링크 -->
+              <Link
+                v-else
+                :href="tryCatchRoute(item.route)"
+                :class="[
+                  'inline-flex items-center px-1 pt-1 text-sm h-16 border-b-2 transition-colors',
+                  isActive(item.route)
+                    ? 'border-primary text-gray-900 font-bold'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-semibold'
+                ]"
+              >
+                {{ item.name }}
+              </Link>
+            </template>
           </nav>
         </div>
 
@@ -153,20 +178,30 @@ const showMobileMenu = ref(false);
 
         <!-- 네비게이션 -->
         <nav class="flex-1 px-3 py-4 space-y-1">
-          <Link
-            v-for="item in navItems"
-            :key="item.route"
-            :href="tryCatchRoute(item.route)"
-            @click="showMobileMenu = false"
-            :class="[
-              'flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-colors',
-              isActive(item.route)
-                ? 'bg-primary/10 text-primary font-bold'
-                : 'text-gray-600 hover:bg-gray-50'
-            ]"
-          >
-            {{ item.name }}
-          </Link>
+          <template v-for="item in navItems" :key="item.route">
+            <!-- 인증 필요 + 비로그인 → 버튼 -->
+            <button
+              v-if="item.requiresAuth && !page.props.auth.user"
+              @click="showMobileMenu = false; showLoginModal = true"
+              class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-colors text-gray-600 hover:bg-gray-50 w-full text-left"
+            >
+              {{ item.name }}
+            </button>
+            <!-- 일반 링크 -->
+            <Link
+              v-else
+              :href="tryCatchRoute(item.route)"
+              @click="showMobileMenu = false"
+              :class="[
+                'flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-colors',
+                isActive(item.route)
+                  ? 'bg-primary/10 text-primary font-bold'
+                  : 'text-gray-600 hover:bg-gray-50'
+              ]"
+            >
+              {{ item.name }}
+            </Link>
+          </template>
         </nav>
 
         <!-- 하단 로그아웃 -->
