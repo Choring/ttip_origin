@@ -126,24 +126,26 @@ const getCardComponent = (post) => {
   <MainLayout>
     <div class="space-y-6">
       
-      <!-- Category Tabs (Horizontal Scroll / Wrap) - Mobile Only -->
-      <div v-if="categories && categories.length > 0" class="md:hidden flex flex-wrap gap-2 pb-2">
-        <Link 
-            :href="route('home')"
-            class="px-4 py-2 rounded-full text-sm font-bold transition-all"
-            :class="currentCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
-        >
-            전체 피드
-        </Link>
-        <Link 
-            v-for="cat in categories" 
-            :key="cat.id" 
-            :href="route('home', { category: cat.slug })"
-            class="px-4 py-2 rounded-full text-sm font-bold transition-all"
-            :class="currentCategory === cat.slug ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
-        >
-            {{ cat.name }}
-        </Link>
+      <!-- Category Tabs (Horizontal Scroll) - Mobile Only -->
+      <div v-if="categories && categories.length > 0" class="md:hidden -mx-4 px-4">
+        <div class="flex overflow-x-auto gap-2 pb-1 no-scrollbar">
+          <Link
+              :href="route('home')"
+              class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
+              :class="currentCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
+          >
+              전체 피드
+          </Link>
+          <Link
+              v-for="cat in categories"
+              :key="cat.id"
+              :href="route('home', { category: cat.slug })"
+              class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
+              :class="currentCategory === cat.slug ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
+          >
+              {{ cat.name }}
+          </Link>
+        </div>
       </div>
 
       <!-- Trending Now Horizontal Scroll - Mobile Only -->
