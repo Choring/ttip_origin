@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Cloudflare 프록시 IP 신뢰 (실제 접속자 IP를 올바르게 인식)
+        $middleware->trustProxies(at: '*');
+
         // 악성 봇/IP 차단은 모든 요청에 가장 먼저 적용
         $middleware->prepend(\App\Http\Middleware\BlockMaliciousRequests::class);
 

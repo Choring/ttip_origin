@@ -26,6 +26,9 @@
 
     <!-- Global Toast Notifications -->
     <ToastNotification />
+
+    <!-- Mobile Floating Action Button -->
+    <FloatingActionButton />
   </div>
 </template>
 
@@ -38,6 +41,7 @@ import LeftSidebar from '@/Components/LeftSidebar.vue';
 import RightSidebar from '@/Components/RightSidebar.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
 import AppFooter from '@/Components/AppFooter.vue';
+import FloatingActionButton from '@/Components/FloatingActionButton.vue';
 
 const { showToast, showPointToast } = useToast();
 const page = usePage();

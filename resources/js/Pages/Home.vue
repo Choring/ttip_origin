@@ -28,6 +28,11 @@ const props = defineProps({
 
 const searchType = ref(props.filters?.search_type || 'title');
 const searchKeyword = ref(props.filters?.search_keyword || '');
+const isSearchVisible = ref(!!props.filters?.search_keyword); // 검색어가 있으면 열어둠
+
+const toggleSearch = () => {
+    isSearchVisible.value = !isSearchVisible.value;
+};
 
 const executeSearch = () => {
     let queryParams = {};
@@ -151,11 +156,14 @@ const getCardComponent = (post) => {
       </div>
 
       <!-- Category Tabs (Horizontal Scroll) - Mobile Only -->
-      <div v-if="categories && categories.length > 0" class="md:hidden -mx-4 px-4">
-        <div class="flex overflow-x-auto gap-2 pb-1 no-scrollbar">
+      <div v-if="categories && categories.length > 0" class="md:hidden -mx-4 px-4 relative">
+        <!-- Scroll indicator gradient -->
+        <div class="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-10"></div>
+        
+        <div class="flex overflow-x-auto gap-2 pb-1 no-scrollbar scroll-smooth">
           <Link
               :href="route('home')"
-              class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
+              class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all relative z-0"
               :class="currentCategory === 'all' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
           >
               전체 피드
@@ -164,11 +172,13 @@ const getCardComponent = (post) => {
               v-for="cat in categories.filter(c => c.slug !== 'notice')"
               :key="cat.id"
               :href="route('home', { category: cat.slug })"
-              class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all"
+              class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all relative z-0"
               :class="currentCategory === cat.slug ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
           >
               {{ cat.name }}
           </Link>
+          <!-- Spacer for scroll padding -->
+          <div class="flex-shrink-0 w-8"></div>
         </div>
       </div>
 
@@ -202,10 +212,11 @@ const getCardComponent = (post) => {
           </div>
         </div>
       </div>
-      <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row gap-3">
+      <!-- Desktop Search (Visible on md+) -->
+      <div class="hidden md:flex bg-white p-4 rounded-xl shadow-sm border border-gray-200 gap-3">
           <select 
              v-model="searchType" 
-             class="border-gray-200 text-gray-700 font-medium rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:w-40 text-sm"
+             class="border-gray-200 text-gray-700 font-medium rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-40 text-sm"
           >
               <option value="title">제목</option>
               <option value="tags">해시태그</option>
@@ -223,6 +234,59 @@ const getCardComponent = (post) => {
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
               </button>
           </div>
+      </div>
+
+      <!-- Mobile Search / Filter Toggle & Section -->
+      <div class="md:hidden space-y-3">
+        <div class="flex items-center justify-between px-1">
+          <button 
+            @click="toggleSearch"
+            class="flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 shadow-sm"
+            :class="isSearchVisible 
+              ? 'bg-indigo-600 border-indigo-600 text-white shadow-indigo-100' 
+              : 'bg-white border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-gray-50'"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <span class="text-xs font-black tracking-tight">{{ isSearchVisible ? '검색창 닫기' : '필터 및 검색하기' }}</span>
+          </button>
+          
+          <div v-if="props.filters?.search_keyword && !isSearchVisible" class="flex flex-col items-end">
+            <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Active Search</span>
+            <span class="text-[11px] bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg font-black border border-indigo-100">
+              "{{ props.filters.search_keyword }}"
+            </span>
+          </div>
+        </div>
+
+        <div 
+          v-show="isSearchVisible" 
+          class="bg-white p-3 rounded-xl shadow-sm border border-indigo-100 flex flex-col gap-2 transition-all duration-300 overflow-hidden"
+        >
+          <div class="flex gap-2">
+            <select 
+               v-model="searchType" 
+               class="border-gray-200 text-gray-700 font-medium rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 flex-1 text-sm py-2"
+            >
+                <option value="title">제목</option>
+                <option value="tags">태그</option>
+                <option value="author">작성자</option>
+            </select>
+          </div>
+          <div class="relative">
+              <input 
+                 v-model="searchKeyword" 
+                 @keydown.enter="executeSearch"
+                 type="text" 
+                 placeholder="검색어를 입력하세요..." 
+                 class="w-full border-gray-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-12 text-sm py-2"
+              />
+              <button @click="executeSearch" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-md transition-colors shadow-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </button>
+          </div>
+        </div>
       </div>
 
       <!-- Pinned Notices (모든 카테고리에서 항상 표시) -->
