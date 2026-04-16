@@ -11,7 +11,11 @@ class PostController extends Controller
 {
     public function create()
     {
-        $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+        $categories = \App\Models\Category::where('is_active', true)
+            ->where('slug', '!=', 'all')
+            ->where('slug', 'not like', 'notice%')
+            ->orderBy('sort_order')
+            ->get();
         return \Inertia\Inertia::render('Post/Create', [
             'categories' => $categories
         ]);
@@ -80,7 +84,11 @@ class PostController extends Controller
     {
         Gate::authorize('update', $post);
 
-        $categories = \App\Models\Category::where('is_active', true)->orderBy('sort_order')->get();
+        $categories = \App\Models\Category::where('is_active', true)
+            ->where('slug', '!=', 'all')
+            ->where('slug', 'not like', 'notice%')
+            ->orderBy('sort_order')
+            ->get();
         return \Inertia\Inertia::render('Post/Edit', [
             'post' => $post,
             'categories' => $categories
