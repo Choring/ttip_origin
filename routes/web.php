@@ -10,19 +10,19 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ImageController;
 
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/sitemap.xml', [SEOController::class, 'sitemap']);
-Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
-Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');
-Route::get('/notices', [\App\Http\Controllers\NoticeController::class, 'index'])->name('notices.index');
-Route::inertia('/terms', 'Legal/Terms')->name('terms');
-Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
+Route::middleware('throttle:global')->group(function () {
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::get('/sitemap.xml', [SEOController::class, 'sitemap']);
+    Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
+    Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');
+    Route::get('/notices', [\App\Http\Controllers\NoticeController::class, 'index'])->name('notices.index');
+    Route::inertia('/terms', 'Legal/Terms')->name('terms');
+    Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
+    Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post');
+});
 
 // 에디터 이미지 업로드
 Route::post('/api/upload-image', [ImageController::class, 'upload'])->middleware(['auth', 'verified'])->name('image.upload');
-
-// {post} 라우트가 'create' 문자열을 삼켜서 404 에러가 나지 않도록 숫자(ID)만 받게 제한합니다.
-Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -39,12 +39,12 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
     Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('posts.edit');
-    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-    Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
+    Route::post('/posts', [PostController::class, 'store'])->middleware('throttle:write')->name('posts.store');
+    Route::put('/posts/{post}', [PostController::class, 'update'])->middleware('throttle:write')->name('posts.update');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 
-    Route::post('/posts/{post}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
-    Route::put('/comments/{comment}', [\App\Http\Controllers\CommentController::class, 'update'])->name('comments.update');
+    Route::post('/posts/{post}/comments', [\App\Http\Controllers\CommentController::class, 'store'])->middleware('throttle:write')->name('comments.store');
+    Route::put('/comments/{comment}', [\App\Http\Controllers\CommentController::class, 'update'])->middleware('throttle:write')->name('comments.update');
     Route::delete('/comments/{comment}', [\App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
 
     Route::post('/posts/{post}/like', [PostController::class, 'toggleLike'])->name('posts.like');

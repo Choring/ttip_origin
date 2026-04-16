@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // 악성 봇/IP 차단은 모든 요청에 가장 먼저 적용
+        $middleware->prepend(\App\Http\Middleware\BlockMaliciousRequests::class);
+
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
