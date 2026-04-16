@@ -14,6 +14,8 @@
           :src="card_image_url" 
           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
           alt="Post image"
+          loading="lazy"
+          fetchpriority="low"
         >
         <h2 class="text-[14px] font-bold text-gray-900 leading-tight line-clamp-1 mb-1 group-hover:text-green-600 transition-colors">
           {{ title }}

@@ -7,6 +7,8 @@
         :src="card_image_url" 
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
         alt="Post image"
+        loading="lazy"
+        fetchpriority="low"
       >
       <div v-else class="w-full h-full bg-indigo-50 flex items-center justify-center">
         <span class="text-4xl text-indigo-200">{{ categoryIcon }}</span>

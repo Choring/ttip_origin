@@ -7,6 +7,8 @@
         :src="card_image_url" 
         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
         alt="Gym image"
+        loading="lazy"
+        fetchpriority="low"
       >
       <div v-else class="w-full h-full flex items-center justify-center text-3xl opacity-30">🏋️</div>
     </Link>
