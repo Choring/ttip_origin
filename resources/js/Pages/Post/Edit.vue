@@ -65,7 +65,9 @@ const currentFields = computed(() => {
 });
 
 const tagInput = ref('');
+const isComposing = ref(false);
 const addTag = () => {
+    if (isComposing.value) return;
     const val = tagInput.value.trim();
     if (val && !form.tags.includes(val) && form.tags.length < 3) {
         form.tags.push(val);
@@ -159,14 +161,24 @@ const submit = () => {
                             </button>
                         </span>
                     </div>
-                    <input 
-                        v-if="form.tags.length < 3"
-                        v-model="tagInput" 
-                        @keydown.enter.prevent="addTag"
-                        type="text" 
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
-                        placeholder="태그를 입력하고 엔터(Enter)를 누르세요"
-                    />
+                    <div v-if="form.tags.length < 3" class="flex gap-2">
+                        <input
+                            v-model="tagInput"
+                            @keydown.enter.prevent="addTag"
+                            @compositionstart="isComposing = true"
+                            @compositionend="isComposing = false"
+                            type="text"
+                            class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            placeholder="태그 입력 후 엔터 또는 추가 버튼 클릭"
+                        />
+                        <button 
+                            type="button" 
+                            @click="addTag"
+                            class="px-5 py-2 bg-indigo-50 text-indigo-700 rounded-md font-bold hover:bg-indigo-100 transition-colors shadow-sm"
+                        >
+                            추가
+                        </button>
+                    </div>
                     <div v-if="form.errors.tags" class="text-red-500 text-sm mt-1">{{ form.errors.tags }}</div>
                 </div>
 

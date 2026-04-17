@@ -34,7 +34,9 @@ const onTypeChange = () => {
 };
 
 const tagInput = ref('');
+const isComposing = ref(false);
 const addTag = () => {
+    if (isComposing.value) return;
     const val = tagInput.value.trim();
     if (val && !form.tags.includes(val) && form.tags.length < 3) {
         form.tags.push(val);
@@ -169,14 +171,24 @@ const submit = () => {
                         </span>
                         <span v-if="form.tags.length === 0" class="text-xs text-gray-400 font-medium italic py-1.5">등록된 태그 없음</span>
                     </div>
-                    <input
-                        v-if="form.tags.length < 3"
-                        v-model="tagInput"
-                        @keydown.enter.prevent="addTag"
-                        type="text"
-                        class="w-full max-w-md rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2.5"
-                        placeholder="태그 입력 후 엔터 (최대 3개)"
-                    />
+                    <div v-if="form.tags.length < 3" class="flex gap-2 max-w-md">
+                        <input
+                            v-model="tagInput"
+                            @keydown.enter.prevent="addTag"
+                            @compositionstart="isComposing = true"
+                            @compositionend="isComposing = false"
+                            type="text"
+                            class="flex-1 rounded-xl border-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2.5"
+                            placeholder="태그 입력 후 엔터 또는 추가"
+                        />
+                        <button 
+                            type="button" 
+                            @click="addTag"
+                            class="px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-black text-xs hover:bg-indigo-100 transition-all border border-indigo-100 shadow-sm"
+                        >
+                            추가
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ─── 섹션 4: 본문 에디터 ─── -->
