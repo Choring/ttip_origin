@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import CommentItem from '@/Components/CommentItem.vue';
 import ShareButtons from '@/Components/ShareButtons.vue';
+import Breadcrumbs from '@/Components/Breadcrumbs.vue';
 import { computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 
@@ -101,6 +102,13 @@ const descriptionText = computed(() =>
 
     <MainLayout>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8" v-if="post">
+            <!-- Breadcrumbs -->
+            <Breadcrumbs :items="[
+                { label: '홈', href: route('home') },
+                { label: post.category?.name || '분류 없음', href: route('home', { category: post.category?.slug || 'all' }) },
+                { label: post.title }
+            ]" />
+
             <div class="mb-4">
                 <!-- 카테고리 + 북마크 버튼 -->
                 <div class="flex items-center justify-between mb-2">

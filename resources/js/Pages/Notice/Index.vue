@@ -1,6 +1,7 @@
 <script setup>
 import MainLayout from '@/Layouts/MainLayout.vue';
 import SummaryCard from '@/Components/SummaryCard.vue';
+import Breadcrumbs from '@/Components/Breadcrumbs.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -13,6 +14,14 @@ const props = defineProps({
 
   <MainLayout>
     <div class="space-y-6">
+      <!-- Breadcrumbs -->
+      <div class="bg-white px-6 py-2 rounded-2xl shadow-sm border border-gray-100 -mb-4 inline-block">
+        <Breadcrumbs :items="[
+          { label: '홈', href: route('home') },
+          { label: '공지사항' }
+        ]" class="!mb-0" />
+      </div>
+
       <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">공지사항</h1>
