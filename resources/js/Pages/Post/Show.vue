@@ -5,6 +5,7 @@ import CommentItem from '@/Components/CommentItem.vue';
 import ShareButtons from '@/Components/ShareButtons.vue';
 import Breadcrumbs from '@/Components/Breadcrumbs.vue';
 import LoginModal from '@/Components/LoginModal.vue';
+import RelatedPosts from '@/Components/RelatedPosts.vue';
 import { ref, computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 
@@ -12,6 +13,7 @@ const props = defineProps({
     post: Object,
     isLiked: Boolean,
     isBookmarked: Boolean,
+    relatedPosts: Array,
 });
 
 
@@ -274,6 +276,9 @@ const openLoginModal = (type) => {
                     :image-url="post.card_image_url"
                 />
             </div>
+
+            <!-- 관련 게시글 추천 -->
+            <RelatedPosts :posts="relatedPosts" />
 
             <!-- Comments Section -->
             <div class="mt-12 pt-8 border-t border-gray-100">

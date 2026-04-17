@@ -37,10 +37,52 @@ class PostController extends Controller
             $isBookmarked = $post->bookmarks()->where('user_id', auth()->id())->exists();
         }
 
+        // 관련 게시글 추천 로직
+        $tags = $post->tags ?: [];
+        
+        // 1순위: 같은 카테고리 + 태그가 하나라도 겹치는 글
+        $relatedByTags = Post::where('category_id', $post->category_id)
+            ->where('id', '!=', $post->id)
+            ->where('type', 'general')
+            ->where(function ($query) use ($tags) {
+                foreach ($tags as $tag) {
+                    $query->orWhereJsonContains('tags', $tag);
+                }
+            })
+            ->latest()
+            ->take(4)
+            ->get();
+
+        $relatedIds = $relatedByTags->pluck('id');
+
+        // 2순위: 태그 매칭이 부족할 경우 같은 카테고리 최신글로 보충
+        $relatedPosts = $relatedByTags;
+        if ($relatedPosts->count() < 4) {
+            $fallbacks = Post::where('category_id', $post->category_id)
+                ->where('id', '!=', $post->id)
+                ->whereNotIn('id', $relatedIds)
+                ->where('type', 'general')
+                ->latest()
+                ->take(4 - $relatedPosts->count())
+                ->get();
+            
+            $relatedPosts = $relatedPosts->concat($fallbacks);
+        }
+
         return \Inertia\Inertia::render('Post/Show', [
             'post' => $post->load(['user.tier', 'comments.user.tier', 'category']),
             'isLiked' => $isLiked,
-            'isBookmarked' => $isBookmarked
+            'isBookmarked' => $isBookmarked,
+            'relatedPosts' => $relatedPosts->map(function($p) {
+                return [
+                    'id' => $p->id,
+                    'title' => $p->title,
+                    'card_image_url' => $p->card_image_url,
+                    'created_at' => $p->created_at,
+                    'view_count' => $p->view_count,
+                    'user' => ['name' => $p->user->name]
+                ];
+            })
         ]);
 
 
