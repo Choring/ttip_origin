@@ -105,8 +105,12 @@ onUnmounted(() => {
     window.removeEventListener('popstate', handlePopState);
 });
 
+// 의도적 이탈(취소 버튼) 플래그
+const isLeaving = ref(false);
+
 // Inertia 내부 내비게이션 보호
 const removeRouterListener = router.on('before', (event) => {
+    if (isLeaving.value) return; // 취소 버튼 클릭 시 가드 우회
     if (form.isDirty && !confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
         event.preventDefault();
     }
@@ -265,12 +269,13 @@ const submit = () => {
                 </div>
 
                 <div class="flex justify-end pt-4 space-x-3">
-                    <Link 
-                        :href="route('home')"
+                    <button
+                        type="button"
+                        @click="() => { isLeaving = true; router.visit(route('home')); }"
                         class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                         취소
-                    </Link>
+                    </button>
                     <button 
                         type="submit" 
                         :disabled="form.processing"
