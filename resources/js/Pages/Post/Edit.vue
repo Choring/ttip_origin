@@ -1,5 +1,5 @@
 <script setup>
-import { useForm, Head, Link } from '@inertiajs/vue3';
+import { useForm, Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import TiptapEditor from '@/Components/TiptapEditor.vue';
 
@@ -8,7 +8,7 @@ const props = defineProps({
     categories: Array
 });
 
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const form = useForm({
     category_id: props.post.category_id || '',
@@ -77,6 +77,33 @@ const addTag = () => {
 const removeTag = (index) => {
     form.tags.splice(index, 1);
 };
+
+// 내비게이션 보호: 수정 중 이탈 방지
+const handleBeforeUnload = (event) => {
+    if (form.isDirty) {
+        event.preventDefault();
+        event.returnValue = '';
+    }
+};
+
+onMounted(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+});
+
+// Inertia 내부 내비게이션 보호
+const removeRouterListener = router.on('before', (event) => {
+    if (form.isDirty && !confirm('수정 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
+        event.preventDefault();
+    }
+});
+
+onUnmounted(() => {
+    removeRouterListener();
+});
 
 const submit = () => {
     if (tagInput.value.trim() && form.tags.length < 3) {
