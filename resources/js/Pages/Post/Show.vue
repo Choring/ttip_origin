@@ -238,7 +238,7 @@ const openLoginModal = (type) => {
             </div>
 
 
-            <div class="prose prose-indigo max-w-none text-gray-800 leading-relaxed" v-html="post.content">
+            <div class="prose prose-indigo prose-p:my-0 prose-li:my-0 max-w-none text-gray-800 leading-normal" v-html="post.content">
             </div>
 
             <!-- Like Action Bar -->
