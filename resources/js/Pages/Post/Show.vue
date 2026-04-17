@@ -4,7 +4,8 @@ import MainLayout from '@/Layouts/MainLayout.vue';
 import CommentItem from '@/Components/CommentItem.vue';
 import ShareButtons from '@/Components/ShareButtons.vue';
 import Breadcrumbs from '@/Components/Breadcrumbs.vue';
-import { computed } from 'vue';
+import LoginModal from '@/Components/LoginModal.vue';
+import { ref, computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 
 const props = defineProps({
@@ -78,6 +79,33 @@ const postUrl = computed(() => {
 const descriptionText = computed(() =>
     Array.isArray(props.post.summary) ? props.post.summary.join(' ') : (props.post.summary || '')
 );
+
+// 비로그인 유도 모달 관련
+const showLoginModal = ref(false);
+const loginModalText = ref({
+    title: '',
+    description: ''
+});
+
+const openLoginModal = (type) => {
+    if (type === 'like') {
+        loginModalText.value = {
+            title: '도움이 된 정보였나요? 👍',
+            description: '로그인하고 작성자에게 따뜻한 띱을 전해보세요!'
+        };
+    } else if (type === 'bookmark') {
+        loginModalText.value = {
+            title: '이 꿀팁을 저장할까요? 🔖',
+            description: '띱(TTIP)의 모든 정보를 모아두고 언제든 꺼내보세요!'
+        };
+    } else {
+        loginModalText.value = {
+            title: '다시 오신 것을 환영해요!',
+            description: '오늘도 유용한 팁을 나누어 볼까요?'
+        };
+    }
+    showLoginModal.value = true;
+};
 </script>
 
 <template>
@@ -137,6 +165,24 @@ const descriptionText = computed(() =>
                                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                             </svg>
                         </Link>
+                    </div>
+                    <!-- 비로그인 북마크 버튼 -->
+                    <div v-else>
+                        <button
+                            @click="openLoginModal('bookmark')"
+                            class="p-2 transition-all rounded-full hover:bg-amber-50 group"
+                            title="북마크 저장"
+                        >
+                            <svg
+                                class="w-6 h-6 text-gray-300 group-hover:text-amber-400 transition-colors"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 <!-- 태그 (별도 줄, flex-wrap) -->
@@ -204,10 +250,11 @@ const descriptionText = computed(() =>
                         <span>띱 👍</span>
                         <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border" :class="isLiked ? 'border-indigo-200' : 'border-gray-100'">{{ post.likes_count || 0 }}</span>
                     </Link>
-                    <div v-else class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg bg-gray-50 border-2 border-gray-100 text-gray-400 cursor-not-allowed">
+                    <!-- 비로그인 띱 버튼 -->
+                    <button v-else @click="openLoginModal('like')" class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg bg-white border-2 border-gray-200 text-gray-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all transform hover:-translate-y-0.5 shadow-md">
                         <span>띱 👍</span>
                         <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border border-gray-100">{{ post.likes_count || 0 }}</span>
-                    </div>
+                    </button>
                 </div>
 
                 <div v-if="user && user.id === post.user_id" class="flex space-x-3 order-3">
@@ -261,4 +308,12 @@ const descriptionText = computed(() =>
             </div>
         </div>
     </MainLayout>
+
+    <!-- 로그인 유도 모달 -->
+    <LoginModal 
+        :show="showLoginModal" 
+        :title="loginModalText.title"
+        :description="loginModalText.description"
+        @close="showLoginModal = false" 
+    />
 </template>

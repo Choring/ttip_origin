@@ -11,6 +11,14 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    title: {
+        type: String,
+        default: '다시 오신 것을 환영해요!',
+    },
+    description: {
+        type: String,
+        default: '오늘도 유용한 팁을 나누어 볼까요?',
+    },
 });
 
 const emit = defineEmits(['close']);
@@ -55,8 +63,8 @@ const close = () => {
                 <div class="inline-block mb-2">
                     <span class="text-primary font-extrabold text-4xl tracking-tighter cursor-default">ttip</span>
                 </div>
-                <h2 class="text-xl font-bold text-gray-800">다시 오신 것을 환영해요!</h2>
-                <p class="text-sm text-gray-500 mt-2">오늘도 유용한 팁을 나누어 볼까요?</p>
+                <h2 class="text-xl font-bold text-gray-800">{{ title }}</h2>
+                <p class="text-sm text-gray-500 mt-2">{{ description }}</p>
             </div>
 
             <form @submit.prevent="submit" class="space-y-5">
