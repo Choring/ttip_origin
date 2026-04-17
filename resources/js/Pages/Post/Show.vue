@@ -82,19 +82,21 @@ const descriptionText = computed(() =>
 <template>
     <Head>
         <title>{{ post?.title ? `${post.title} - ttip` : '로딩 중' }}</title>
-        <meta v-if="post?.summary" head-key="description" name="description" :content="descriptionText">
+        <meta head-key="description" name="description" :content="descriptionText">
+        
         <!-- Open Graph 태그 -->
-        <meta property="og:type"        content="article" />
-        <meta property="og:site_name"   content="ttip" />
-        <meta property="og:title"       :content="post?.title" />
-        <meta property="og:description" :content="descriptionText" />
-        <meta property="og:url"         :content="postUrl" />
-        <meta v-if="post?.card_image_url" property="og:image" :content="post.card_image_url" />
+        <meta head-key="og:type" property="og:type" content="article" />
+        <meta head-key="og:site_name" property="og:site_name" content="ttip" />
+        <meta head-key="og:title" property="og:title" :content="post?.title ? `${post.title} - ttip` : 'ttip'" />
+        <meta head-key="og:description" property="og:description" :content="descriptionText" />
+        <meta head-key="og:url" property="og:url" :content="postUrl" />
+        <meta v-if="post?.card_image_url" head-key="og:image" property="og:image" :content="post.card_image_url" />
+        
         <!-- Twitter Card -->
-        <meta name="twitter:card"        :content="post?.card_image_url ? 'summary_large_image' : 'summary'" />
-        <meta name="twitter:title"       :content="post?.title" />
-        <meta name="twitter:description" :content="descriptionText" />
-        <meta v-if="post?.card_image_url" name="twitter:image" :content="post.card_image_url" />
+        <meta head-key="twitter:card" name="twitter:card" :content="post?.card_image_url ? 'summary_large_image' : 'summary'" />
+        <meta head-key="twitter:title" name="twitter:title" :content="post?.title ? `${post.title} - ttip` : 'ttip'" />
+        <meta head-key="twitter:description" name="twitter:description" :content="descriptionText" />
+        <meta v-if="post?.card_image_url" head-key="twitter:image" name="twitter:image" :content="post.card_image_url" />
     </Head>
 
     <MainLayout>

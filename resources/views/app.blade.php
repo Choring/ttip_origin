@@ -6,24 +6,36 @@
 
         <title inertia>{{ config('app.name', 'ttip') }}</title>
 
+        @php
+            $post = $page['props']['post'] ?? null;
+            $title = isset($post['title']) ? $post['title'] : null;
+            $displayTitle = $title ? "$title - ttip" : config('app.name', 'ttip');
+            
+            $summary = isset($post['summary']) ? $post['summary'] : null;
+            $description = $summary ? (is_array($summary) ? implode(' ', $summary) : $summary) : 'ttip - 당신의 일상에 특별한 팁을 더하는 커뮤니티 공간입니다.';
+            
+            $image = isset($post['card_image_url']) ? $post['card_image_url'] : asset('og-image.png');
+            $url = isset($post['id']) ? route('posts.show', $post['id']) : url()->current();
+        @endphp
+
         <!-- Meta Tags -->
-        <meta name="description" content="ttip - 당신의 일상에 특별한 팁을 더하는 커뮤니티 공간입니다. 유용한 정보와 즐거운 이야기를 나누어보세요.">
+        <meta name="description" content="{{ $description }}">
         <meta name="keywords" content="ttip, 팁, 정보공유, 커뮤니티, 도파스테이션, 일상꿀팁">
         <meta name="author" content="ttip Team">
 
         <!-- Open Graph / Facebook -->
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="https://dopastation.com/">
-        <meta property="og:title" content="ttip - 특별한 팁이 가득한 공간">
-        <meta property="og:description" content="당신의 일상에 특별한 팁을 더하는 커뮤니티 공간, ttip입니다.">
-        <meta property="og:image" content="https://dopastation.com/og-image.png">
+        <meta property="og:type" content="{{ $post ? 'article' : 'website' }}">
+        <meta property="og:url" content="{{ $url }}">
+        <meta property="og:title" content="{{ $displayTitle }}">
+        <meta property="og:description" content="{{ $description }}">
+        <meta property="og:image" content="{{ $image }}">
 
         <!-- Twitter -->
-        <meta property="twitter:card" content="summary_large_image">
-        <meta property="twitter:url" content="https://dopastation.com/">
-        <meta property="twitter:title" content="ttip - 특별한 팁이 가득한 공간">
-        <meta property="twitter:description" content="당신의 일상에 특별한 팁을 더하는 커뮤니티 공간, ttip입니다.">
-        <meta property="twitter:image" content="https://dopastation.com/og-image.png">
+        <meta property="twitter:card" content="{{ isset($post['card_image_url']) ? 'summary_large_image' : 'summary' }}">
+        <meta property="twitter:url" content="{{ $url }}">
+        <meta property="twitter:title" content="{{ $displayTitle }}">
+        <meta property="twitter:description" content="{{ $description }}">
+        <meta property="twitter:image" content="{{ $image }}">
 
         <!-- Google AdSense -->
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8069193438069319"
