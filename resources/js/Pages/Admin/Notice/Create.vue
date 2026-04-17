@@ -46,12 +46,24 @@ const handleBeforeUnload = (event) => {
     }
 };
 
+// 브라우저 뒤로가기 버튼 감지 및 차단
+const handlePopState = (event) => {
+    if (form.isDirty) {
+        // 이미 주소가 바뀌었으므로, 취소 시 현재 주소로 다시 밀어넣어 페이지를 고정함
+        if (!confirm('공지사항을 작성 중입니다. 정말 나가시겠습니까?')) {
+            history.pushState(null, '', window.location.href);
+        }
+    }
+};
+
 onMounted(() => {
     window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
 });
 
 onUnmounted(() => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('popstate', handlePopState);
 });
 
 // Inertia 내부 내비게이션 보호
