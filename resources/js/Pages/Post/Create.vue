@@ -77,48 +77,23 @@ const removeTag = (index) => {
     form.tags.splice(index, 1);
 };
 
-// 내비게이션 보호: 작성 중 이탈 방지
-const handleBeforeUnload = (event) => {
-    if (form.isDirty) {
-        event.preventDefault();
-        event.returnValue = '';
-    }
-};
+// 실제 값으로 직접 체크
+const hasUnsavedContent = computed(() => {
+    const hasTitle = form.title.trim() !== '';
+    const hasContent = form.content !== '' && form.content !== '<p></p>';
+    const hasTags = form.tags.length > 0;
+    return hasTitle || hasContent || hasTags;
+});
 
-// 브라우저 뒤로가기 버튼 감지 및 차단
-const handlePopState = (event) => {
-    if (form.isDirty) {
+// 취소 버튼 핸들러
+const handleCancel = () => {
+    if (hasUnsavedContent.value) {
         if (!confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
-            // 현재 페이지 주소를 다시 히스토리에 밀어넣어 이동을 취소한 것처럼 처리
-            history.pushState(null, '', window.location.href);
+            return;
         }
     }
+    router.visit(route('home'));
 };
-
-onMounted(() => {
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('popstate', handlePopState);
-});
-
-onUnmounted(() => {
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-    window.removeEventListener('popstate', handlePopState);
-});
-
-// 의도적 이탈(취소 버튼) 플래그
-const isLeaving = ref(false);
-
-// Inertia 내부 내비게이션 보호
-const removeRouterListener = router.on('before', (event) => {
-    if (isLeaving.value) return; // 취소 버튼 클릭 시 가드 우회
-    if (form.isDirty && !confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
-        event.preventDefault();
-    }
-});
-
-onUnmounted(() => {
-    removeRouterListener();
-});
 
 const submit = () => {
     if (tagInput.value.trim() && form.tags.length < 3) {
@@ -271,7 +246,7 @@ const submit = () => {
                 <div class="flex justify-end pt-4 space-x-3">
                     <button
                         type="button"
-                        @click="() => { isLeaving = true; router.visit(route('home')); }"
+                        @click="handleCancel"
                         class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                         취소
