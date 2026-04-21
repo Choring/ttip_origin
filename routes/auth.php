@@ -9,9 +9,19 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\KakaoController;
+use App\Http\Controllers\Auth\SocialRegisterController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
+    // 카카오 로그인
+    Route::get('auth/kakao', [KakaoController::class, 'redirectToKakao'])->name('kakao.login');
+    Route::get('auth/kakao/callback', [KakaoController::class, 'handleKakaoCallback'])->name('kakao.callback');
+    
+    // 카카오 추가 정보 입력 (이메일 등)
+    Route::get('auth/kakao/register', [SocialRegisterController::class, 'create'])->name('kakao.register');
+    Route::post('auth/kakao/register', [SocialRegisterController::class, 'store']);
+
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 

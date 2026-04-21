@@ -49,5 +49,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('write', function (Request $request) {
             return Limit::perMinute(20)->by($request->ip());
         });
+
+        // Kakao Socialite Provider 등록
+        \Illuminate\Support\Facades\Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
+            $event->extendSocialite('kakao', \SocialiteProviders\Kakao\KakaoProvider::class);
+        });
     }
 }

@@ -37,6 +37,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_banned',
         'last_login_at',
         'role',
+        'kakao_id',
+        'avatar',
     ];
 
     /**

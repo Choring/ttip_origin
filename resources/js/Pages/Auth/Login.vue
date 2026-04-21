@@ -95,6 +95,27 @@ const submit = () => {
                     Log in
                 </PrimaryButton>
             </div>
+
+            <div class="mt-6 flex flex-col items-center space-y-4">
+                <div class="relative w-full">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="bg-white px-2 text-gray-500">간편 로그인</span>
+                    </div>
+                </div>
+
+                <a
+                    :href="route('kakao.login')"
+                    class="flex w-full items-center justify-center gap-3 rounded-md bg-[#FEE500] px-3 py-2.5 text-sm font-semibold text-[#191919] shadow-sm hover:bg-[#FADA0A] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FEE500]"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.558 1.707 4.8 4.27 6.054l-.841 3.08c-.05.187.159.333.31.233l3.638-2.423c.203.028.41.042.623.042 4.97 0 9-3.186 9-7.115S16.97 3 12 3z" />
+                    </svg>
+                    <span>카카오로 로그인</span>
+                </a>
+            </div>
         </form>
     </GuestLayout>
 </template>

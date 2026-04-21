@@ -112,6 +112,29 @@ const submit = () => {
                 </button>
             </div>
 
+            <div class="mt-8">
+                <div class="relative w-full">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="bg-[#F9FAFB] px-4 text-gray-500 font-bold">간편 회원가입</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a
+                        :href="route('kakao.login')"
+                        class="flex w-full items-center justify-center gap-3 rounded-full bg-[#FEE500] px-4 py-3.5 text-base font-bold text-[#191919] shadow-md hover:bg-[#FADA0A] transition-all active:scale-[0.98]"
+                    >
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.558 1.707 4.8 4.27 6.054l-.841 3.08c-.05.187.159.333.31.233l3.638-2.423c.203.028.41.042.623.042 4.97 0 9-3.186 9-7.115S16.97 3 12 3z" />
+                        </svg>
+                        <span>카카오로 시작하기</span>
+                    </a>
+                </div>
+            </div>
+
             <div class="mt-6 flex items-center justify-center space-x-2 text-sm text-gray-600 font-medium pb-2">
                 <span>이미 계정이 있으신가요?</span>
                 <Link
