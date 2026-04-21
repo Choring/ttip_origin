@@ -21,6 +21,8 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'hasPassword' => !is_null($request->user()->password),
+            'isKakaoLinked' => !is_null($request->user()->kakao_id),
         ]);
     }
 
@@ -45,9 +47,11 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
+        if ($request->user()->password) {
+            $request->validate([
+                'password' => ['required', 'current_password'],
+            ]);
+        }
 
         $user = $request->user();
 

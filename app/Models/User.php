@@ -8,13 +8,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected static function booted()
     {
+        static::deleting(function ($user) {
+            $timestamp = now()->timestamp;
+            // 유니크 제약 조건을 피하기 위해 이메일과 카카오 ID 변조
+            $user->email = $user->email . '_deleted_' . $timestamp;
+            if ($user->kakao_id) {
+                $user->kakao_id = $user->kakao_id . '_deleted_' . $timestamp;
+            }
+            $user->save();
+        });
+
         static::created(function ($user) {
             \App\Models\DailyStatistic::updateOrCreate(
                 ['date' => now()->toDateString()],

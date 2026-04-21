@@ -11,6 +11,9 @@ defineProps({
     status: {
         type: String,
     },
+    isKakaoLinked: {
+        type: Boolean,
+    },
 });
 
 const user = usePage().props.auth.user;
@@ -86,6 +89,37 @@ const form = useForm({
                     class="mt-2 text-sm font-medium text-green-600"
                 >
                     새로운 인증 링크가 이메일로 전송되었습니다.
+                </div>
+            </div>
+
+            <!-- 카카오 연동 섹션 -->
+            <div class="mt-8 pt-6 border-t border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-800">소셜 계정 연동</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">카카오 계정을 연동하여 간편하게 로그인하세요.</p>
+                    </div>
+                    <div>
+                        <template v-if="isKakaoLinked">
+                            <div class="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full border border-gray-100 shadow-sm">
+                                <svg class="h-4 w-4 text-[#FEE500]" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.558 1.707 4.8 4.27 6.054l-.841 3.08c-.05.187.159.333.31.233l3.638-2.423c.203.028.41.042.623.042 4.97 0 9-3.186 9-7.115S16.97 3 12 3z" />
+                                </svg>
+                                <span class="text-xs font-bold text-gray-600">연동됨</span>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <a 
+                                :href="route('kakao.login')"
+                                class="flex items-center gap-2 bg-[#FEE500] hover:bg-[#FADA0A] px-4 py-2.5 rounded-full shadow-sm transition-all active:scale-[0.98]"
+                            >
+                                <svg class="h-4 w-4 text-[#191919]" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 3c-4.97 0-9 3.185-9 7.115 0 2.558 1.707 4.8 4.27 6.054l-.841 3.08c-.05.187.159.333.31.233l3.638-2.423c.203.028.41.042.623.042 4.97 0 9-3.186 9-7.115S16.97 3 12 3z" />
+                                </svg>
+                                <span class="text-xs font-bold text-[#191919]">카카오 연동하기</span>
+                            </a>
+                        </template>
+                    </div>
                 </div>
             </div>
 

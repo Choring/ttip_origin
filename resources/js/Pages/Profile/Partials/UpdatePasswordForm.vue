@@ -5,6 +5,13 @@ import TextInput from '@/Components/TextInput.vue';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
+const props = defineProps({
+    hasPassword: {
+        type: Boolean,
+        default: true,
+    }
+});
+
 const passwordInput = ref(null);
 const currentPasswordInput = ref(null);
 
@@ -36,16 +43,19 @@ const updatePassword = () => {
     <section>
         <header>
             <h2 class="text-xl font-bold text-gray-900">
-                비밀번호 변경
+                {{ hasPassword ? '비밀번호 변경' : '비밀번호 설정' }}
             </h2>
 
             <p class="mt-1 text-sm text-gray-500">
-                보안을 위해 영문, 숫자, 특수문자를 혼합한 길고 안전한 비밀번호를 사용해 주세요.
+                {{ hasPassword 
+                    ? '보안을 위해 영문, 숫자, 특수문자를 혼합한 길고 안전한 비밀번호를 사용해 주세요.' 
+                    : '계정 보안 및 이메일 로그인을 위해 사용할 비밀번호를 설정해 주세요.' 
+                }}
             </p>
         </header>
 
         <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
-            <div>
+            <div v-if="hasPassword">
                 <InputLabel for="current_password" value="현재 비밀번호" class="font-bold text-gray-700 mb-1" />
 
                 <TextInput
@@ -64,7 +74,7 @@ const updatePassword = () => {
             </div>
 
             <div>
-                <InputLabel for="password" value="새 비밀번호" class="font-bold text-gray-700 mb-1" />
+                <InputLabel for="password" :value="hasPassword ? '새 비밀번호' : '비밀번호 설정'" class="font-bold text-gray-700 mb-1" />
 
                 <TextInput
                     id="password"

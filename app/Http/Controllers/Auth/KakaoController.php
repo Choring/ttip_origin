@@ -37,13 +37,30 @@ class KakaoController extends Controller
             return redirect()->route('login')->with('error', '카카오 로그인 중 오류가 발생했습니다.');
         }
 
+        // 로그인된 상태에서 연동 시도 시
+        if (Auth::check()) {
+            $user = Auth::user();
+            
+            // 이미 다른 계정에 연동된 카카오 ID인지 확인
+            $existingUser = User::where('kakao_id', $kakaoUser->getId())->first();
+            if ($existingUser && $existingUser->id !== $user->id) {
+                return redirect()->route('profile.edit')->with('error', '해당 카카오 계정은 이미 다른 회원과 연동되어 있습니다.');
+            }
+
+            $user->update([
+                'kakao_id' => $kakaoUser->getId(),
+                'avatar' => $user->avatar ?? $kakaoUser->getAvatar(),
+            ]);
+
+            return redirect()->route('profile.edit')->with('status', '카카오 계정이 성공적으로 연동되었습니다.');
+        }
+
         // 1. 카카오 ID로 사용자 확인
         $user = User::where('kakao_id', $kakaoUser->getId())->first();
 
         if ($user) {
-            // 이미 가입된 카카오 사용자: 정보 업데이트 후 로그인
+            // 이미 가입된 카카오 사용자: 아바타만 업데이트하고 닉네임은 유지
             $user->update([
-                'name' => $kakaoUser->getName() ?? $kakaoUser->getNickname() ?? $user->name,
                 'avatar' => $kakaoUser->getAvatar(),
             ]);
             

@@ -12,6 +12,12 @@ defineProps({
     status: {
         type: String,
     },
+    hasPassword: {
+        type: Boolean,
+    },
+    isKakaoLinked: {
+        type: Boolean,
+    },
 });
 </script>
 
@@ -32,16 +38,23 @@ defineProps({
                     <UpdateProfileInformationForm
                         :must-verify-email="mustVerifyEmail"
                         :status="status"
+                        :is-kakao-linked="isKakaoLinked"
                         class="max-w-xl"
                     />
                 </div>
 
                 <div class="bg-white p-6 shadow-md rounded-3xl border border-gray-50 sm:p-8 transition-shadow">
-                    <UpdatePasswordForm class="max-w-xl" />
+                    <UpdatePasswordForm 
+                        :has-password="hasPassword"
+                        class="max-w-xl" 
+                    />
                 </div>
 
                 <div class="bg-white p-6 shadow-md rounded-3xl border border-gray-50 sm:p-8 transition-shadow">
-                    <DeleteUserForm class="max-w-xl" />
+                    <DeleteUserForm 
+                        :has-password="hasPassword"
+                        class="max-w-xl" 
+                    />
                 </div>
             </div>
         </div>
