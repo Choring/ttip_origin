@@ -13,12 +13,12 @@ use App\Http\Controllers\Auth\KakaoController;
 use App\Http\Controllers\Auth\SocialRegisterController;
 use Illuminate\Support\Facades\Route;
 
+// 카카오 로그인 및 연동 (게스트와 인증 사용자 모두 접근 가능해야 함)
+Route::get('auth/kakao', [KakaoController::class, 'redirectToKakao'])->name('kakao.login');
+Route::get('auth/kakao/callback', [KakaoController::class, 'handleKakaoCallback'])->name('kakao.callback');
+
 Route::middleware('guest')->group(function () {
-    // 카카오 로그인
-    Route::get('auth/kakao', [KakaoController::class, 'redirectToKakao'])->name('kakao.login');
-    Route::get('auth/kakao/callback', [KakaoController::class, 'handleKakaoCallback'])->name('kakao.callback');
-    
-    // 카카오 추가 정보 입력 (이메일 등)
+    // 카카오 추가 정보 입력 (이메일 등) - 게스트 전용
     Route::get('auth/kakao/register', [SocialRegisterController::class, 'create'])->name('kakao.register');
     Route::post('auth/kakao/register', [SocialRegisterController::class, 'store']);
 
