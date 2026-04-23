@@ -32,20 +32,19 @@ class CommentController extends Controller
             session()->flash('point_gain', 1); // 토스트 알림용
         }
 
-        // 2. 내 글에 댓글이 달렸을 때 원글 작성자에게 3 포인트 지급 (본인 댓글 제외)
         $postAuthor = $post->user;
-        if ($postAuthor && $postAuthor->id !== $user->id) {
-            $pointService->addPoints($postAuthor, 3, 'receive_comment', 'comments', $comment->id);
-            // 원글 작성자가 현재 접속 중인 경우 Inertia를 통해 알림이 전달되도록 세션 플래시
-            session()->flash('point_gain', 3);
 
-            // 알림 발송
-            if ($comment->parent_id) {
-                $parentComment = \App\Models\Comment::find($comment->parent_id);
-                if ($parentComment && $parentComment->user_id !== $user->id) {
-                    $parentComment->user->notify(new \App\Notifications\CommentReplied($parentComment, $comment));
-                }
-            } else {
+        if ($comment->parent_id) {
+            // 답글인 경우: 원 댓글 작성자에게 알림 (본인 제외)
+            $parentComment = \App\Models\Comment::find($comment->parent_id);
+            if ($parentComment && $parentComment->user_id !== $user->id) {
+                $parentComment->user->notify(new \App\Notifications\CommentReplied($parentComment, $comment));
+            }
+        } else {
+            // 일반 댓글인 경우: 원글 작성자에게 포인트 + 알림 (본인 제외)
+            if ($postAuthor && $postAuthor->id !== $user->id) {
+                $pointService->addPoints($postAuthor, 3, 'receive_comment', 'comments', $comment->id);
+                session()->flash('point_gain', 3);
                 $postAuthor->notify(new \App\Notifications\PostCommented($post, $comment));
             }
         }
