@@ -67,4 +67,39 @@ class CommentController extends Controller
 
         return redirect()->back();
     }
+
+    public function toggleLike(Comment $comment, \App\Services\PointService $pointService)
+    {
+        $user = auth()->user();
+        $commentAuthor = $comment->user;
+
+        $existingLike = $comment->likes()->where('user_id', $user->id)->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
+            $comment->decrement('likes_count');
+            
+            // 띱 취소 시 작성자 포인트 회수 (본인 댓글 제외)
+            if ($commentAuthor && $commentAuthor->id !== $user->id) {
+                $pointService->subtractPoints($commentAuthor, 5, 'lost_comment_like', 'comments', $comment->id);
+            }
+            
+            $message = '댓글 좋아요를 취소했습니다.';
+        } else {
+            $comment->likes()->create([
+                'user_id' => $user->id
+            ]);
+            $comment->increment('likes_count');
+            
+            // 띱 수신 시 작성자 포인트 적립 (본인 댓글 제외)
+            if ($commentAuthor && $commentAuthor->id !== $user->id) {
+                $pointService->addPoints($commentAuthor, 5, 'receive_comment_like', 'comments', $comment->id);
+                session()->flash('point_gain', 5);
+            }
+
+            $message = '댓글 좋아요를 눌렀습니다!';
+        }
+
+        return back()->with('success', $message);
+    }
 }

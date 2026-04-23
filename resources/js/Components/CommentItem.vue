@@ -61,6 +61,21 @@ const formatDate = (dateString) => {
         hour: '2-digit', minute: '2-digit'
     });
 }
+
+const emit = defineEmits(['open-login-modal']);
+
+const likeForm = useForm({});
+
+const toggleLike = () => {
+    if (!user) {
+        emit('open-login-modal', 'like');
+        return;
+    }
+
+    likeForm.post(route('comments.like', { comment: props.comment.id }), {
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
@@ -97,10 +112,14 @@ const formatDate = (dateString) => {
                 </div>
                 
                 <!-- Actions -->
-                <div class="mt-1 ml-2 flex items-center space-x-4 text-xs text-gray-400 font-semibold" v-if="user">
-                    <button @click="showReplyForm = !showReplyForm" class="hover:text-indigo-600 transition">답글 달기</button>
-                    <button v-if="user.id === comment.user_id" @click="showEditForm = !showEditForm" class="hover:text-amber-600 transition">수정</button>
-                    <button v-if="user.id === comment.user_id" @click="deleteComment" class="hover:text-red-600 transition">삭제</button>
+                <div class="mt-1 ml-2 flex items-center space-x-4 text-xs text-gray-400 font-semibold">
+                    <button @click="toggleLike" class="flex items-center space-x-1 transition" :class="comment.isLiked ? 'text-indigo-600' : 'hover:text-indigo-600'">
+                        <span>좋아요</span>
+                        <span v-if="comment.likes_count > 0">{{ comment.likes_count }}</span>
+                    </button>
+                    <button v-if="user" @click="showReplyForm = !showReplyForm" class="hover:text-indigo-600 transition">답글 달기</button>
+                    <button v-if="user && user.id === comment.user_id" @click="showEditForm = !showEditForm" class="hover:text-amber-600 transition">수정</button>
+                    <button v-if="user && user.id === comment.user_id" @click="deleteComment" class="hover:text-red-600 transition">삭제</button>
                 </div>
                 
                 <!-- Reply Form -->
@@ -115,7 +134,14 @@ const formatDate = (dateString) => {
         <!-- Nested Comments (Moved OUTSIDE the flex wrapper so it doesn't infinitely indent) -->
         <div v-if="comment.children && comment.children.length > 0" 
              :class="['mt-3', depth === 0 ? 'ml-12 border-l-2 border-indigo-100 pl-4 py-1' : '']">
-            <CommentItem v-for="child in comment.children" :key="child.id" :comment="child" :postId="postId" :depth="depth + 1" />
+            <CommentItem 
+                v-for="child in comment.children" 
+                :key="child.id" 
+                :comment="child" 
+                :postId="postId" 
+                :depth="depth + 1" 
+                @open-login-modal="(type) => emit('open-login-modal', type)"
+            />
         </div>
     </div>
 </template>

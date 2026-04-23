@@ -32,9 +32,15 @@ class PostController extends Controller
 
         $isLiked = false;
         $isBookmarked = false;
+        $likedCommentIds = [];
         if (auth()->check()) {
-            $isLiked = $post->likes()->where('user_id', auth()->id())->exists();
-            $isBookmarked = $post->bookmarks()->where('user_id', auth()->id())->exists();
+            $userId = auth()->id();
+            $isLiked = $post->likes()->where('user_id', $userId)->exists();
+            $isBookmarked = $post->bookmarks()->where('user_id', $userId)->exists();
+            $likedCommentIds = \App\Models\CommentLike::whereIn('comment_id', $post->comments->pluck('id'))
+                ->where('user_id', $userId)
+                ->pluck('comment_id')
+                ->toArray();
         }
 
         // 관련 게시글 추천 로직
@@ -73,6 +79,7 @@ class PostController extends Controller
             'post' => $post->load(['user.tier', 'comments.user.tier', 'category']),
             'isLiked' => $isLiked,
             'isBookmarked' => $isBookmarked,
+            'likedCommentIds' => $likedCommentIds,
             'relatedPosts' => $relatedPosts->map(function($p) {
                 return [
                     'id' => $p->id,

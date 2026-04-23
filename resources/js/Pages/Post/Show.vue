@@ -14,6 +14,7 @@ const props = defineProps({
     isLiked: Boolean,
     isBookmarked: Boolean,
     relatedPosts: Array,
+    likedCommentIds: Array,
 });
 
 
@@ -26,7 +27,11 @@ const commentsTree = computed(() => {
     const lookup = {};
 
     flat.forEach(comment => {
-        lookup[comment.id] = { ...comment, children: [] };
+        lookup[comment.id] = { 
+            ...comment, 
+            isLiked: props.likedCommentIds.includes(comment.id),
+            children: [] 
+        };
     });
 
     flat.forEach(comment => {
@@ -304,7 +309,13 @@ const openLoginModal = (type) => {
 
                 <!-- Comments List -->
                 <div class="space-y-6">
-                    <CommentItem v-for="comment in commentsTree" :key="comment.id" :comment="comment" :postId="post.id" />
+                    <CommentItem 
+                        v-for="comment in commentsTree" 
+                        :key="comment.id" 
+                        :comment="comment" 
+                        :postId="post.id" 
+                        @open-login-modal="openLoginModal"
+                    />
                     
                     <div v-if="commentsTree.length === 0" class="text-center text-gray-400 py-10">
                         첫 댓글의 주인공이 되어보세요!
