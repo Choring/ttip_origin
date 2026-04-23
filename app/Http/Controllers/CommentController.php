@@ -38,6 +38,16 @@ class CommentController extends Controller
             $pointService->addPoints($postAuthor, 3, 'receive_comment', 'comments', $comment->id);
             // 원글 작성자가 현재 접속 중인 경우 Inertia를 통해 알림이 전달되도록 세션 플래시
             session()->flash('point_gain', 3);
+
+            // 알림 발송
+            if ($comment->parent_id) {
+                $parentComment = \App\Models\Comment::find($comment->parent_id);
+                if ($parentComment && $parentComment->user_id !== $user->id) {
+                    $parentComment->user->notify(new \App\Notifications\CommentReplied($parentComment, $comment));
+                }
+            } else {
+                $postAuthor->notify(new \App\Notifications\PostCommented($post, $comment));
+            }
         }
 
         return redirect()->back();
@@ -95,6 +105,9 @@ class CommentController extends Controller
             if ($commentAuthor && $commentAuthor->id !== $user->id) {
                 $pointService->addPoints($commentAuthor, 5, 'receive_comment_like', 'comments', $comment->id);
                 session()->flash('point_gain', 5);
+
+                // 알림 발송
+                $commentAuthor->notify(new \App\Notifications\LikedNotification($comment, $user));
             }
 
             $message = '댓글 좋아요를 눌렀습니다!';

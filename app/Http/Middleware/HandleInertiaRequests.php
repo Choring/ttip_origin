@@ -33,10 +33,13 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user()
-                    ? $request->user()->loadMissing('tier')->only([
-                        'id', 'name', 'email', 'role',
-                        'current_points', 'tier_id', 'tier',
-                    ])
+                    ? array_merge(
+                        $request->user()->loadMissing('tier')->only([
+                            'id', 'name', 'email', 'role',
+                            'current_points', 'tier_id', 'tier',
+                        ]),
+                        ['unread_notifications_count' => $request->user()->unreadNotifications->count()]
+                    )
                     : null,
             ],
             'flash' => [

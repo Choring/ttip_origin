@@ -206,6 +206,9 @@ class PostController extends Controller
             if ($postAuthor && $postAuthor->id !== $user->id) {
                 $pointService->addPoints($postAuthor, 5, 'receive_like', 'posts', $post->id);
                 session()->flash('point_gain', 5);
+
+                // 알림 발송
+                $postAuthor->notify(new \App\Notifications\LikedNotification($post, $user));
             }
 
 
