@@ -21,8 +21,9 @@ const categoryIcons = {
     'restaurant':   '🍽️',
     'cafe':         '☕',
     'solo-dining':  '🥢',
-    'gym':          '💪',
-    'part-time':    '💼',
+    'spot':         '🎯',
+    'daily-log':    '📝',
+    'daeguinfo':    '📍',
 };
 </script>
 
