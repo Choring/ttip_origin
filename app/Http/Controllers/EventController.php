@@ -11,25 +11,16 @@ class EventController extends Controller
 {
     public function index()
     {
-        // 1시간(3600초) 단위로 공공 API 응답 결과를 캐싱하여 속도와 API 부하 최소화
-        $events = Cache::remember('daegu_cultural_events', 3600, function () {
-            try {
-                $response = Http::timeout(10)
-                    ->withoutVerifying() // SSL 에러 방지 (필요에 따라 제거)
-                    ->get('https://dgfca.or.kr/api/daegu/cultural-events');
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    
-                    // 만약 데이터가 배열 형태가 아니라면 배열로 변환하거나 빈 배열 반환
-                    return is_array($data) ? $data : [];
-                }
-            } catch (\Exception $e) {
-                \Log::error('Event API Fetch Error: ' . $e->getMessage());
-            }
-
-            return []; // 실패 시 빈 배열 반환
-        });
+        // 백그라운드 스케줄러가 수집한 자체 DB에서 데이터를 즉시 가져옴
+        // 이미 종료된 행사는 제외하고, 행사 시작일 기준 최신순으로 정렬
+        $events = \App\Models\CulturalEvent::where('end_date', '>=', date('Y-m-d'))
+            ->select(
+                'event_seq', 'subject', 'event_gubun', 'start_date', 'end_date', 
+                'place', 'pay', 'homepage',
+                \Illuminate\Support\Facades\DB::raw('SUBSTRING(content, 1, 300) as content')
+            )
+            ->orderBy('start_date', 'asc') // 다가오는 행사순(또는 최신순)
+            ->get();
 
         return Inertia::render('Events/Index', [
             'events' => $events
