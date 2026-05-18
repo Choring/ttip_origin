@@ -14,16 +14,28 @@
             $summary = isset($post['summary']) ? $post['summary'] : null;
             $description = $summary ? (is_array($summary) ? implode(' ', $summary) : $summary) : 'ttip - 당신의 일상에 특별한 팁을 더하는 커뮤니티 공간입니다.';
             
-            $image = isset($post['card_image_url']) ? $post['card_image_url'] : asset('og-image.png');
-            $url = isset($post['id']) ? route('posts.show', $post['id']) : url()->current();
-        @endphp
+    $image = isset($post['card_image_url']) ? $post['card_image_url'] : asset('og-image.png');
+    $url = isset($post['id']) ? route('posts.show', $post['id']) : url()->current();
 
-        <!-- Canonical URL -->
-        <link rel="canonical" href="{{ $url }}">
+    $defaultKeywords = ['ttip', '팁', '정보공유', '커뮤니티', '일상꿀팁'];
+    $postKeywords = [];
+    if (isset($post['tags']) && is_array($post['tags'])) {
+        $postKeywords = $post['tags'];
+    }
+    if (isset($post['category']['name'])) {
+        $postKeywords[] = $post['category']['name'];
+    }
+    $keywords = count($postKeywords) > 0 
+        ? implode(', ', array_merge($postKeywords, $defaultKeywords)) 
+        : implode(', ', $defaultKeywords);
+@endphp
 
-        <!-- Meta Tags -->
-        <meta name="description" content="{{ $description }}">
-        <meta name="keywords" content="ttip, 팁, 정보공유, 커뮤니티, 도파스테이션, 일상꿀팁">
+<!-- Canonical URL -->
+<link rel="canonical" href="{{ $url }}">
+
+<!-- Meta Tags -->
+<meta name="description" content="{{ $description }}">
+<meta name="keywords" content="{{ $keywords }}">
         <meta name="author" content="ttip Team">
 
         <!-- Open Graph / Facebook -->
