@@ -27,4 +27,10 @@ class SEOController extends Controller
             'categories' => $categories,
         ])->header('Content-Type', 'application/xml; charset=UTF-8');
     }
+
+    public function robots()
+    {
+        $content = "User-agent: *\nAllow: /\n\nSitemap: " . url('/sitemap.xml');
+        return response($content, 200)->header('Content-Type', 'text/plain');
+    }
 }
