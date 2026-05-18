@@ -4,7 +4,6 @@ import { Head } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
-import FloatingActionButton from '@/Components/FloatingActionButton.vue';
 
 const props = defineProps({
     events: {
@@ -244,6 +243,5 @@ onUnmounted(() => {
 
         <AppFooter />
         <ToastNotification />
-        <FloatingActionButton />
     </div>
 </template>
