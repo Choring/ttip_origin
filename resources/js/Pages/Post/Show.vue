@@ -133,6 +133,9 @@ const openLoginModal = (type) => {
         <meta head-key="twitter:title" name="twitter:title" :content="post?.title ? `${post.title} - ttip` : 'ttip'" />
         <meta head-key="twitter:description" name="twitter:description" :content="descriptionText" />
         <meta v-if="post?.card_image_url" head-key="twitter:image" name="twitter:image" :content="post.card_image_url" />
+        
+        <!-- Canonical URL -->
+        <link head-key="canonical" rel="canonical" :href="postUrl" />
     </Head>
 
     <MainLayout>

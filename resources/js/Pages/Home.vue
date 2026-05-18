@@ -122,6 +122,18 @@ const getCardComponent = (post) => {
     
     return componentMap[props.currentCategory] || SummaryCard;
 };
+
+// 현재 페이지의 고유 URL (Canonical URL)
+const currentUrl = computed(() => {
+    try { 
+        return props.currentCategory === 'all' 
+            ? route('home') 
+            : route('home', { category: props.currentCategory }); 
+    }
+    catch { 
+        return typeof window !== 'undefined' ? window.location.href.split('?')[0] : ''; 
+    }
+});
 </script>
 
 <template>
@@ -129,6 +141,7 @@ const getCardComponent = (post) => {
     <title>{{ currentCategory === 'all' ? 'ttip - 특별한 팁이 가득한 공간' : `ttip - ${currentCategory} 카테고리` }}</title>
     <meta head-key="description" name="description" :content="currentCategory === 'all' ? 'ttip은 당신의 일상에 특별한 팁을 더하는 커뮤니티 공간입니다. 유용한 정보와 즐거운 이야기를 나누어보세요.' : `${currentCategory}에 관한 유용한 정보와 꿀팁들을 ttip에서 확인해보세요.`">
     <meta property="og:title" :content="currentCategory === 'all' ? 'ttip - 특별한 팁이 가득한 공간' : `ttip - ${currentCategory} 탐색`" />
+    <link head-key="canonical" rel="canonical" :href="currentUrl" />
   </Head>
 
   <MainLayout>

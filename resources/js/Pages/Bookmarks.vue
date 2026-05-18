@@ -9,7 +9,10 @@ defineProps({
 </script>
 
 <template>
-  <Head title="ttip - 북마크" />
+  <Head>
+    <title>ttip - 북마크</title>
+    <link head-key="canonical" rel="canonical" :href="route('bookmarks')" />
+  </Head>
 
   <MainLayout>
     <div class="space-y-6">

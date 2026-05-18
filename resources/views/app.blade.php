@@ -18,6 +18,9 @@
             $url = isset($post['id']) ? route('posts.show', $post['id']) : url()->current();
         @endphp
 
+        <!-- Canonical URL -->
+        <link rel="canonical" href="{{ $url }}">
+
         <!-- Meta Tags -->
         <meta name="description" content="{{ $description }}">
         <meta name="keywords" content="ttip, 팁, 정보공유, 커뮤니티, 도파스테이션, 일상꿀팁">

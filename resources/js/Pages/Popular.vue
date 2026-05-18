@@ -9,7 +9,10 @@ defineProps({
 </script>
 
 <template>
-  <Head title="ttip - 인기글" />
+  <Head>
+    <title>ttip - 인기글</title>
+    <link head-key="canonical" rel="canonical" :href="route('popular')" />
+  </Head>
 
   <MainLayout>
     <div class="space-y-6">
