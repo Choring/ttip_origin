@@ -113,6 +113,49 @@ const openLoginModal = (type) => {
     }
     showLoginModal.value = true;
 };
+
+// JSON-LD (Schema.org) for Article
+const jsonLdArticle = computed(() => {
+    return JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": props.post?.title,
+        "image": props.post?.card_image_url ? [props.post.card_image_url] : [],
+        "datePublished": props.post?.created_at,
+        "dateModified": props.post?.updated_at || props.post?.created_at,
+        "author": [{
+            "@type": "Person",
+            "name": props.post?.user?.name || "ttip"
+        }]
+    });
+});
+
+// JSON-LD (Schema.org) for BreadcrumbList
+const jsonLdBreadcrumb = computed(() => {
+    return JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "홈",
+                "item": route('home')
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": props.post?.category?.name || "분류 없음",
+                "item": route('home', { category: props.post?.category?.slug || 'all' })
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": props.post?.title
+            }
+        ]
+    });
+});
 </script>
 
 <template>
@@ -136,6 +179,10 @@ const openLoginModal = (type) => {
         
         <!-- Canonical URL -->
         <link head-key="canonical" rel="canonical" :href="postUrl" />
+
+        <!-- JSON-LD Structured Data -->
+        <component :is="'script'" type="application/ld+json" v-html="jsonLdArticle"></component>
+        <component :is="'script'" type="application/ld+json" v-html="jsonLdBreadcrumb"></component>
     </Head>
 
     <MainLayout>
