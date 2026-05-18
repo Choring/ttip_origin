@@ -12,6 +12,7 @@ const navItems = [
   { name: '공지사항', route: 'notices.index', requiresAuth: false },
   { name: '인기글', route: 'popular', requiresAuth: false },
   { name: '북마크', route: 'bookmarks', requiresAuth: true },
+  { name: '공연/전시', route: 'events.index', requiresAuth: false }
 ];
 
 function isActive(routeName) {
