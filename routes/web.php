@@ -12,7 +12,9 @@ use App\Http\Controllers\ImageController;
 
 Route::middleware('throttle:global')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    Route::get('/sitemap.xml', [SEOController::class, 'sitemap']);
+    Route::get('/sitemap.xml', [SEOController::class, 'sitemapIndex']);
+    Route::get('/sitemap-main.xml', [SEOController::class, 'sitemapMain']);
+    Route::get('/sitemap-posts-{page}.xml', [SEOController::class, 'sitemapPosts'])->whereNumber('page');
     Route::get('/robots.txt', [SEOController::class, 'robots']);
     Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
     Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');

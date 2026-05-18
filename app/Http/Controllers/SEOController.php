@@ -8,23 +8,40 @@ use Illuminate\Http\Response;
 
 class SEOController extends Controller
 {
-    public function sitemap()
+    public function sitemapIndex()
     {
-        // 공지 전용 카테고리(all)는 제외, 일반 카테고리만
+        $postCount = Post::whereIn('type', ['general'])->count();
+        $perPage = 1000;
+        $pages = ceil($postCount / $perPage);
+
+        return response()->view('seo.sitemap-index', [
+            'pages' => $pages
+        ])->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
+
+    public function sitemapMain()
+    {
         $categories = Category::where('is_active', true)
             ->where('slug', '!=', 'all')
             ->get();
 
-        // 공지/광고 타입 제외, 일반 게시글만, 최근 500개
+        return response()->view('seo.sitemap-main', [
+            'categories' => $categories,
+        ])->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
+
+    public function sitemapPosts($page)
+    {
+        $perPage = 1000;
         $posts = Post::with('category')
             ->whereIn('type', ['general'])
-            ->latest('updated_at')
-            ->take(500)
+            ->latest('id')
+            ->skip(($page - 1) * $perPage)
+            ->take($perPage)
             ->get();
 
-        return response()->view('seo.sitemap', [
-            'posts'      => $posts,
-            'categories' => $categories,
+        return response()->view('seo.sitemap-posts', [
+            'posts' => $posts,
         ])->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 
