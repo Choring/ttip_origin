@@ -72,6 +72,14 @@ const loadMore = () => {
     visibleCount.value += 12;
 };
 
+// 홈페이지가 없는 카드 클릭 처리 로직
+const handleCardClick = (e, homepage) => {
+    if (!homepage) {
+        e.preventDefault();
+        alert('이 행사는 공식 홈페이지(상세 페이지) 링크가 제공되지 않습니다.\n장소 및 일정을 참고해 주세요.');
+    }
+};
+
 // 상단으로 가기 (Scroll to Top) 로직
 const showScrollTop = ref(false);
 
@@ -107,7 +115,7 @@ onUnmounted(() => {
             <div class="mb-12 flex justify-between items-end">
                 <div>
                     <h1 class="text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-4">
-                        대구 문화/행사
+                        대구 공연/전시
                     </h1>
                     <p class="text-lg text-gray-500 font-medium">
                         대구광역시에서 진행하는 다양한 전시와 공연 정보를 만나보세요.
@@ -127,13 +135,14 @@ onUnmounted(() => {
                 <a 
                     v-for="(event, index) in visibleEvents" 
                     :key="event.event_seq"
-                    :href="event.homepage || '#'"
+                    :href="event.homepage || 'javascript:void(0)'"
                     :target="event.homepage ? '_blank' : '_self'"
-                    class="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-black/5 flex flex-col justify-between"
+                    @click="handleCardClick($event, event.homepage)"
+                    class="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-black/5 flex flex-col justify-between h-full min-h-[380px]"
                     :class="[
                         getEventColor(event.event_gubun).bg,
                         getEventColor(event.event_gubun).text,
-                        index % 5 === 0 ? 'md:col-span-2 lg:col-span-2 md:aspect-[2/1]' : 'aspect-square md:aspect-auto md:min-h-[420px]'
+                        index % 5 === 0 ? 'md:col-span-2 lg:col-span-2' : ''
                     ]"
                 >
                     <!-- Background Glow / Blur Effect -->
@@ -201,18 +210,12 @@ onUnmounted(() => {
                         
                         <!-- Right Side: Button (and Venue for small cards) -->
                         <div class="flex flex-col items-end shrink-0 max-w-[55%] min-w-[100px]">
-                            <div v-if="index % 5 !== 0" class="mb-3 text-right w-full min-w-0">
+                            <div v-if="index % 5 !== 0" class="mb-2 text-right w-full min-w-0">
                                 <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Venue</p>
                                 <p class="font-bold truncate text-sm drop-shadow-sm w-full">{{ event.place }}</p>
                             </div>
                             
-                            <button 
-                                class="px-4 py-2 md:px-5 md:py-2.5 rounded text-[11px] md:text-xs font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap shadow-sm"
-                                :class="getEventColor(event.event_gubun).button"
-                            >
-                                예매하기
-                            </button>
-                            <p class="text-[9px] font-bold uppercase tracking-widest opacity-40 mt-1.5 text-right w-full">{{ event.pay && event.pay !== '무료' ? event.pay : 'KRW 0' }}</p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 text-right w-full mt-auto">{{ event.pay && event.pay !== '무료' ? event.pay : 'KRW 0' }}</p>
                         </div>
                     </div>
                 </a>
