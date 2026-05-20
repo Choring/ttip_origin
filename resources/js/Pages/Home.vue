@@ -177,7 +177,7 @@ const currentUrl = computed(() => {
           style="height: 130px;"
         >
           <img
-            src="/images/banner/events-banner.png"
+            src="/images/banner/tour-banner.jpg"
             alt="공연/전시"
             class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -195,7 +195,7 @@ const currentUrl = computed(() => {
           style="height: 130px;"
         >
           <img
-            src="/images/banner/tour-banner.jpg"
+            src="/images/banner/events-banner.png"
             alt="관광지"
             class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
