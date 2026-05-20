@@ -11,30 +11,29 @@ const props = defineProps({
     spots: { type: Array, default: () => [] }
 });
 
-const CATEGORIES = [
+const DISTRICTS = [
     { key: 'all',  label: '전체' },
-    { key: '자연', label: '자연' },
-    { key: '문화', label: '문화' },
-    { key: '체험', label: '체험' },
-    { key: '힐링', label: '힐링' },
+    { key: '중구',  label: '중구' },
+    { key: '동구',  label: '동구' },
+    { key: '서구',  label: '서구' },
+    { key: '남구',  label: '남구' },
+    { key: '북구',  label: '북구' },
+    { key: '수성구', label: '수성구' },
+    { key: '달서구', label: '달서구' },
+    { key: '달성군', label: '달성군' },
 ];
-
-const CATEGORY_KEYWORDS = {
-    '자연': ['공원', '산', '강', '호수', '계곡', '숲', '연못', '팔공', '앞산', '수성못'],
-    '문화': ['박물관', '미술관', '갤러리', '유적', '문화', '역사', '전통', '사찰', '절', '향교'],
-    '체험': ['체험', '마을', '시장', '투어', '거리', '골목', '테마'],
-    '힐링': ['온천', '스파', '카페', '힐링', '정원', '휴양', '치유'],
-};
 
 const activeCategory = ref('all');
 const visibleCount = ref(12);
 
+// 셔플된 spots (페이지 진입 시마다 랜덤 순서)
+const shuffledSpots = ref([]);
+const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
 const filteredSpots = computed(() => {
-    if (activeCategory.value === 'all') return props.spots;
-    const keywords = CATEGORY_KEYWORDS[activeCategory.value] || [];
-    return props.spots.filter(spot =>
-        keywords.some(kw => spot.title?.includes(kw) || spot.addr1?.includes(kw))
-    );
+    const base = shuffledSpots.value.length ? shuffledSpots.value : props.spots;
+    if (activeCategory.value === 'all') return base;
+    return base.filter(spot => spot.addr1?.includes(activeCategory.value));
 });
 
 const visibleSpots = computed(() => filteredSpots.value.slice(0, visibleCount.value));
@@ -64,26 +63,37 @@ const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 onMounted(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
 
-    // 저장된 상태가 있으면 복원 (관광지 상세 → 뒤로가기 시)
     const raw = sessionStorage.getItem(SESSION_KEY);
-    if (!raw) return;
 
-    sessionStorage.removeItem(SESSION_KEY);
-    try {
-        const state = JSON.parse(raw);
-        visibleCount.value = state.visibleCount ?? 12;
-        activeCategory.value = state.activeCategory ?? 'all';
-        nextTick(() => {
-            window.scrollTo({ top: state.scrollY ?? 0, behavior: 'instant' });
-        });
-    } catch {
-        // 파싱 실패 무시
+    if (raw) {
+        // 뒤로가기: 저장된 셔플 순서 + 상태 그대로 복원
+        sessionStorage.removeItem(SESSION_KEY);
+        try {
+            const state = JSON.parse(raw);
+            // 저장된 contentId 순서로 배열 재정렬
+            if (state.shuffledIds?.length) {
+                const spotMap = Object.fromEntries(props.spots.map(s => [String(s.contentId), s]));
+                shuffledSpots.value = state.shuffledIds.map(id => spotMap[id]).filter(Boolean);
+            } else {
+                shuffledSpots.value = shuffleArray(props.spots);
+            }
+            visibleCount.value = state.visibleCount ?? 12;
+            activeCategory.value = state.activeCategory ?? 'all';
+            nextTick(() => {
+                window.scrollTo({ top: state.scrollY ?? 0, behavior: 'instant' });
+            });
+        } catch {
+            shuffledSpots.value = shuffleArray(props.spots);
+        }
+    } else {
+        // 새 진입: 랜덤 셔플
+        shuffledSpots.value = shuffleArray(props.spots);
     }
 });
 
 // 페이지 이탈 직전 처리:
-// - 관광지 상세로 이동 → 현재 상태 저장 (뒤로가기 시 복원용)
-// - 다른 페이지로 이동 → 저장된 상태 제거 (불필요한 복원 방지)
+// - 관광지 상세로 이동 → 현재 상태 + 셔플 순서 저장
+// - 다른 페이지로 이동 → 저장된 상태 제거
 const stopRouterListener = router.on('before', (event) => {
     const href = event.detail?.visit?.url?.href ?? event.detail?.visit?.url ?? '';
     if (/\/tour\/[^/]+/.test(href)) {
@@ -91,6 +101,7 @@ const stopRouterListener = router.on('before', (event) => {
             visibleCount: visibleCount.value,
             activeCategory: activeCategory.value,
             scrollY: window.scrollY,
+            shuffledIds: shuffledSpots.value.map(s => String(s.contentId)),
         }));
     } else {
         sessionStorage.removeItem(SESSION_KEY);
@@ -121,19 +132,24 @@ onUnmounted(() => {
                 </p>
             </div>
 
-            <!-- 카테고리 필터 탭 -->
-            <div class="flex gap-2 mb-10 flex-wrap">
-                <button
-                    v-for="cat in CATEGORIES"
-                    :key="cat.key"
-                    @click="setCategory(cat.key)"
-                    class="px-5 py-2.5 rounded-full font-bold text-sm transition-all"
-                    :class="activeCategory === cat.key
-                        ? 'bg-primary text-white shadow-md'
-                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
-                >
-                    {{ cat.label }}
-                </button>
+            <!-- 지역구 필터 탭 -->
+            <!-- 모바일: 가로 슬라이드 / 데스크탑: 줄바꿈 -->
+            <div class="mb-10 -mx-4 px-4 md:mx-0 md:px-0 relative">
+                <!-- 모바일 슬라이드 힌트: 오른쪽 페이드 -->
+                <div class="md:hidden absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-10"></div>
+                <div class="flex gap-2 md:flex-wrap overflow-x-auto md:overflow-visible no-scrollbar pb-1 md:pb-0">
+                    <button
+                        v-for="district in DISTRICTS"
+                        :key="district.key"
+                        @click="setCategory(district.key)"
+                        class="flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-sm transition-all"
+                        :class="activeCategory === district.key
+                            ? 'bg-primary text-white shadow-md'
+                            : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
+                    >
+                        {{ district.label }}
+                    </button>
+                </div>
             </div>
 
             <!-- 빈 상태 -->
