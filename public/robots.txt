@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# 관리자 및 인증 페이지 크롤링 제외
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /profile
+
+# 사이트맵
+Sitemap: https://ttip.kr/sitemap.xml
