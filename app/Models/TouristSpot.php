@@ -21,13 +21,21 @@ class TouristSpot extends Model
         'map_y',
         'tel',
         'overview',
+        'usetime',
+        'restdate',
+        'usefee',
+        'parking',
+        'chkpet',
+        'chkbabycarriage',
+        'extra_images',
         'content_type_id',
         'source',
         'fetched_at',
     ];
 
     protected $casts = [
-        'fetched_at' => 'datetime',
+        'fetched_at'   => 'datetime',
+        'extra_images' => 'array',
     ];
 
     // API 데이터만

@@ -29,19 +29,27 @@ class FetchTouristSpots extends Command
             $spots = $this->fetchAllSpots($apiKey);
             $this->info("목록 수집 완료: {$spots->count()}건");
 
-            // 2단계: 각 관광지 overview(상세소개) 수집 후 DB 저장
+            // 2단계: 각 관광지 상세 정보 수집 후 DB 저장
             $count = 0;
             foreach ($spots as $item) {
-                $contentId = $item['contentid'] ?? null;
+                $contentId     = $item['contentid'] ?? null;
+                $contentTypeId = $item['contenttypeid'] ?? '12';
                 if (!$contentId) continue;
-
-                $overview = $this->fetchOverview($apiKey, $contentId);
 
                 // source = 'manual'인 항목은 덮어쓰지 않음
                 $existing = TouristSpot::find($contentId);
                 if ($existing && $existing->source === 'manual') {
                     continue;
                 }
+
+                // overview
+                $overview = $this->fetchOverview($apiKey, $contentId);
+
+                // 운영 정보 (이용시간, 휴무일, 요금, 주차 등)
+                $intro = $this->fetchIntro($apiKey, $contentId, $contentTypeId);
+
+                // 추가 이미지
+                $extraImages = $this->fetchImages($apiKey, $contentId);
 
                 TouristSpot::updateOrCreate(
                     ['content_id' => $contentId],
@@ -55,7 +63,14 @@ class FetchTouristSpots extends Command
                         'map_y'           => $item['mapy'] ?? '',
                         'tel'             => $item['tel'] ?? '',
                         'overview'        => $overview,
-                        'content_type_id' => $item['contenttypeid'] ?? '12',
+                        'usetime'         => $intro['usetime'] ?? null,
+                        'restdate'        => $intro['restdate'] ?? null,
+                        'usefee'          => $intro['usefee'] ?? null,
+                        'parking'         => $intro['parking'] ?? null,
+                        'chkpet'          => $intro['chkpet'] ?? null,
+                        'chkbabycarriage' => $intro['chkbabycarriage'] ?? null,
+                        'extra_images'    => $extraImages ?: null,
+                        'content_type_id' => $contentTypeId,
                         'source'          => 'api',
                         'fetched_at'      => now(),
                     ]
@@ -105,6 +120,56 @@ class FetchTouristSpots extends Command
         } while ($fetched < $total);
 
         return $spots;
+    }
+
+    private function fetchIntro($apiKey, $contentId, $contentTypeId): array
+    {
+        $query = http_build_query([
+            'MobileOS'      => 'ETC',
+            'MobileApp'     => 'ttip',
+            '_type'         => 'json',
+            'contentId'     => $contentId,
+            'contentTypeId' => $contentTypeId,
+        ]);
+
+        $url      = "{$this->baseUrl}/detailIntro2?serviceKey={$apiKey}&{$query}";
+        $response = Http::withoutVerifying()->timeout(10)->get($url);
+
+        if (!$response->successful()) return [];
+
+        $item = data_get($response->json(), 'response.body.items.item.0', null);
+        if (!$item) return [];
+
+        // HTML 태그 제거 후 반환
+        return array_map(fn($v) => is_string($v) ? strip_tags($v) : $v, $item);
+    }
+
+    private function fetchImages($apiKey, $contentId): array
+    {
+        $query = http_build_query([
+            'MobileOS'  => 'ETC',
+            'MobileApp' => 'ttip',
+            '_type'     => 'json',
+            'contentId' => $contentId,
+            'imageYN'   => 'Y',
+            'subImageYN'=> 'Y',
+            'numOfRows' => '10',
+            'pageNo'    => '1',
+        ]);
+
+        $url      = "{$this->baseUrl}/detailImage2?serviceKey={$apiKey}&{$query}";
+        $response = Http::withoutVerifying()->timeout(10)->get($url);
+
+        if (!$response->successful()) return [];
+
+        $items = data_get($response->json(), 'response.body.items.item', []);
+        if (!is_array($items)) return [];
+
+        return collect($items)
+            ->map(fn($img) => $img['originimgurl'] ?? null)
+            ->filter()
+            ->values()
+            ->toArray();
     }
 
     private function fetchOverview($apiKey, $contentId): string
