@@ -20,5 +20,6 @@ class CulturalEvent extends Model
         'pay',
         'content',
         'homepage',
+        'image',
     ];
 }

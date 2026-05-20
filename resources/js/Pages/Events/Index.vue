@@ -1,244 +1,285 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
 
 const props = defineProps({
-    events: {
-        type: Array,
-        default: () => []
-    }
+    events: { type: Array, default: () => [] }
 });
 
-// 외부 라이브러리 없이 순수 JS로 날짜 포맷팅 (예: 2026-05-12 -> 2026.05.12)
-const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    return dateStr.substring(0, 10).replace(/-/g, '.');
+// ── 필터 ────────────────────────────────────────────────────────
+const FILTERS = [
+    { key: 'all', label: '전체' },
+    { key: '공연', label: '공연' },
+    { key: '전시', label: '전시' },
+    { key: '축제', label: '축제' },
+    { key: '행사', label: '행사' },
+];
+
+const activeFilter = ref('all');
+
+const filteredEvents = computed(() => {
+    if (activeFilter.value === 'all') return props.events;
+    return props.events.filter(e => e.event_gubun === activeFilter.value);
+});
+
+// ── 더보기 ───────────────────────────────────────────────────────
+const visibleCount = ref(9);
+const visibleEvents = computed(() => filteredEvents.value.slice(0, visibleCount.value));
+const loadMore = () => { visibleCount.value += 9; };
+
+const setFilter = (key) => {
+    activeFilter.value = key;
+    visibleCount.value = 9;
 };
 
-const getEventColor = (gubun) => {
-    // 시안 느낌을 살린 그라데이션 및 색상 프리셋
-    const presets = {
-        '전시': {
-            bg: 'from-[#e0f2fe] to-[#ccfbf1]',
-            text: 'text-gray-900',
-            button: 'bg-black text-white hover:bg-gray-800'
-        },
-        '공연': {
-            bg: 'from-[#6366f1] to-[#312e81]',
-            text: 'text-white',
-            button: 'bg-white text-indigo-900 hover:bg-gray-100'
-        },
-        '뮤지컬': {
-            bg: 'from-[#475569] to-[#1e293b]',
-            text: 'text-white',
-            button: 'bg-transparent border border-white text-white hover:bg-white/10'
-        },
-        '기타': {
-            bg: 'from-[#fdf2f8] to-[#fce7f3]',
-            text: 'text-gray-900',
-            button: 'bg-black text-white hover:bg-gray-800'
-        }
+// ── D-day 계산 ───────────────────────────────────────────────────
+const getDday = (startDate, endDate) => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const start = new Date(startDate);
+    const end   = new Date(endDate);
+    if (today >= start && today <= end) return { label: '진행중', type: 'ongoing' };
+    if (today < start) {
+        const diff = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+        return { label: `D-${diff}`, type: 'upcoming' };
+    }
+    // 종료된 행사
+    return { label: '종료', type: 'ended' };
+};
+
+// ── 날짜 포맷 ─────────────────────────────────────────────────────
+const formatDate = (d) => d ? d.substring(0, 10).replace(/-/g, '.') : '';
+
+// ── 카테고리 색상 ─────────────────────────────────────────────────
+const gubunStyle = (gubun) => {
+    const map = {
+        '공연': 'bg-purple-100 text-purple-700',
+        '전시': 'bg-blue-100 text-blue-700',
+        '축제': 'bg-orange-100 text-orange-700',
+        '행사': 'bg-green-100 text-green-700',
     };
-    
-    // 키워드 기반으로 매칭 (없으면 기타)
-    if (gubun && gubun.includes('전시')) return presets['전시'];
-    if (gubun && gubun.includes('공연')) return presets['공연'];
-    if (gubun && gubun.includes('뮤지컬')) return presets['뮤지컬'];
-    
-    return presets['기타'];
+    return map[gubun] || 'bg-gray-100 text-gray-600';
 };
 
-// HTML 엔티티 디코딩 함수 (&lt; -> < 등 변환)
-const decodeHtml = (text) => {
-    if (!text) return '';
-    return text
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&')
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&nbsp;/g, ' ');
+// ── 이미지 없을 때 그라데이션 폴백 ───────────────────────────────
+const fallbackGradient = (gubun) => {
+    const map = {
+        '공연': 'from-purple-800 to-indigo-900',
+        '전시': 'from-slate-700 to-blue-900',
+        '축제': 'from-orange-600 to-rose-700',
+        '행사': 'from-teal-600 to-emerald-800',
+    };
+    return map[gubun] || 'from-gray-700 to-gray-900';
 };
 
-// 프론트엔드 더보기(Pagination) 로직
-const visibleCount = ref(12); // 처음엔 12개 렌더링
-const visibleEvents = computed(() => props.events.slice(0, visibleCount.value));
-
-const loadMore = () => {
-    visibleCount.value += 12;
-};
-
-// 홈페이지가 없는 카드 클릭 처리 로직
-const handleCardClick = (e, homepage) => {
-    if (!homepage) {
-        e.preventDefault();
-        alert('이 행사는 공식 홈페이지(상세 페이지) 링크가 제공되지 않습니다.\n장소 및 일정을 참고해 주세요.');
-    }
-};
-
-// 상단으로 가기 (Scroll to Top) 로직
+// ── 스크롤 상단 버튼 ──────────────────────────────────────────────
 const showScrollTop = ref(false);
+const handleScroll = () => { showScrollTop.value = window.scrollY > 150; };
+const scrollToTop  = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-const handleScroll = () => {
-    // 다양한 브라우저 호환성을 위해 scrollY 또는 scrollTop 사용
-    const scrollPosition = window.scrollY || document.documentElement.scrollTop;
-    showScrollTop.value = scrollPosition > 150;
-};
-
-const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-onMounted(() => {
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // 초기 렌더링 시 강제 확인
-});
-
-onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll);
-});
+onMounted(()  => window.addEventListener('scroll', handleScroll, { passive: true }));
+onUnmounted(() => window.removeEventListener('scroll', handleScroll));
 </script>
 
 <template>
-    <Head title="대구 문화/행사" />
-    
+    <Head title="대구 공연/전시" />
+
     <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
         <AppHeader />
-        
-        <!-- Full width layout instead of max-w-7xl -->
+
         <main class="w-full mx-auto px-4 sm:px-8 lg:px-12 xl:px-20 py-10 md:py-16">
-            <!-- Header Section -->
-            <div class="mb-12 flex justify-between items-end">
-                <div>
-                    <h1 class="text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-4">
-                        대구 공연/전시
-                    </h1>
-                    <p class="text-lg text-gray-500 font-medium">
-                        대구광역시에서 진행하는 다양한 전시와 공연 정보를 만나보세요.
-                    </p>
+
+            <!-- 헤더 -->
+            <div class="mb-10">
+                <h1 class="text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-4">
+                    대구 공연/전시
+                </h1>
+                <p class="text-lg text-gray-500 font-medium">
+                    대구의 공연, 전시, 축제 정보를 한눈에
+                </p>
+            </div>
+
+            <!-- 필터 탭 -->
+            <div class="mb-10 -mx-4 px-4 md:mx-0 md:px-0 relative">
+                <div class="md:hidden absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-10"></div>
+                <div class="flex gap-2 overflow-x-auto md:flex-wrap md:overflow-visible no-scrollbar pb-1 md:pb-0">
+                    <button
+                        v-for="f in FILTERS"
+                        :key="f.key"
+                        @click="setFilter(f.key)"
+                        class="flex-shrink-0 px-5 py-2.5 rounded-full font-bold text-sm transition-all"
+                        :class="activeFilter === f.key
+                            ? 'bg-primary text-white shadow-md'
+                            : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'"
+                    >
+                        {{ f.label }}
+                    </button>
                 </div>
             </div>
 
-            <!-- Empty State -->
-            <div v-if="events.length === 0" class="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
+            <!-- 빈 상태 -->
+            <div v-if="filteredEvents.length === 0" class="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
                 <div class="text-6xl mb-4">🎭</div>
                 <h3 class="text-xl font-bold text-gray-900 mb-2">현재 진행 중인 행사가 없습니다</h3>
                 <p class="text-gray-500">잠시 후 다시 확인해주세요.</p>
             </div>
 
-        <!-- Bento/Masonry Grid (Expanded for Ultra-wide screens) -->
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 xl:gap-8 auto-rows-min">
-                <a 
-                    v-for="(event, index) in visibleEvents" 
+            <!-- 카드 그리드 -->
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a
+                    v-for="event in visibleEvents"
                     :key="event.event_seq"
-                    :href="event.homepage || 'javascript:void(0)'"
-                    :target="event.homepage ? '_blank' : '_self'"
-                    @click="handleCardClick($event, event.homepage)"
-                    class="group relative overflow-hidden rounded-[2rem] bg-gradient-to-br p-8 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border border-black/5 flex flex-col justify-between h-full min-h-[380px]"
+                    :href="event.homepage || undefined"
+                    :target="event.homepage ? '_blank' : undefined"
+                    rel="noopener noreferrer"
+                    class="group relative overflow-hidden rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col"
                     :class="[
-                        getEventColor(event.event_gubun).bg,
-                        getEventColor(event.event_gubun).text,
-                        index % 5 === 0 ? 'md:col-span-2 lg:col-span-2' : ''
+                        event.homepage ? 'cursor-pointer' : 'cursor-default',
+                        getDday(event.start_date, event.end_date)?.type === 'ended' ? 'opacity-60 hover:opacity-90' : ''
                     ]"
+                    style="min-height: 280px;"
                 >
-                    <!-- Background Glow / Blur Effect -->
-                    <div class="absolute inset-0 opacity-20 pointer-events-none mix-blend-overlay" style="background-image: radial-gradient(circle at 50% 50%, white 0%, transparent 80%);"></div>
-                    
-                    <!-- Vertical Ticket Text (Right Side) -->
-                    <div class="absolute right-6 top-0 bottom-0 flex flex-col justify-center opacity-10 tracking-[0.4em] font-black uppercase pointer-events-none text-6xl" style="writing-mode: vertical-rl;">
-                        ADMISSION
-                    </div>
+                    <!-- 이미지가 있는 경우 -->
+                    <template v-if="event.image">
+                        <!-- 배경 이미지 -->
+                        <img
+                            :src="event.image"
+                            :alt="event.subject"
+                            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10"></div>
 
-                    <div class="relative z-10 flex-1">
-                        <div class="flex items-center gap-3 mb-6">
-                            <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded text-xs font-black tracking-wider uppercase border border-white/30">
-                                {{ event.event_gubun || '문화행사' }}
-                            </span>
-                            <span v-if="event.pay === '무료'" class="px-3 py-1 bg-green-400/20 text-green-800 rounded text-xs font-black tracking-wider bg-white">
-                                FREE
-                            </span>
-                            <span v-if="index % 5 === 0" class="px-3 py-1 bg-red-500 text-white rounded text-xs font-black tracking-wider flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-                                LIVE NOW
-                            </span>
-                        </div>
+                        <!-- 콘텐츠 -->
+                        <div class="relative z-10 flex flex-col h-full p-6">
+                            <!-- 상단: D-day + 카테고리 -->
+                            <div class="flex items-center gap-2">
+                                <span
+                                    v-if="getDday(event.start_date, event.end_date)"
+                                    class="px-3 py-1 rounded-full text-xs font-black text-white"
+                                    :class="{
+                                        'bg-primary shadow-lg shadow-primary/50 animate-pulse': getDday(event.start_date, event.end_date).type === 'ongoing',
+                                        'bg-gray-900/70 backdrop-blur-sm': getDday(event.start_date, event.end_date).type === 'upcoming',
+                                        'bg-gray-500/70 backdrop-blur-sm': getDday(event.start_date, event.end_date).type === 'ended',
+                                    }"
+                                >
+                                    <span v-if="getDday(event.start_date, event.end_date).type === 'ongoing'" class="inline-block w-1.5 h-1.5 rounded-full bg-white mr-1 animate-ping"></span>
+                                    {{ getDday(event.start_date, event.end_date).label }}
+                                </span>
+                                <span class="px-3 py-1 rounded-full text-xs font-black text-white bg-white/20 backdrop-blur-sm">
+                                    {{ event.event_gubun || '행사' }}
+                                </span>
+                            </div>
 
-                        <h2 
-                            class="font-black leading-tight mb-3 group-hover:scale-[1.02] transition-transform origin-left drop-shadow-sm"
-                            :class="index % 5 === 0 ? 'text-3xl md:text-4xl w-4/5' : 'text-xl md:text-2xl w-full pr-4'"
-                        >
-                            {{ decodeHtml(event.subject) }}
-                        </h2>
-                        
-                        <!-- Content Preview (only for large cards) -->
-                        <p v-if="index % 5 === 0 && event.content" class="w-3/4 opacity-80 font-medium line-clamp-2 mt-4 text-sm">
-                            {{ decodeHtml(event.content).replace(/<[^>]*>?/gm, '') }}
-                        </p>
-                    </div>
-
-                    <div class="relative z-10 mt-auto pt-6 flex justify-between items-end gap-4 w-full">
-                        <!-- Left Side: Date (and Venue for large cards) -->
-                        <div class="flex flex-col gap-4 min-w-0 flex-1">
-                            <!-- Large Card: Flex Row for Date and Venue -->
-                            <div v-if="index % 5 === 0" class="flex flex-col sm:flex-row gap-4 sm:gap-8 min-w-0">
-                                <div class="shrink-0">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Date</p>
-                                    <p class="font-bold text-base md:text-lg drop-shadow-sm">
-                                        {{ formatDate(event.start_date) }} <span class="mx-1 text-sm opacity-60">—</span> <span>{{ formatDate(event.end_date) }}</span>
+                            <!-- 하단: 제목 + 날짜/장소 -->
+                            <div class="mt-auto">
+                                <h2 class="font-black text-white text-lg leading-snug mb-3 line-clamp-2 drop-shadow">
+                                    {{ event.subject }}
+                                </h2>
+                                <div class="space-y-1.5">
+                                    <p class="text-white/75 text-xs font-medium flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        {{ formatDate(event.start_date) }} ~ {{ formatDate(event.end_date) }}
+                                    </p>
+                                    <p v-if="event.place" class="text-white/75 text-xs font-medium flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        {{ event.place }}
                                     </p>
                                 </div>
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Venue</p>
-                                    <p class="font-bold truncate text-base md:text-lg drop-shadow-sm">{{ event.place }}</p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- 이미지가 없는 경우: 포스터 스타일 -->
+                    <template v-else>
+                        <div
+                            class="absolute inset-0 bg-gradient-to-br transition-all duration-500"
+                            :class="fallbackGradient(event.event_gubun)"
+                        ></div>
+                        <!-- 배경 장식 원 -->
+                        <div class="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/10"></div>
+                        <div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/5"></div>
+
+                        <!-- 콘텐츠 -->
+                        <div class="relative z-10 flex flex-col h-full p-6">
+                            <!-- 상단: D-day + 카테고리 -->
+                            <div class="flex items-center gap-2">
+                                <span
+                                    v-if="getDday(event.start_date, event.end_date)"
+                                    class="px-3 py-1 rounded-full text-xs font-black text-white"
+                                    :class="{
+                                        'bg-primary shadow-lg shadow-black/30 animate-pulse': getDday(event.start_date, event.end_date).type === 'ongoing',
+                                        'bg-white/15 backdrop-blur-sm': getDday(event.start_date, event.end_date).type === 'upcoming',
+                                        'bg-white/10 backdrop-blur-sm': getDday(event.start_date, event.end_date).type === 'ended',
+                                    }"
+                                >
+                                    <span v-if="getDday(event.start_date, event.end_date).type === 'ongoing'" class="inline-block w-1.5 h-1.5 rounded-full bg-white mr-1 animate-ping"></span>
+                                    {{ getDday(event.start_date, event.end_date).label }}
+                                </span>
+                                <span class="px-3 py-1 rounded-full text-xs font-black text-white bg-white/20 backdrop-blur-sm">
+                                    {{ event.event_gubun || '행사' }}
+                                </span>
+                                <span v-if="event.pay === '무료'" class="px-3 py-1 rounded-full text-xs font-black bg-white/20 backdrop-blur-sm text-white">
+                                    무료
+                                </span>
+                            </div>
+
+                            <!-- 하단: 제목 + 날짜/장소 -->
+                            <div class="mt-auto">
+                                <h2 class="font-black text-white text-xl leading-snug mb-4 drop-shadow">
+                                    {{ event.subject }}
+                                </h2>
+                                <div class="space-y-1.5">
+                                    <p class="text-white/70 text-xs font-medium flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        {{ formatDate(event.start_date) }} ~ {{ formatDate(event.end_date) }}
+                                    </p>
+                                    <p v-if="event.place" class="text-white/70 text-xs font-medium flex items-center gap-1.5">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        {{ event.place }}
+                                    </p>
+                                    <p v-if="event.homepage" class="text-white/60 text-xs font-semibold mt-2">
+                                        자세히 보기 →
+                                    </p>
                                 </div>
                             </div>
-                            
-                            <!-- Small Card: Just Date here -->
-                            <div v-else class="min-w-0">
-                                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Date</p>
-                                <p class="font-bold text-sm md:text-base drop-shadow-sm leading-tight">
-                                    {{ formatDate(event.start_date) }}<br/>
-                                    <span class="text-xs opacity-60">~</span><br/>
-                                    {{ formatDate(event.end_date) }}
-                                </p>
-                            </div>
                         </div>
-                        
-                        <!-- Right Side: Button (and Venue for small cards) -->
-                        <div class="flex flex-col items-end shrink-0 max-w-[55%] min-w-[100px]">
-                            <div v-if="index % 5 !== 0" class="mb-2 text-right w-full min-w-0">
-                                <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-1">Venue</p>
-                                <p class="font-bold truncate text-sm drop-shadow-sm w-full">{{ event.place }}</p>
-                            </div>
-                            
-                            <p class="text-[10px] font-bold uppercase tracking-widest opacity-60 text-right w-full mt-auto">{{ event.pay && event.pay !== '무료' ? event.pay : 'KRW 0' }}</p>
-                        </div>
-                    </div>
+                    </template>
                 </a>
             </div>
 
-            <!-- Load More Button -->
-            <div v-if="visibleCount < events.length" class="mt-16 flex justify-center">
-                <button 
-                    @click="loadMore" 
+            <!-- 더보기 버튼 -->
+            <div v-if="visibleCount < filteredEvents.length" class="mt-16 flex justify-center">
+                <button
+                    @click="loadMore"
                     class="px-8 py-4 bg-white border border-gray-200 text-gray-900 rounded-full font-bold shadow-sm hover:shadow-md hover:bg-gray-50 transition-all flex items-center gap-2"
                 >
-                    더보기 ({{ visibleCount }} / {{ events.length }})
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    더보기 ({{ visibleCount }} / {{ filteredEvents.length }})
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
                 </button>
             </div>
         </main>
 
-        <!-- Scroll to Top Button -->
-        <button 
+        <!-- 스크롤 상단 버튼 -->
+        <button
             @click="scrollToTop"
             class="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-primary text-white shadow-xl hover:bg-[#E65300] hover:-translate-y-1 transition-all duration-300"
             :class="showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'"
         >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
+            </svg>
         </button>
 
         <AppFooter />
