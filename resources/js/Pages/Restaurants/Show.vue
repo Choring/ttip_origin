@@ -8,6 +8,7 @@ import ToastNotification from '@/Components/ToastNotification.vue';
 const props = defineProps({
     restaurant:         { type: Object, required: true },
     relatedRestaurants: { type: Array,  default: () => [] },
+    nearbySpots:        { type: Array,  default: () => [] },
 });
 
 // ── 이미지 갤러리 ────────────────────────────────────────────────
@@ -393,6 +394,42 @@ const infoItems = computed(() => {
                             </svg>
                         </div>
                     </button>
+                </div>
+            </div>
+
+            <!-- 근처 관광지 -->
+            <div v-if="nearbySpots.length > 0" class="mb-12">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-2xl font-black text-gray-900">🗺️ 근처 관광지</h2>
+                    <Link :href="route('tour.index')" class="text-sm font-bold text-primary hover:underline">전체보기</Link>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <Link
+                        v-for="s in nearbySpots"
+                        :key="s.contentId"
+                        :href="route('tour.show', s.contentId)"
+                        class="group relative overflow-hidden rounded-2xl bg-gray-200 border border-black/5 transition-all hover:shadow-lg hover:-translate-y-1"
+                        style="min-height: 180px;"
+                    >
+                        <img
+                            v-if="s.image"
+                            :src="s.image"
+                            :alt="s.title"
+                            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div v-else class="absolute inset-0 bg-gradient-to-br from-teal-600 to-emerald-800"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-5 z-10">
+                            <p class="text-[10px] font-black text-primary/90 uppercase tracking-widest mb-1">관광지</p>
+                            <h3 class="text-white font-black text-base leading-snug">{{ s.title }}</h3>
+                            <p v-if="s.addr1" class="text-white/60 text-xs mt-1 flex items-center gap-1 line-clamp-1">
+                                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                                {{ s.addr1 }}
+                            </p>
+                        </div>
+                    </Link>
                 </div>
             </div>
 

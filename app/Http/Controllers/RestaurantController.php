@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Restaurant;
+use App\Models\TouristSpot;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
@@ -34,6 +35,21 @@ class RestaurantController extends Controller
         $detail = Cache::remember("restaurant_detail_{$contentId}", 86400, function () use ($contentId) {
             return $this->fetchDetail($contentId);
         });
+
+        // 근처 관광지 (같은 구/군)
+        $district = $this->extractDistrict($restaurant->address);
+        $nearbySpots = TouristSpot::select('content_id', 'content_type_id', 'title', 'addr1', 'image', 'thumbnail')
+            ->when($district, fn($q) => $q->where('addr1', 'like', "%{$district}%"))
+            ->inRandomOrder()
+            ->limit(3)
+            ->get()
+            ->map(fn($s) => [
+                'contentId'     => $s->content_id,
+                'contentTypeId' => $s->content_type_id,
+                'title'         => $s->title,
+                'addr1'         => $s->addr1,
+                'image'         => $s->image ?? $s->thumbnail,
+            ]);
 
         // 연관 맛집 (같은 카테고리 우선, 랜덤 3개)
         $related = Restaurant::where('content_id', '!=', $contentId)
@@ -73,7 +89,15 @@ class RestaurantController extends Controller
                 'extraImages' => $detail['extraImages']  ?? [],
             ],
             'relatedRestaurants' => $related,
+            'nearbySpots'        => $nearbySpots,
         ]);
+    }
+
+    private function extractDistrict(?string $address): ?string
+    {
+        if (!$address) return null;
+        preg_match('/(\S+구|\S+군)/', $address, $matches);
+        return $matches[1] ?? null;
     }
 
     private function fetchDetail(string $contentId): array
