@@ -168,6 +168,45 @@ const currentUrl = computed(() => {
         </button>
       </div>
 
+      <!-- 대구 탐방 배너 (전체 피드일 때만 표시) -->
+      <div v-if="currentCategory === 'all'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- 공연/전시 -->
+        <Link
+          :href="route('events.index')"
+          class="relative overflow-hidden rounded-2xl group"
+          style="height: 130px;"
+        >
+          <img
+            src="/images/banner/events-banner.png"
+            alt="공연/전시"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-4">
+            <p class="text-white font-black text-base leading-tight drop-shadow">🎭 공연 / 전시</p>
+            <p class="text-white/75 text-xs font-semibold mt-1">대구 공연 일정 보기 →</p>
+          </div>
+        </Link>
+
+        <!-- 관광지 -->
+        <Link
+          :href="route('tour.index')"
+          class="relative overflow-hidden rounded-2xl group"
+          style="height: 130px;"
+        >
+          <img
+            src="/images/banner/tour-banner.jpg"
+            alt="관광지"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+          <div class="absolute bottom-0 left-0 right-0 p-4">
+            <p class="text-white font-black text-base leading-tight drop-shadow">🗺️ 관광지</p>
+            <p class="text-white/75 text-xs font-semibold mt-1">대구 명소 둘러보기 →</p>
+          </div>
+        </Link>
+      </div>
+
       <!-- Category Tabs (Horizontal Scroll) - Mobile Only -->
       <div v-if="categories && categories.length > 0" class="md:hidden -mx-4 px-4 relative">
         <!-- Scroll indicator gradient -->
