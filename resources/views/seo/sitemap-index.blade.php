@@ -12,6 +12,12 @@
         <lastmod>{{ now()->toAtomString() }}</lastmod>
     </sitemap>
 
+    <!-- 맛집 -->
+    <sitemap>
+        <loc>{{ url('/sitemap-restaurants.xml') }}</loc>
+        <lastmod>{{ now()->toAtomString() }}</lastmod>
+    </sitemap>
+
     <!-- 게시글 페이징 (1000개 단위) -->
     @for ($i = 1; $i <= max(1, $pages); $i++)
     <sitemap>

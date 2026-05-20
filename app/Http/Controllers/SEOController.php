@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Category;
+use App\Models\Restaurant;
 use App\Models\TouristSpot;
 use Illuminate\Http\Response;
 
@@ -48,10 +49,19 @@ class SEOController extends Controller
 
     public function sitemapSpots()
     {
-        $spots = TouristSpot::select('content_id', 'updated_at')->get();
+        $spots = TouristSpot::select('content_id', 'image', 'updated_at')->get();
 
         return response()->view('seo.sitemap-spots', [
             'spots' => $spots,
+        ])->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
+
+    public function sitemapRestaurants()
+    {
+        $restaurants = Restaurant::select('content_id', 'image', 'updated_at')->get();
+
+        return response()->view('seo.sitemap-restaurants', [
+            'restaurants' => $restaurants,
         ])->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 

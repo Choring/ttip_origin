@@ -16,6 +16,7 @@ Route::middleware('throttle:global')->group(function () {
     Route::get('/sitemap-main.xml', [SEOController::class, 'sitemapMain']);
     Route::get('/sitemap-posts-{page}.xml', [SEOController::class, 'sitemapPosts'])->whereNumber('page');
     Route::get('/sitemap-spots.xml', [SEOController::class, 'sitemapSpots']);
+    Route::get('/sitemap-restaurants.xml', [SEOController::class, 'sitemapRestaurants']);
     Route::get('/robots.txt', [SEOController::class, 'robots']);
     Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
     Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');

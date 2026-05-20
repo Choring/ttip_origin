@@ -16,6 +16,22 @@
         <priority>0.9</priority>
     </url>
 
+    {{-- 문화행사 목록 --}}
+    <url>
+        <loc>{{ url('/events') }}</loc>
+        <lastmod>{{ now()->toAtomString() }}</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+
+    {{-- 맛집 목록 --}}
+    <url>
+        <loc>{{ url('/restaurants') }}</loc>
+        <lastmod>{{ now()->toAtomString() }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+
     {{-- 카테고리 피드 (공지 카테고리 제외) --}}
     @foreach($categories as $category)
     <url>

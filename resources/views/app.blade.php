@@ -7,9 +7,10 @@
         <title inertia>{{ config('app.name', 'ttip') }}</title>
 
         @php
-            $component  = $page['component'] ?? '';
-            $post       = $page['props']['post'] ?? null;
-            $spot       = $page['props']['spot'] ?? null;
+            $component   = $page['component'] ?? '';
+            $post        = $page['props']['post']       ?? null;
+            $spot        = $page['props']['spot']       ?? null;
+            $restaurant  = $page['props']['restaurant'] ?? null;
 
             $siteUrl    = config('app.url');
             $siteName   = 'ttip';
@@ -60,6 +61,61 @@
                 $url          = $siteUrl . '/tour';
                 $ogType       = 'website';
                 $keywords     = '대구 관광, 대구 여행, 대구 관광지 추천, 대구 명소, 대구광역시 여행, ttip';
+                $jsonLd       = null;
+
+            // ── 맛집 상세 페이지 ────────────────────────────────────────────
+            } elseif ($restaurant) {
+                $displayTitle = ($restaurant['title'] ?? '맛집') . ' - 대구 맛집 | ttip';
+                $description  = ($restaurant['overview'] ?? null)
+                    ? mb_substr(strip_tags($restaurant['overview']), 0, 120) . '...'
+                    : ($restaurant['title'] ?? '') . ' - 대구 맛집 정보를 ttip에서 확인하세요.';
+                $image        = $restaurant['image'] ?? $defaultImg;
+                $url          = $siteUrl . '/restaurants/' . ($restaurant['contentId'] ?? '');
+                $ogType       = 'article';
+                $keywords     = implode(', ', array_filter([
+                    $restaurant['title'] ?? '', '대구 맛집', '대구 맛집 추천', '대구 음식점',
+                    $restaurant['category'] ?? '', 'ttip', '대구',
+                ]));
+                $jsonLd = [
+                    '@context'    => 'https://schema.org',
+                    '@type'       => 'Restaurant',
+                    'name'        => $restaurant['title'] ?? '',
+                    'description' => $description,
+                    'url'         => $url,
+                    'image'       => $image ?: $defaultImg,
+                    'address'     => [
+                        '@type'           => 'PostalAddress',
+                        'streetAddress'   => $restaurant['address'] ?? '',
+                        'addressLocality' => '대구광역시',
+                        'addressCountry'  => 'KR',
+                    ],
+                    'telephone'   => $restaurant['tel'] ?? null,
+                    'servesCuisine' => $restaurant['category'] ?? null,
+                    'geo'         => ($restaurant['mapX'] && $restaurant['mapY']) ? [
+                        '@type'     => 'GeoCoordinates',
+                        'longitude' => $restaurant['mapX'],
+                        'latitude'  => $restaurant['mapY'],
+                    ] : null,
+                ];
+
+            // ── 맛집 목록 페이지 ────────────────────────────────────────────
+            } elseif (str_starts_with($component, 'Restaurants/')) {
+                $displayTitle = '대구 맛집 | ttip';
+                $description  = '대구 한식, 카페, 양식 등 다양한 맛집 정보를 ttip에서 확인하세요.';
+                $image        = $defaultImg;
+                $url          = $siteUrl . '/restaurants';
+                $ogType       = 'website';
+                $keywords     = '대구 맛집, 대구 음식점, 대구 맛집 추천, 대구 카페, 대구 한식, 대구 맛집 지도, ttip';
+                $jsonLd       = null;
+
+            // ── 문화행사 목록 페이지 ────────────────────────────────────────
+            } elseif (str_starts_with($component, 'Events/')) {
+                $displayTitle = '대구 문화행사 | ttip';
+                $description  = '대구 공연, 전시, 축제 등 다양한 문화행사 일정을 ttip에서 확인하세요.';
+                $image        = $defaultImg;
+                $url          = $siteUrl . '/events';
+                $ogType       = 'website';
+                $keywords     = '대구 문화행사, 대구 공연, 대구 전시, 대구 축제, 대구 행사, 대구 문화, ttip';
                 $jsonLd       = null;
 
             // ── 커뮤니티 포스트 상세 ────────────────────────────────────────

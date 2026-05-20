@@ -3,15 +3,15 @@
     xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
     xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
 >
-    @foreach($spots as $spot)
+    @foreach($restaurants as $restaurant)
     <url>
-        <loc>{{ url('/tour/' . $spot->content_id) }}</loc>
-        <lastmod>{{ $spot->updated_at->toAtomString() }}</lastmod>
+        <loc>{{ url('/restaurants/' . $restaurant->content_id) }}</loc>
+        <lastmod>{{ $restaurant->updated_at->toAtomString() }}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
-        @if(!empty($spot->image))
+        @if(!empty($restaurant->image))
         <image:image>
-            <image:loc>{{ $spot->image }}</image:loc>
+            <image:loc>{{ $restaurant->image }}</image:loc>
         </image:image>
         @endif
     </url>
