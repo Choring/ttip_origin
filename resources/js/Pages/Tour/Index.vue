@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
+
+const SESSION_KEY = 'tour_list_state';
 
 const props = defineProps({
     spots: { type: Array, default: () => [] }
@@ -58,8 +60,47 @@ const handleScroll = () => {
 };
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-onMounted(() => window.addEventListener('scroll', handleScroll, { passive: true }));
-onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+// ── 뒤로가기 상태 복원 ──────────────────────────────────────────
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // 저장된 상태가 있으면 복원 (관광지 상세 → 뒤로가기 시)
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+
+    sessionStorage.removeItem(SESSION_KEY);
+    try {
+        const state = JSON.parse(raw);
+        visibleCount.value = state.visibleCount ?? 12;
+        activeCategory.value = state.activeCategory ?? 'all';
+        nextTick(() => {
+            window.scrollTo({ top: state.scrollY ?? 0, behavior: 'instant' });
+        });
+    } catch {
+        // 파싱 실패 무시
+    }
+});
+
+// 페이지 이탈 직전 처리:
+// - 관광지 상세로 이동 → 현재 상태 저장 (뒤로가기 시 복원용)
+// - 다른 페이지로 이동 → 저장된 상태 제거 (불필요한 복원 방지)
+const stopRouterListener = router.on('before', (event) => {
+    const href = event.detail?.visit?.url?.href ?? event.detail?.visit?.url ?? '';
+    if (/\/tour\/[^/]+/.test(href)) {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+            visibleCount: visibleCount.value,
+            activeCategory: activeCategory.value,
+            scrollY: window.scrollY,
+        }));
+    } else {
+        sessionStorage.removeItem(SESSION_KEY);
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+    stopRouterListener();
+});
 </script>
 
 <template>
