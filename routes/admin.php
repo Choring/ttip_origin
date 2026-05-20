@@ -24,6 +24,14 @@ Route::get('/posts/{post}/edit', [\App\Http\Controllers\Admin\PostController::cl
 Route::put('/posts/{post}', [\App\Http\Controllers\Admin\PostController::class, 'update'])->name('posts.update');
 Route::delete('/posts/{post}', [\App\Http\Controllers\Admin\PostController::class, 'destroy'])->name('posts.destroy');
 
+// Tourist Spot Management
+Route::get('/tourist-spots', [\App\Http\Controllers\Admin\TouristSpotController::class, 'index'])->name('tourist-spots.index');
+Route::get('/tourist-spots/create', [\App\Http\Controllers\Admin\TouristSpotController::class, 'create'])->name('tourist-spots.create');
+Route::post('/tourist-spots', [\App\Http\Controllers\Admin\TouristSpotController::class, 'store'])->name('tourist-spots.store');
+Route::get('/tourist-spots/{touristSpot}/edit', [\App\Http\Controllers\Admin\TouristSpotController::class, 'edit'])->name('tourist-spots.edit');
+Route::put('/tourist-spots/{touristSpot}', [\App\Http\Controllers\Admin\TouristSpotController::class, 'update'])->name('tourist-spots.update');
+Route::delete('/tourist-spots/{touristSpot}', [\App\Http\Controllers\Admin\TouristSpotController::class, 'destroy'])->name('tourist-spots.destroy');
+
 // Notice Management
 Route::get('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'index'])->name('notices.index');
 Route::get('/notices/create', [\App\Http\Controllers\Admin\NoticeController::class, 'create'])->name('notices.create');
