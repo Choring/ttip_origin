@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
@@ -21,6 +21,43 @@ const allImages = computed(() => {
         });
     }
     return imgs;
+});
+
+// ── 라이트박스 ──────────────────────────────────────────────────
+const lightboxOpen  = ref(false);
+const lightboxIndex = ref(0);
+
+const openLightbox = (index) => {
+    if (!allImages.value.length) return;
+    lightboxIndex.value = index;
+    lightboxOpen.value  = true;
+    document.body.style.overflow = 'hidden';
+};
+
+const closeLightbox = () => {
+    lightboxOpen.value = false;
+    document.body.style.overflow = '';
+};
+
+const prevImage = () => {
+    lightboxIndex.value = (lightboxIndex.value - 1 + allImages.value.length) % allImages.value.length;
+};
+
+const nextImage = () => {
+    lightboxIndex.value = (lightboxIndex.value + 1) % allImages.value.length;
+};
+
+const onKeydown = (e) => {
+    if (!lightboxOpen.value) return;
+    if (e.key === 'Escape')     closeLightbox();
+    if (e.key === 'ArrowLeft')  prevImage();
+    if (e.key === 'ArrowRight') nextImage();
+};
+
+onMounted(()  => window.addEventListener('keydown', onKeydown));
+onUnmounted(() => {
+    window.removeEventListener('keydown', onKeydown);
+    document.body.style.overflow = '';
 });
 
 const extractDistrict = (addr) => {
@@ -76,20 +113,34 @@ const infoItems = computed(() => {
     <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
         <AppHeader />
 
-        <!-- 히어로 이미지 -->
-        <div class="relative w-full overflow-hidden" style="height: 55vh; min-height: 340px;">
+        <!-- 히어로 이미지 (클릭 시 라이트박스 오픈) -->
+        <div
+            class="relative w-full overflow-hidden bg-black"
+            style="height: 55vh; min-height: 340px;"
+            :class="allImages.length ? 'cursor-zoom-in' : ''"
+            @click="allImages.length && openLightbox(allImages.indexOf(activeImage) >= 0 ? allImages.indexOf(activeImage) : 0)"
+        >
+            <!-- 블러 배경: 이미지 여백을 자연스럽게 채움 -->
+            <img
+                v-if="activeImage"
+                :src="activeImage"
+                :alt="''"
+                aria-hidden="true"
+                class="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50 transition-all duration-500"
+            />
+            <!-- 메인 이미지: 원본 비율 그대로 표시 -->
             <img
                 v-if="activeImage"
                 :src="activeImage"
                 :alt="spot.title"
-                class="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+                class="absolute inset-0 w-full h-full object-contain transition-all duration-500 pointer-events-none"
             />
             <div v-else class="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-600"></div>
 
             <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-black/10"></div>
 
             <!-- 뒤로가기 -->
-            <div class="absolute top-6 left-6 z-10">
+            <div class="absolute top-6 left-6 z-10" @click.stop>
                 <Link
                     :href="route('tour.index')"
                     class="inline-flex items-center gap-2 text-white/90 hover:text-white font-bold text-sm bg-black/25 backdrop-blur-sm px-4 py-2 rounded-full transition-colors"
@@ -295,13 +346,16 @@ const infoItems = computed(() => {
                     <button
                         v-for="(img, i) in allImages"
                         :key="i"
-                        @click="activeImage = img; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                        class="relative overflow-hidden rounded-2xl group border-2 transition-all"
-                        :class="activeImage === img ? 'border-primary ring-2 ring-primary/30' : 'border-transparent'"
+                        @click="openLightbox(i)"
+                        class="relative overflow-hidden rounded-2xl group border-2 border-transparent transition-all"
                         style="aspect-ratio: 4/3;"
                     >
                         <img :src="img" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                            </svg>
+                        </div>
                     </button>
                 </div>
             </div>
@@ -357,5 +411,91 @@ const infoItems = computed(() => {
 
         <AppFooter />
         <ToastNotification />
+
+        <!-- ── 라이트박스 ───────────────────────────────────────── -->
+        <Teleport to="body">
+            <Transition name="lightbox">
+                <div
+                    v-if="lightboxOpen"
+                    class="fixed inset-0 z-[9999] bg-black/95 flex flex-col"
+                    @click.self="closeLightbox"
+                >
+                    <!-- 상단 바 -->
+                    <div class="flex items-center justify-between px-5 py-4 flex-shrink-0">
+                        <span class="text-white/60 text-sm font-bold">
+                            {{ lightboxIndex + 1 }} / {{ allImages.length }}
+                        </span>
+                        <button
+                            @click="closeLightbox"
+                            class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition-colors"
+                        >
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- 메인 이미지 영역 -->
+                    <div class="relative flex-1 flex items-center justify-center px-14 min-h-0">
+                        <!-- 이전 버튼 -->
+                        <button
+                            v-if="allImages.length > 1"
+                            @click="prevImage"
+                            class="absolute left-3 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition-colors z-10"
+                        >
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+
+                        <Transition name="fade" mode="out-in">
+                            <img
+                                :key="lightboxIndex"
+                                :src="allImages[lightboxIndex]"
+                                :alt="`${spot.title} 사진 ${lightboxIndex + 1}`"
+                                class="max-w-full max-h-full object-contain select-none rounded-lg shadow-2xl"
+                                style="max-height: calc(100vh - 180px);"
+                            />
+                        </Transition>
+
+                        <!-- 다음 버튼 -->
+                        <button
+                            v-if="allImages.length > 1"
+                            @click="nextImage"
+                            class="absolute right-3 w-11 h-11 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center transition-colors z-10"
+                        >
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- 하단 썸네일 스트립 -->
+                    <div v-if="allImages.length > 1" class="flex gap-2 justify-center px-4 py-4 overflow-x-auto flex-shrink-0">
+                        <button
+                            v-for="(img, i) in allImages"
+                            :key="i"
+                            @click="lightboxIndex = i"
+                            class="flex-shrink-0 w-14 h-10 rounded-lg overflow-hidden border-2 transition-all"
+                            :class="lightboxIndex === i ? 'border-primary opacity-100' : 'border-transparent opacity-40 hover:opacity-75'"
+                        >
+                            <img :src="img" class="w-full h-full object-cover" />
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
+
+<style scoped>
+.lightbox-enter-active,
+.lightbox-leave-active { transition: opacity 0.2s ease; }
+.lightbox-enter-from,
+.lightbox-leave-to    { opacity: 0; }
+
+.fade-enter-active,
+.fade-leave-active { transition: opacity 0.15s ease; }
+.fade-enter-from,
+.fade-leave-to    { opacity: 0; }
+</style>
