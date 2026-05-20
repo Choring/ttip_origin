@@ -36,6 +36,9 @@ function tryCatchRoute(name) {
                 <Link :href="tryCatchRoute('admin.tourist-spots.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/tourist-spots'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/tourist-spots')}">
                     관광지 관리
                 </Link>
+                <Link :href="tryCatchRoute('admin.restaurants.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/restaurants'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/restaurants')}">
+                    맛집 관리
+                </Link>
                 <Link :href="tryCatchRoute('home')" class="block px-4 py-2.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-200 transition-colors mt-12 text-sm">
                     &larr; 사이트로 돌아가기
                 </Link>

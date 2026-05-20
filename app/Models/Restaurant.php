@@ -16,9 +16,14 @@ class Restaurant extends Model
         'category',
         'address',
         'image',
+        'extra_images',
         'homepage',
         'tel',
         'map_x',
         'map_y',
+    ];
+
+    protected $casts = [
+        'extra_images' => 'array',
     ];
 }

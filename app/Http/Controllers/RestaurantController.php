@@ -86,7 +86,11 @@ class RestaurantController extends Controller
                 'seat'        => $detail['seat']         ?? null,
                 'smoking'     => $detail['smoking']      ?? null,
                 'chkcreditcardfood' => $detail['chkcreditcardfood'] ?? null,
-                'extraImages' => $detail['extraImages']  ?? [],
+                // DB 추가 이미지 + TourAPI 추가 이미지 합치기
+                'extraImages' => array_values(array_unique(array_merge(
+                    $restaurant->extra_images ?? [],
+                    $detail['extraImages'] ?? []
+                ))),
             ],
             'relatedRestaurants' => $related,
             'nearbySpots'        => $nearbySpots,

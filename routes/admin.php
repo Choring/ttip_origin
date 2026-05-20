@@ -32,6 +32,14 @@ Route::get('/tourist-spots/{touristSpot}/edit', [\App\Http\Controllers\Admin\Tou
 Route::put('/tourist-spots/{touristSpot}', [\App\Http\Controllers\Admin\TouristSpotController::class, 'update'])->name('tourist-spots.update');
 Route::delete('/tourist-spots/{touristSpot}', [\App\Http\Controllers\Admin\TouristSpotController::class, 'destroy'])->name('tourist-spots.destroy');
 
+// Restaurant Management
+Route::get('/restaurants', [\App\Http\Controllers\Admin\RestaurantController::class, 'index'])->name('restaurants.index');
+Route::get('/restaurants/create', [\App\Http\Controllers\Admin\RestaurantController::class, 'create'])->name('restaurants.create');
+Route::post('/restaurants', [\App\Http\Controllers\Admin\RestaurantController::class, 'store'])->name('restaurants.store');
+Route::get('/restaurants/{restaurant}/edit', [\App\Http\Controllers\Admin\RestaurantController::class, 'edit'])->name('restaurants.edit');
+Route::put('/restaurants/{restaurant}', [\App\Http\Controllers\Admin\RestaurantController::class, 'update'])->name('restaurants.update');
+Route::delete('/restaurants/{restaurant}', [\App\Http\Controllers\Admin\RestaurantController::class, 'destroy'])->name('restaurants.destroy');
+
 // Notice Management
 Route::get('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'index'])->name('notices.index');
 Route::get('/notices/create', [\App\Http\Controllers\Admin\NoticeController::class, 'create'])->name('notices.create');
