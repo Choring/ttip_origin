@@ -200,31 +200,29 @@ const infoItems = computed(() => {
 
                 <!-- 우측: 지도 -->
                 <div class="lg:col-span-2 bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm" style="min-height: 300px;">
-                    <a
-                        v-if="kakaoMapUrl"
-                        :href="kakaoMapUrl"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="block w-full h-full relative group"
-                        style="min-height: 300px;"
-                    >
-                        <div class="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center gap-3">
-                            <div class="w-14 h-14 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
-                            </div>
-                            <div class="text-center px-4">
-                                <p class="font-black text-gray-700">{{ spot.title }}</p>
-                                <p class="text-gray-500 text-sm mt-0.5">{{ extractDistrict(spot.addr1) }}</p>
-                            </div>
-                            <span class="text-sm text-primary font-bold bg-orange-50 px-4 py-2 rounded-full group-hover:bg-primary group-hover:text-white transition-colors">
-                                지도에서 보기 →
-                            </span>
-                        </div>
-                        <p class="absolute bottom-3 right-3 text-[10px] text-gray-400 font-bold uppercase tracking-wider">KAKAO MAPS</p>
-                    </a>
+                    <template v-if="spot.mapX && spot.mapY">
+                        <!-- OpenStreetMap iframe (좌표 기반, API 키 불필요) -->
+                        <iframe
+                            :src="`https://www.openstreetmap.org/export/embed.html?bbox=${+spot.mapX - 0.003},${+spot.mapY - 0.002},${+spot.mapX + 0.003},${+spot.mapY + 0.002}&layer=mapnik&marker=${spot.mapY},${spot.mapX}`"
+                            class="w-full"
+                            style="height: 300px; border: 0;"
+                            loading="lazy"
+                            :title="`${spot.title} 지도`"
+                        ></iframe>
+                        <!-- 카카오맵 바로가기 링크 -->
+                        <a
+                            v-if="kakaoMapUrl"
+                            :href="kakaoMapUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold text-gray-500 hover:text-primary hover:bg-orange-50 transition-colors border-t border-gray-100"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                            카카오맵에서 크게 보기
+                        </a>
+                    </template>
                     <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-sm font-medium" style="min-height: 300px;">
                         지도 정보 없음
                     </div>
