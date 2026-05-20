@@ -84,7 +84,7 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
 </script>
 
 <template>
-    <Head title="대구 공연/전시" />
+    <Head title="대구 문화행사" />
 
     <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
         <AppHeader />
@@ -94,7 +94,7 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
             <!-- 헤더 -->
             <div class="mb-10">
                 <h1 class="text-4xl md:text-5xl font-black tracking-tight text-gray-900 mb-4">
-                    대구 공연/전시
+                    대구 문화행사
                 </h1>
                 <p class="text-lg text-gray-500 font-medium">
                     대구의 공연, 전시, 축제 정보를 한눈에

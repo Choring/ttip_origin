@@ -20,6 +20,8 @@ Route::middleware('throttle:global')->group(function () {
     Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
     Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');
     Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+    Route::get('/restaurants', [\App\Http\Controllers\RestaurantController::class, 'index'])->name('restaurants.index');
+    Route::get('/restaurants/{contentId}', [\App\Http\Controllers\RestaurantController::class, 'show'])->name('restaurants.show');
     Route::get('/tour', [\App\Http\Controllers\TourController::class, 'index'])->name('tour.index');
     Route::get('/tour/{contentId}', [\App\Http\Controllers\TourController::class, 'show'])->name('tour.show');
     Route::get('/notices', [\App\Http\Controllers\NoticeController::class, 'index'])->name('notices.index');

@@ -170,7 +170,7 @@ const currentUrl = computed(() => {
 
       <!-- 대구 탐방 배너 (전체 피드일 때만 표시) -->
       <div v-if="currentCategory === 'all'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <!-- 공연/전시 -->
+        <!-- 문화행사 -->
         <Link
           :href="route('events.index')"
           class="relative overflow-hidden rounded-2xl group"
@@ -178,13 +178,13 @@ const currentUrl = computed(() => {
         >
           <img
             src="/images/banner/tour-banner.jpg"
-            alt="공연/전시"
+            alt="문화행사"
             class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
           <div class="absolute bottom-0 left-0 right-0 p-4">
-            <p class="text-white font-black text-base leading-tight drop-shadow">🎭 공연 / 전시</p>
-            <p class="text-white/75 text-xs font-semibold mt-1">대구 공연 일정 보기 →</p>
+            <p class="text-white font-black text-base leading-tight drop-shadow">🎭 문화행사</p>
+            <p class="text-white/75 text-xs font-semibold mt-1">공연·전시·축제 일정 보기 →</p>
           </div>
         </Link>
 
