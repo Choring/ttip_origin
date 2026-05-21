@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -83,8 +84,7 @@ class NoticeController extends Controller
         $post->is_pinned = $validated['is_pinned'] ?? false;
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('posts', 'public');
-            $post->card_image_path = $path;
+            $post->card_image_path = FileUploadHelper::upload($request->file('image'), 'posts');
         }
 
         $post->save();
