@@ -44,16 +44,18 @@ class DashboardController extends Controller
                 ]);
             }
 
-            // DB 데이터로 채우기
-            DailyStatistic::where('date', '>=', now()->subDays($days)->toDateString())
+            // DB 데이터로 채우기 (range에 있는 날짜만 업데이트)
+            DailyStatistic::where('date', '>=', now()->subDays($days - 1)->toDateString())
                 ->orderBy('date', 'asc')
                 ->get()
                 ->each(function ($row) use (&$range) {
-                    $range->put($row->date, [
-                        'visitor_count'   => $row->visitor_count   ?? 0,
-                        'new_posts_count' => $row->new_posts_count ?? 0,
-                        'new_users_count' => $row->new_users_count ?? 0,
-                    ]);
+                    if ($range->has($row->date)) {
+                        $range->put($row->date, [
+                            'visitor_count'   => $row->visitor_count   ?? 0,
+                            'new_posts_count' => $row->new_posts_count ?? 0,
+                            'new_users_count' => $row->new_users_count ?? 0,
+                        ]);
+                    }
                 });
 
             return [
