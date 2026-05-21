@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
+import LazyImage from '@/Components/LazyImage.vue';
 
 const SESSION_KEY = 'tour_list_state';
 
@@ -169,12 +170,12 @@ onUnmounted(() => {
                     :class="index === 0 ? 'md:col-span-2 md:row-span-2' : ''"
                     :style="index === 0 ? 'min-height: 520px;' : 'min-height: 260px;'"
                 >
-                    <!-- 이미지 -->
-                    <img
+                    <!-- 이미지 (LazyImage: viewport 400px 전 로드 + fade-in) -->
+                    <LazyImage
                         v-if="spot.image || spot.thumbnail"
                         :src="spot.image || spot.thumbnail"
                         :alt="spot.title"
-                        class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105"
                     />
                     <div v-else class="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
                         <svg class="w-16 h-16 text-gray-500 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">

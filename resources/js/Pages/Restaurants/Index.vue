@@ -4,6 +4,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
+import LazyImage from '@/Components/LazyImage.vue';
 
 const SESSION_KEY = 'restaurant_list_state';
 
@@ -198,14 +199,14 @@ onUnmounted(() => {
                     :href="route('restaurants.show', restaurant.content_id)"
                     class="group relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
                 >
-                    <!-- 이미지 영역 -->
-                    <div class="relative overflow-hidden" style="height: 180px;">
-                        <!-- 이미지 있는 경우 -->
+                    <!-- 이미지 영역 (bg-gray-200: 로딩 중 skeleton 역할) -->
+                    <div class="relative overflow-hidden bg-gray-200" style="height: 180px;">
+                        <!-- 이미지 있는 경우 (LazyImage: viewport 400px 전 로드 + fade-in) -->
                         <template v-if="restaurant.image">
-                            <img
+                            <LazyImage
                                 :src="restaurant.image"
                                 :alt="restaurant.title"
-                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                class="w-full h-full object-cover group-hover:scale-105"
                             />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                         </template>
