@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="naver-site-verification" content="b1763caa574f418b81b82307627d9afa1e13483a" />
 
         <title inertia>{{ config('app.name', 'ttip') }}</title>
 
