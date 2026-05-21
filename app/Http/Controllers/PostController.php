@@ -170,9 +170,12 @@ class PostController extends Controller
         return redirect()->route('posts.show', $post)->with('success', '게시글이 깔끔하게 수정되었습니다.');
     }
 
-    public function destroy(Post $post)
+    public function destroy(Post $post, \App\Services\PointService $pointService)
     {
         Gate::authorize('delete', $post);
+
+        // 게시글 관련 포인트 회수 (삭제 전에 실행)
+        $pointService->revokePostPoints($post);
 
         $post->delete();
 

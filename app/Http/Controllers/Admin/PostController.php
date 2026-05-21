@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\Category;
+use App\Services\PointService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -61,11 +62,13 @@ class PostController extends Controller
         return redirect()->route('admin.posts.index')->with('success', '해당 게시글이 관리자에 의해 수정되었습니다.');
     }
 
-    public function destroy(Post $post)
+    public function destroy(Post $post, PointService $pointService)
     {
-        // Delete cascading associations conceptually, real physical delete handles via DB standard rules or observers
+        // 게시글 관련 포인트 회수 (삭제 전에 실행)
+        $pointService->revokePostPoints($post);
+
         $post->delete();
-        
+
         return redirect()->route('admin.posts.index')->with('success', '해당 게시글이 강제로 삭제(블라인드) 처리되었습니다.');
     }
 }

@@ -66,12 +66,18 @@ class CommentController extends Controller
         return redirect()->back();
     }
 
-    public function destroy(Comment $comment)
+    public function destroy(Comment $comment, PointService $pointService)
     {
         Gate::authorize('delete', $comment);
 
-        // Delete sub-comments recursively ?
-        // The migration has cascadeOnDelete for parent_id, so it deletes automatically in DB.
+        // 댓글 관련 포인트 회수 (삭제 전에 실행)
+        $pointService->revokeCommentPoints($comment);
+
+        // 대댓글도 cascade 삭제되므로 각각 포인트 회수
+        $comment->replies()->each(function ($reply) use ($pointService) {
+            $pointService->revokeCommentPoints($reply);
+        });
+
         $comment->delete();
 
         return redirect()->back();
