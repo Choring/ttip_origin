@@ -54,15 +54,13 @@ class PostController extends Controller
         // 관련 게시글 추천 로직
         $tags = $post->tags ?: [];
         
-        // 1순위: 같은 카테고리 + 태그가 하나라도 겹치는 글
+        // 1순위: 같은 카테고리 + 태그가 하나라도 겹치는 글 (post_tags 인덱스 활용)
         $relatedByTags = Post::visible()
             ->where('category_id', $post->category_id)
             ->where('id', '!=', $post->id)
             ->where('type', 'general')
-            ->where(function ($query) use ($tags) {
-                foreach ($tags as $tag) {
-                    $query->orWhereJsonContains('tags', $tag);
-                }
+            ->when(!empty($tags), function ($query) use ($tags) {
+                $query->whereHas('postTags', fn($q) => $q->whereIn('tag', $tags));
             })
             ->latest()
             ->take(4)

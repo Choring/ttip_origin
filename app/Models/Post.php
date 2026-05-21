@@ -18,7 +18,39 @@ class Post extends Model
                 ['date' => now()->toDateString()],
                 ['new_posts_count' => \Illuminate\Support\Facades\DB::raw('new_posts_count + 1')]
             );
+            // post_tags 동기화
+            $post->syncPostTags();
         });
+
+        static::updated(function ($post) {
+            // tags 컬럼이 변경된 경우에만 재동기화
+            if ($post->wasChanged('tags')) {
+                $post->syncPostTags();
+            }
+        });
+
+        // deleted는 FK cascade로 자동 삭제되므로 별도 처리 불필요
+    }
+
+    /**
+     * posts.tags JSON 컬럼 기준으로 post_tags 테이블을 동기화합니다.
+     */
+    public function syncPostTags(): void
+    {
+        $this->postTags()->delete();
+
+        $tags = $this->tags ?? [];
+        $rows = [];
+        foreach ($tags as $tag) {
+            $tag = trim((string) $tag);
+            if ($tag !== '') {
+                $rows[] = ['post_id' => $this->id, 'tag' => $tag];
+            }
+        }
+
+        if (!empty($rows)) {
+            \App\Models\PostTag::insert($rows);
+        }
     }
 
     protected $appends = ['card_image_url'];
@@ -120,6 +152,11 @@ class Post extends Model
     public function bookmarks()
     {
         return $this->hasMany(PostBookmark::class);
+    }
+
+    public function postTags()
+    {
+        return $this->hasMany(PostTag::class);
     }
 
     public function reports()

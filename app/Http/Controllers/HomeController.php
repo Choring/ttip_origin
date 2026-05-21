@@ -69,8 +69,11 @@ class HomeController extends Controller
                     $q->where('title', 'like', "%{$keyword}%");
                 });
             } elseif ($type === 'tags') {
-                $cleanKeyword = ltrim($keyword, '#');
-                $query->whereRaw('LOWER(tags) like ?', ['%' . mb_strtolower($cleanKeyword) . '%']);
+                $cleanKeyword = mb_strtolower(ltrim($keyword, '#'));
+                // post_tags 인덱스 테이블을 통한 빠른 검색
+                $query->whereHas('postTags', function ($q) use ($cleanKeyword) {
+                    $q->whereRaw('LOWER(tag) = ?', [$cleanKeyword]);
+                });
             } elseif ($type === 'author') {
                 $query->whereHas('user', function ($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%");
