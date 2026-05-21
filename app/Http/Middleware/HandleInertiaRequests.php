@@ -44,9 +44,10 @@ class HandleInertiaRequests extends Middleware
                     : null,
             ],
             'flash' => [
-                'success' => session('success'),
-                'error' => session('error'),
-                'point_gain' => session('point_gain'),
+                'success'      => session('success'),
+                'error'        => session('error'),
+                'point_gain'   => session('point_gain'),
+                'tier_upgrade' => session('tier_upgrade'), // ['name' => '새싹', 'icon' => '🌿']
             ],
 
             'categories' => \Illuminate\Support\Facades\Cache::remember('active_categories', 600, function () {

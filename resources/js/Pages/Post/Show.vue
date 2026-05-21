@@ -9,6 +9,7 @@ import RelatedPosts from '@/Components/RelatedPosts.vue';
 import { ref, computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
 import ReportModal from '@/Components/ReportModal.vue';
+import TierUpgradeModal from '@/Components/TierUpgradeModal.vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -89,6 +90,7 @@ const submitComment = async () => {
         });
         localComments.value.push(res.data.comment);
         if (res.data.point_gain) showPointToast(res.data.point_gain);
+        if (res.data.tier_upgrade) tierUpgradeData.value = res.data.tier_upgrade;
         commentContent.value = '';
     } catch (e) {
         console.error(e);
@@ -130,6 +132,9 @@ const descriptionText = computed(() =>
 
 // 신고 모달
 const showReportModal = ref(false);
+
+// 티어 승급 모달 (AJAX 댓글 작성 시)
+const tierUpgradeData = ref(null);
 
 // 비로그인 유도 모달 관련
 const showLoginModal = ref(false);
@@ -451,5 +456,12 @@ const jsonLdBreadcrumb = computed(() => {
         reportable-type="post"
         :reportable-id="post.id"
         @close="showReportModal = false"
+    />
+
+    <!-- 댓글 작성 시 티어 승급 모달 -->
+    <TierUpgradeModal
+        v-if="tierUpgradeData"
+        :tier="tierUpgradeData"
+        @close="tierUpgradeData = null"
     />
 </template>

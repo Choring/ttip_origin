@@ -45,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'current_points',
+        'total_points',
         'tier_id',
         'is_banned',
         'last_login_at',

@@ -12,62 +12,97 @@ use Illuminate\Support\Facades\DB;
 class PointService
 {
     /**
-     * 사용자에게 포인트를 지급/차감하고 내역을 남긴 뒤 티어를 갱신합니다.
+     * 포인트를 지급합니다.
+     * - current_points (잔액): 증가
+     * - total_points  (누적 획득량): 증가 → 티어 기준으로 사용
+     *
+     * @return Tier|null 티어가 승급된 경우 새 Tier 반환, 아니면 null
      */
-    public function addPoints(User $user, int $amount, string $type, ?string $referenceTable = null, ?int $referenceId = null): void
+    public function addPoints(User $user, int $amount, string $type, ?string $referenceTable = null, ?int $referenceId = null): ?Tier
     {
-        DB::transaction(function () use ($user, $amount, $type, $referenceTable, $referenceId) {
-            // 1. 포인트 내역 생성
+        $upgradedTier = null;
+
+        DB::transaction(function () use ($user, $amount, $type, $referenceTable, $referenceId, &$upgradedTier) {
             PointHistory::create([
-                'user_id' => $user->id,
-                'amount' => $amount,
-                'type' => $type,
+                'user_id'         => $user->id,
+                'amount'          => $amount,
+                'type'            => $type,
                 'reference_table' => $referenceTable,
-                'reference_id' => $referenceId,
+                'reference_id'    => $referenceId,
             ]);
 
-            // 2. 유저 포인트 업데이트
             $user->increment('current_points', $amount);
+            $user->increment('total_points', $amount);
+            $user->refresh();
 
-            // 3. 티어 변동 체크
-            $this->updateUserTier($user);
+            $upgradedTier = $this->updateUserTier($user);
         });
+
+        return $upgradedTier;
     }
 
     /**
-     * 사용자로부터 포인트를 회수하고 내역을 남긴 뒤 티어를 갱신합니다.
+     * 포인트를 차감합니다. (좋아요 취소 등 활동 반영)
+     * - current_points: 감소
+     * - total_points:   감소 (활동이 취소된 것이므로 누적량도 되돌림)
+     *
+     * ⚠️ 포인트 "소비/사용" 기능(미래 상점 등)은 별도 spendPoints() 사용
      */
     public function subtractPoints(User $user, int $amount, string $type, ?string $referenceTable = null, ?int $referenceId = null): void
     {
         DB::transaction(function () use ($user, $amount, $type, $referenceTable, $referenceId) {
-            // 1. 포인트 내역 생성 (음수로 기록)
             PointHistory::create([
-                'user_id' => $user->id,
-                'amount' => -$amount,
-                'type' => $type,
+                'user_id'         => $user->id,
+                'amount'          => -$amount,
+                'type'            => $type,
                 'reference_table' => $referenceTable,
-                'reference_id' => $referenceId,
+                'reference_id'    => $referenceId,
             ]);
 
-            // 2. 유저 포인트 업데이트 (0 이하로 떨어지지 않게 처리)
             $user->current_points = max(0, $user->current_points - $amount);
+            $user->total_points   = max(0, $user->total_points   - $amount);
             $user->save();
 
-            // 3. 티어 변동 체크
             $this->updateUserTier($user);
         });
     }
 
     /**
-     * 게시글 삭제 시 해당 글과 관련된 모든 포인트를 회수합니다.
-     * (글 작성 포인트 + 좋아요 수신 포인트 + 댓글 관련 포인트 전부 포함)
+     * 포인트를 소비합니다. (상점, 이벤트 등 미래 기능용)
+     * - current_points: 감소
+     * - total_points:   변동 없음 → 티어 유지
+     */
+    public function spendPoints(User $user, int $amount, string $type, ?string $referenceTable = null, ?int $referenceId = null): bool
+    {
+        if ($user->current_points < $amount) {
+            return false; // 잔액 부족
+        }
+
+        DB::transaction(function () use ($user, $amount, $type, $referenceTable, $referenceId) {
+            PointHistory::create([
+                'user_id'         => $user->id,
+                'amount'          => -$amount,
+                'type'            => $type,
+                'reference_table' => $referenceTable,
+                'reference_id'    => $referenceId,
+            ]);
+
+            $user->current_points = max(0, $user->current_points - $amount);
+            $user->save();
+            // total_points 변경 없음 → 티어 유지
+        });
+
+        return true;
+    }
+
+    /**
+     * 게시글 삭제 시 관련 포인트 전체 회수
+     * current_points + total_points 모두 감소 (활동 자체가 사라지므로)
      */
     public function revokePostPoints(Post $post): void
     {
-        // 이 게시글의 댓글 ID 목록
         $commentIds = Comment::where('post_id', $post->id)->pluck('id')->toArray();
 
-        // 게시글/댓글에서 실제로 적립된 포인트 내역(양수만) 조회
         $query = PointHistory::where('amount', '>', 0)
             ->where(function ($q) use ($post, $commentIds) {
                 $q->where(function ($q2) use ($post) {
@@ -85,7 +120,6 @@ class PointService
         $histories = $query->get();
         if ($histories->isEmpty()) return;
 
-        // 유저별로 회수할 포인트 합산 후 일괄 처리
         DB::transaction(function () use ($histories, $post) {
             foreach ($histories->groupBy('user_id') as $userId => $userHistories) {
                 $totalRevoke = $userHistories->sum('amount');
@@ -103,6 +137,7 @@ class PointService
                 ]);
 
                 $user->current_points = max(0, $user->current_points - $totalRevoke);
+                $user->total_points   = max(0, $user->total_points   - $totalRevoke);
                 $user->save();
                 $this->updateUserTier($user);
             }
@@ -110,8 +145,8 @@ class PointService
     }
 
     /**
-     * 댓글 삭제 시 해당 댓글과 관련된 포인트를 회수합니다.
-     * (댓글 작성 노력 포인트 + 게시글 작성자 댓글 수신 포인트 + 댓글 좋아요 포인트)
+     * 댓글 삭제 시 관련 포인트 회수
+     * current_points + total_points 모두 감소
      */
     public function revokeCommentPoints(Comment $comment): void
     {
@@ -139,6 +174,7 @@ class PointService
                 ]);
 
                 $user->current_points = max(0, $user->current_points - $totalRevoke);
+                $user->total_points   = max(0, $user->total_points   - $totalRevoke);
                 $user->save();
                 $this->updateUserTier($user);
             }
@@ -146,19 +182,27 @@ class PointService
     }
 
     /**
-     * 사용자의 현재 포인트에 맞춰 티어를 갱신합니다.
+     * total_points 기준으로 티어를 갱신합니다.
+     *
+     * @return Tier|null 승급된 경우 새 Tier 반환, 강등/유지 시 null
      */
-    public function updateUserTier(User $user): void
+    public function updateUserTier(User $user): ?Tier
     {
-        // 최신 포인트를 기준으로 달성 가능한 가장 높은 티어 찾기
-        $newTier = Tier::where('min_points', '<=', $user->current_points)
-                    ->orderBy('min_points', 'desc')
-                    ->first();
+        $oldTierId = $user->tier_id;
 
-        // 현재 티어와 다르다면 승급/강등 처리
+        $newTier = Tier::where('min_points', '<=', $user->total_points)
+            ->orderBy('min_points', 'desc')
+            ->first();
+
         if ($newTier && $user->tier_id !== $newTier->id) {
+            $isUpgrade = $newTier->min_points > ($user->tier?->min_points ?? 0);
             $user->tier_id = $newTier->id;
             $user->save();
+
+            // 승급한 경우에만 Tier 반환 (강등은 null)
+            return $isUpgrade ? $newTier : null;
         }
+
+        return null;
     }
 }

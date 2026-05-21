@@ -137,8 +137,11 @@ class PostController extends Controller
         // 글 작성 포인트 지급 (+50P)
         /** @var \App\Models\User $author */
         $author = auth()->user();
-        $pointService->addPoints($author, 50, 'create_post', 'posts', $post->id);
+        $upgradedTier = $pointService->addPoints($author, 50, 'create_post', 'posts', $post->id);
         session()->flash('point_gain', 50);
+        if ($upgradedTier) {
+            session()->flash('tier_upgrade', ['name' => $upgradedTier->name, 'icon' => $upgradedTier->icon_url]);
+        }
 
         return redirect()->route('home')->with('success', '게시글이 깔끔하게 작성되었습니다.');
     }
@@ -221,9 +224,11 @@ class PostController extends Controller
             
             // 띱 수신 시 작성자 포인트 적립 (본인 글 제외)
             if ($postAuthor && $postAuthor->id !== $user->id) {
-                $pointService->addPoints($postAuthor, 5, 'receive_like', 'posts', $post->id);
+                $likeUpgrade = $pointService->addPoints($postAuthor, 5, 'receive_like', 'posts', $post->id);
                 session()->flash('point_gain', 5);
-
+                if ($likeUpgrade) {
+                    session()->flash('tier_upgrade', ['name' => $likeUpgrade->name, 'icon' => $likeUpgrade->icon_url]);
+                }
                 // 알림 발송
                 $postAuthor->notify(new \App\Notifications\LikedNotification($post, $user));
             }

@@ -26,11 +26,12 @@ class CommentController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        $pointGain = 0;
+        $pointGain    = 0;
+        $upgradedTier = null;
 
         // 1. 질 높은 댓글 유도를 위해 10자 이상 작성 시 본인에게 1 포인트 지급
         if (mb_strlen($validated['content']) >= 10) {
-            $pointService->addPoints($user, 1, 'earn_comment_effort', 'comments', $comment->id);
+            $upgradedTier = $pointService->addPoints($user, 1, 'earn_comment_effort', 'comments', $comment->id);
             $pointGain = 1;
             session()->flash('point_gain', 1);
         }
@@ -44,17 +45,22 @@ class CommentController extends Controller
             }
         } else {
             if ($postAuthor && $postAuthor->id !== $user->id) {
-                $pointService->addPoints($postAuthor, 3, 'receive_comment', 'comments', $comment->id);
+                $postUpgrade = $pointService->addPoints($postAuthor, 3, 'receive_comment', 'comments', $comment->id);
                 session()->flash('point_gain', 3);
                 $postAuthor->notify(new \App\Notifications\PostCommented($post, $comment));
             }
         }
 
+        if ($upgradedTier) {
+            session()->flash('tier_upgrade', ['name' => $upgradedTier->name, 'icon' => $upgradedTier->icon_url]);
+        }
+
         if ($request->expectsJson()) {
             $comment->load('user.tier');
             return response()->json([
-                'comment'    => $comment,
-                'point_gain' => $pointGain,
+                'comment'      => $comment,
+                'point_gain'   => $pointGain,
+                'tier_upgrade' => $upgradedTier ? ['name' => $upgradedTier->name, 'icon' => $upgradedTier->icon_url] : null,
             ]);
         }
 
@@ -127,8 +133,11 @@ class CommentController extends Controller
             $comment->increment('likes_count');
 
             if ($commentAuthor && $commentAuthor->id !== $user->id) {
-                $pointService->addPoints($commentAuthor, 5, 'receive_comment_like', 'comments', $comment->id);
+                $likeUpgrade = $pointService->addPoints($commentAuthor, 5, 'receive_comment_like', 'comments', $comment->id);
                 session()->flash('point_gain', 5);
+                if ($likeUpgrade) {
+                    session()->flash('tier_upgrade', ['name' => $likeUpgrade->name, 'icon' => $likeUpgrade->icon_url]);
+                }
                 $commentAuthor->notify(new \App\Notifications\LikedNotification($comment, $user));
             }
 
