@@ -26,22 +26,23 @@ class CommentController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        $pointGain = 0;
+
         // 1. 질 높은 댓글 유도를 위해 10자 이상 작성 시 본인에게 1 포인트 지급
         if (mb_strlen($validated['content']) >= 10) {
             $pointService->addPoints($user, 1, 'earn_comment_effort', 'comments', $comment->id);
-            session()->flash('point_gain', 1); // 토스트 알림용
+            $pointGain = 1;
+            session()->flash('point_gain', 1);
         }
 
         $postAuthor = $post->user;
 
         if ($comment->parent_id) {
-            // 답글인 경우: 원 댓글 작성자에게 알림 (본인 제외)
             $parentComment = \App\Models\Comment::find($comment->parent_id);
             if ($parentComment && $parentComment->user_id !== $user->id) {
                 $parentComment->user->notify(new \App\Notifications\CommentReplied($parentComment, $comment));
             }
         } else {
-            // 일반 댓글인 경우: 원글 작성자에게 포인트 + 알림 (본인 제외)
             if ($postAuthor && $postAuthor->id !== $user->id) {
                 $pointService->addPoints($postAuthor, 3, 'receive_comment', 'comments', $comment->id);
                 session()->flash('point_gain', 3);
@@ -49,8 +50,15 @@ class CommentController extends Controller
             }
         }
 
-        return redirect()->back();
+        if ($request->expectsJson()) {
+            $comment->load('user.tier');
+            return response()->json([
+                'comment'    => $comment,
+                'point_gain' => $pointGain,
+            ]);
+        }
 
+        return redirect()->back();
     }
 
     public function update(Request $request, Comment $comment)
@@ -63,12 +71,19 @@ class CommentController extends Controller
 
         $comment->update($validated);
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back();
     }
 
     public function destroy(Comment $comment, PointService $pointService)
     {
         Gate::authorize('delete', $comment);
+
+        // 대댓글 ID 미리 수집 (삭제 후엔 조회 불가)
+        $replyIds = $comment->replies()->pluck('id')->toArray();
 
         // 댓글 관련 포인트 회수 (삭제 전에 실행)
         $pointService->revokeCommentPoints($comment);
@@ -80,6 +95,13 @@ class CommentController extends Controller
 
         $comment->delete();
 
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success'   => true,
+                'reply_ids' => $replyIds,
+            ]);
+        }
+
         return redirect()->back();
     }
 
@@ -89,33 +111,36 @@ class CommentController extends Controller
         $commentAuthor = $comment->user;
 
         $existingLike = $comment->likes()->where('user_id', $user->id)->first();
+        $isNowLiked   = !$existingLike;
 
         if ($existingLike) {
             $existingLike->delete();
             $comment->decrement('likes_count');
-            
-            // 띱 취소 시 작성자 포인트 회수 (본인 댓글 제외)
+
             if ($commentAuthor && $commentAuthor->id !== $user->id) {
                 $pointService->subtractPoints($commentAuthor, 5, 'lost_comment_like', 'comments', $comment->id);
             }
-            
+
             $message = '댓글 좋아요를 취소했습니다.';
         } else {
-            $comment->likes()->create([
-                'user_id' => $user->id
-            ]);
+            $comment->likes()->create(['user_id' => $user->id]);
             $comment->increment('likes_count');
-            
-            // 띱 수신 시 작성자 포인트 적립 (본인 댓글 제외)
+
             if ($commentAuthor && $commentAuthor->id !== $user->id) {
                 $pointService->addPoints($commentAuthor, 5, 'receive_comment_like', 'comments', $comment->id);
                 session()->flash('point_gain', 5);
-
-                // 알림 발송
                 $commentAuthor->notify(new \App\Notifications\LikedNotification($comment, $user));
             }
 
             $message = '댓글 좋아요를 눌렀습니다!';
+        }
+
+        if (request()->expectsJson()) {
+            $comment->refresh();
+            return response()->json([
+                'liked'      => $isNowLiked,
+                'likes_count' => $comment->likes_count,
+            ]);
         }
 
         return back()->with('success', $message);

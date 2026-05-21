@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import CommentItem from '@/Components/CommentItem.vue';
 import ShareButtons from '@/Components/ShareButtons.vue';
@@ -8,6 +8,7 @@ import LoginModal from '@/Components/LoginModal.vue';
 import RelatedPosts from '@/Components/RelatedPosts.vue';
 import { ref, computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
+import axios from 'axios';
 
 const props = defineProps({
     post: Object,
@@ -17,20 +18,24 @@ const props = defineProps({
     likedCommentIds: Array,
 });
 
-
 const page = usePage();
 const user = page.props.auth.user;
+const { showPointToast } = useToast();
+
+// ── 댓글 로컬 상태 ──────────────────────────────────────────────
+const localComments      = ref([...(props.post.comments || [])]);
+const localLikedCommentIds = ref([...(props.likedCommentIds || [])]);
 
 const commentsTree = computed(() => {
-    const flat = props.post.comments || [];
+    const flat = localComments.value;
     const tree = [];
     const lookup = {};
 
     flat.forEach(comment => {
-        lookup[comment.id] = { 
-            ...comment, 
-            isLiked: props.likedCommentIds.includes(comment.id),
-            children: [] 
+        lookup[comment.id] = {
+            ...comment,
+            isLiked: localLikedCommentIds.value.includes(comment.id),
+            children: [],
         };
     });
 
@@ -45,15 +50,50 @@ const commentsTree = computed(() => {
     return tree;
 });
 
-const form = useForm({
-    content: '',
-});
+// ── 댓글 이벤트 핸들러 ──────────────────────────────────────────
+const onCommentAdded = (comment) => {
+    localComments.value.push(comment);
+};
 
-const submitComment = () => {
-    form.post(route('comments.store', { post: props.post.id }), {
-        preserveScroll: true,
-        onSuccess: () => form.reset('content'),
-    });
+const onCommentUpdated = ({ id, content }) => {
+    const idx = localComments.value.findIndex(c => c.id === id);
+    if (idx !== -1) localComments.value[idx] = { ...localComments.value[idx], content };
+};
+
+const onCommentDeleted = ({ id, replyIds }) => {
+    const removeIds = new Set([id, ...(replyIds || [])]);
+    localComments.value = localComments.value.filter(c => !removeIds.has(c.id));
+};
+
+const onCommentLiked = ({ id, liked, likes_count }) => {
+    const idx = localComments.value.findIndex(c => c.id === id);
+    if (idx !== -1) localComments.value[idx] = { ...localComments.value[idx], likes_count };
+    if (liked) {
+        if (!localLikedCommentIds.value.includes(id)) localLikedCommentIds.value.push(id);
+    } else {
+        localLikedCommentIds.value = localLikedCommentIds.value.filter(cid => cid !== id);
+    }
+};
+
+// ── 댓글 작성 ────────────────────────────────────────────────────
+const commentContent  = ref('');
+const isSubmitting    = ref(false);
+
+const submitComment = async () => {
+    if (!commentContent.value.trim() || isSubmitting.value) return;
+    isSubmitting.value = true;
+    try {
+        const res = await axios.post(route('comments.store', { post: props.post.id }), {
+            content: commentContent.value,
+        });
+        localComments.value.push(res.data.comment);
+        if (res.data.point_gain) showPointToast(res.data.point_gain);
+        commentContent.value = '';
+    } catch (e) {
+        console.error(e);
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 
 const getLabel = (key) => {
@@ -338,17 +378,21 @@ const jsonLdBreadcrumb = computed(() => {
             <!-- Comments Section -->
             <div class="mt-12 pt-8 border-t border-gray-100">
                 <h3 class="text-xl font-bold mb-6 flex items-center space-x-2">
-                    <span>댓글</span> 
-                    <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md text-sm">{{ post.comments?.length || 0 }}</span>
+                    <span>댓글</span>
+                    <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md text-sm">{{ localComments.length }}</span>
                 </h3>
 
                 <!-- Main Comment Form -->
                 <div v-if="user" class="mb-10">
                     <form @submit.prevent="submitComment" class="relative">
-                        <textarea v-model="form.content" rows="3" placeholder="댓글을 자유롭게 남겨보세요..." class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm resize-none shadow-sm transition-shadow" required></textarea>
+                        <textarea v-model="commentContent" rows="3" placeholder="댓글을 자유롭게 남겨보세요..." class="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm resize-none shadow-sm transition-shadow" required></textarea>
                         <div class="absolute bottom-3 right-3">
-                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-bold text-sm transition shadow-sm" :disabled="form.processing">
-                                댓글 작성 (+2P)
+                            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-bold text-sm transition shadow-sm flex items-center gap-2" :disabled="isSubmitting">
+                                <svg v-if="isSubmitting" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                {{ isSubmitting ? '작성 중...' : '댓글 작성 (+1P)' }}
                             </button>
                         </div>
                     </form>
@@ -359,14 +403,18 @@ const jsonLdBreadcrumb = computed(() => {
 
                 <!-- Comments List -->
                 <div class="space-y-6">
-                    <CommentItem 
-                        v-for="comment in commentsTree" 
-                        :key="comment.id" 
-                        :comment="comment" 
-                        :postId="post.id" 
+                    <CommentItem
+                        v-for="comment in commentsTree"
+                        :key="comment.id"
+                        :comment="comment"
+                        :postId="post.id"
                         @open-login-modal="openLoginModal"
+                        @comment-added="onCommentAdded"
+                        @comment-updated="onCommentUpdated"
+                        @comment-deleted="onCommentDeleted"
+                        @comment-liked="onCommentLiked"
                     />
-                    
+
                     <div v-if="commentsTree.length === 0" class="text-center text-gray-400 py-10">
                         첫 댓글의 주인공이 되어보세요!
                     </div>
