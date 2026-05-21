@@ -6,6 +6,7 @@ use App\Models\Restaurant;
 use App\Models\TouristSpot;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class RestaurantController extends Controller
@@ -32,9 +33,15 @@ class RestaurantController extends Controller
             )->findOrFail($contentId);
 
         // TourAPI에서 추가 상세 정보 가져오기 (24시간 캐시)
-        $detail = Cache::remember("restaurant_detail_{$contentId}", 86400, function () use ($contentId) {
-            return $this->fetchDetail($contentId);
-        });
+        // API 실패 시 빈 배열로 fallback — 페이지는 정상 렌더링
+        try {
+            $detail = Cache::remember("restaurant_detail_{$contentId}", 86400, function () use ($contentId) {
+                return $this->fetchDetail($contentId);
+            });
+        } catch (\Exception $e) {
+            Log::warning("맛집 상세 API 캐시 오류 (contentId: {$contentId}): " . $e->getMessage());
+            $detail = [];
+        }
 
         // 근처 관광지 (같은 구/군)
         $district = $this->extractDistrict($restaurant->address);
@@ -107,64 +114,75 @@ class RestaurantController extends Controller
     private function fetchDetail(string $contentId): array
     {
         $apiKey = urlencode(env('TOUR_API_KEY', ''));
-        $result = [];
+        $result = ['extraImages' => []];
 
-        // 공통 정보 (overview, homepage, mapX, mapY)
+        // 공통 정보 (overview)
         try {
-            $res = Http::timeout(10)->withoutVerifying()->get("{$this->baseUrl}/detailCommon2", [
-                'serviceKey'    => urldecode($apiKey),
-                'contentId'     => $contentId,
-                'contentTypeId' => 39,
-                'defaultYN'     => 'Y',
-                'overviewYN'    => 'Y',
-                'MobileOS'      => 'ETC',
-                'MobileApp'     => 'ttip',
-                '_type'         => 'json',
-            ]);
-            $item = data_get($res->json(), 'response.body.items.item.0') ?? data_get($res->json(), 'response.body.items.item');
-            if ($item) {
+            $res = Http::connectTimeout(3)->timeout(5)->withoutVerifying()
+                ->get("{$this->baseUrl}/detailCommon2", [
+                    'serviceKey'    => urldecode($apiKey),
+                    'contentId'     => $contentId,
+                    'contentTypeId' => 39,
+                    'defaultYN'     => 'Y',
+                    'overviewYN'    => 'Y',
+                    'MobileOS'      => 'ETC',
+                    'MobileApp'     => 'ttip',
+                    '_type'         => 'json',
+                ]);
+            $item = data_get($res->json(), 'response.body.items.item.0')
+                 ?? data_get($res->json(), 'response.body.items.item');
+            if (is_array($item)) {
                 $result['overview'] = $item['overview'] ?? null;
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+            Log::warning("TourAPI detailCommon2 실패 (contentId: {$contentId}): " . $e->getMessage());
+        }
 
         // 음식점 상세 소개 정보
         try {
-            $res = Http::timeout(10)->withoutVerifying()->get("{$this->baseUrl}/detailIntro2", [
-                'serviceKey'    => urldecode($apiKey),
-                'contentId'     => $contentId,
-                'contentTypeId' => 39,
-                'MobileOS'      => 'ETC',
-                'MobileApp'     => 'ttip',
-                '_type'         => 'json',
-            ]);
-            $item = data_get($res->json(), 'response.body.items.item.0') ?? data_get($res->json(), 'response.body.items.item');
-            if ($item) {
-                $result['firstmenu']        = $item['firstmenu']        ?? null;
-                $result['opentimefood']     = $item['opentimefood']     ?? null;
-                $result['restdatefood']     = $item['restdatefood']     ?? null;
-                $result['parkingfood']      = $item['parkingfood']      ?? null;
-                $result['seat']             = $item['seat']             ?? null;
-                $result['smoking']          = $item['smoking']          ?? null;
-                $result['chkcreditcardfood']= $item['chkcreditcardfood'] ?? null;
+            $res = Http::connectTimeout(3)->timeout(5)->withoutVerifying()
+                ->get("{$this->baseUrl}/detailIntro2", [
+                    'serviceKey'    => urldecode($apiKey),
+                    'contentId'     => $contentId,
+                    'contentTypeId' => 39,
+                    'MobileOS'      => 'ETC',
+                    'MobileApp'     => 'ttip',
+                    '_type'         => 'json',
+                ]);
+            $item = data_get($res->json(), 'response.body.items.item.0')
+                 ?? data_get($res->json(), 'response.body.items.item');
+            if (is_array($item)) {
+                $result['firstmenu']         = $item['firstmenu']         ?? null;
+                $result['opentimefood']      = $item['opentimefood']      ?? null;
+                $result['restdatefood']      = $item['restdatefood']      ?? null;
+                $result['parkingfood']       = $item['parkingfood']       ?? null;
+                $result['seat']              = $item['seat']              ?? null;
+                $result['smoking']           = $item['smoking']           ?? null;
+                $result['chkcreditcardfood'] = $item['chkcreditcardfood'] ?? null;
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+            Log::warning("TourAPI detailIntro2 실패 (contentId: {$contentId}): " . $e->getMessage());
+        }
 
         // 추가 이미지
         try {
-            $res = Http::timeout(10)->withoutVerifying()->get("{$this->baseUrl}/detailImage2", [
-                'serviceKey'    => urldecode($apiKey),
-                'contentId'     => $contentId,
-                'imageYN'       => 'Y',
-                'subImageYN'    => 'Y',
-                'MobileOS'      => 'ETC',
-                'MobileApp'     => 'ttip',
-                '_type'         => 'json',
-            ]);
+            $res = Http::connectTimeout(3)->timeout(5)->withoutVerifying()
+                ->get("{$this->baseUrl}/detailImage2", [
+                    'serviceKey' => urldecode($apiKey),
+                    'contentId'  => $contentId,
+                    'imageYN'    => 'Y',
+                    'subImageYN' => 'Y',
+                    'MobileOS'   => 'ETC',
+                    'MobileApp'  => 'ttip',
+                    '_type'      => 'json',
+                ]);
             $items = data_get($res->json(), 'response.body.items.item', []);
-            if (isset($items['originimgurl'])) $items = [$items];
-            $result['extraImages'] = collect($items)->pluck('originimgurl')->filter()->values()->toArray();
+            if (is_array($items) && isset($items['originimgurl'])) $items = [$items];
+            $result['extraImages'] = is_array($items)
+                ? collect($items)->pluck('originimgurl')->filter()->values()->toArray()
+                : [];
         } catch (\Exception $e) {
-            $result['extraImages'] = [];
+            Log::warning("TourAPI detailImage2 실패 (contentId: {$contentId}): " . $e->getMessage());
         }
 
         return $result;

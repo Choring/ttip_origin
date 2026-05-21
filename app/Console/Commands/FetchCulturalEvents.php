@@ -40,11 +40,19 @@ class FetchCulturalEvents extends Command
                 '_type'          => 'json',
             ]);
 
-            $url      = "{$this->baseUrl}/searchFestival2?serviceKey={$apiKey}&{$query}";
-            $response = Http::timeout(30)->withoutVerifying()->get($url);
+            $url = "{$this->baseUrl}/searchFestival2?serviceKey={$apiKey}&{$query}";
+
+            try {
+                $response = Http::connectTimeout(5)->timeout(30)->withoutVerifying()->get($url);
+            } catch (\Exception $e) {
+                $this->error("API 연결 오류 (page {$page}): " . $e->getMessage());
+                Log::error("FetchCulturalEvents API 연결 오류 (page {$page}): " . $e->getMessage());
+                break;
+            }
 
             if (!$response->successful()) {
                 $this->error("API 요청 실패 (page {$page}): " . $response->status());
+                Log::warning("FetchCulturalEvents API 요청 실패 (page {$page}): HTTP " . $response->status());
                 break;
             }
 
