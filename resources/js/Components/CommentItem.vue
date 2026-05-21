@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useToast } from '@/Composables/useToast';
+import ReportModal from '@/Components/ReportModal.vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -35,6 +36,8 @@ const isReplying  = ref(false);
 const isEditing   = ref(false);
 const isDeleting  = ref(false);
 const isLiking    = ref(false);
+
+const showReportModal = ref(false);
 
 // ── 답글 작성 ────────────────────────────────────────────────────
 const submitReply = async () => {
@@ -175,6 +178,10 @@ const formatDate = (dateString) => {
                         @click="deleteComment"
                         class="hover:text-red-600 transition disabled:opacity-40"
                         :disabled="isDeleting">{{ isDeleting ? '삭제 중...' : '삭제' }}</button>
+                    <!-- 신고 버튼: 본인 댓글 제외 -->
+                    <button v-if="user && user.id !== comment.user_id"
+                        @click="showReportModal = true"
+                        class="hover:text-red-400 transition ml-auto">신고</button>
                 </div>
 
                 <!-- 답글 폼 -->
@@ -192,6 +199,14 @@ const formatDate = (dateString) => {
                 </form>
             </div>
         </div>
+
+        <!-- 댓글 신고 모달 -->
+        <ReportModal
+            v-if="showReportModal"
+            reportable-type="comment"
+            :reportable-id="comment.id"
+            @close="showReportModal = false"
+        />
 
         <!-- 대댓글 -->
         <div v-if="comment.children && comment.children.length > 0"

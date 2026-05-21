@@ -75,6 +75,10 @@ class HandleInertiaRequests extends Middleware
             'pendingInquiryCount' => $request->user()?->role === 'admin'
                 ? \Illuminate\Support\Facades\Cache::remember('pending_inquiry_count', 60, fn() => Inquiry::where('status', 'pending')->count())
                 : 0,
+            // 어드민 사이드바 미처리 신고 수
+            'pendingReportCount' => $request->user()?->role === 'admin'
+                ? \Illuminate\Support\Facades\Cache::remember('pending_report_count', 60, fn() => \App\Models\Report::where('status', 'pending')->count())
+                : 0,
         ];
     }
 }

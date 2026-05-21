@@ -19,6 +19,7 @@ class Comment extends Model
         'user_id',
         'parent_id',
         'content',
+        'is_hidden',
     ];
 
     /**
@@ -59,5 +60,10 @@ class Comment extends Model
     public function likes()
     {
         return $this->hasMany(CommentLike::class);
+    }
+
+    public function reports()
+    {
+        return $this->morphMany(Report::class, 'reportable');
     }
 }

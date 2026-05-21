@@ -46,6 +46,13 @@ function tryCatchRoute(name) {
                         {{ $page.props.pendingInquiryCount }}
                     </span>
                 </Link>
+                <Link :href="tryCatchRoute('admin.reports.index')" class="flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/reports'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/reports')}">
+                    <span>신고 관리</span>
+                    <span v-if="$page.props.pendingReportCount > 0"
+                        class="text-[10px] font-black bg-red-500 text-white px-1.5 py-0.5 rounded-full">
+                        {{ $page.props.pendingReportCount }}
+                    </span>
+                </Link>
                 <Link :href="tryCatchRoute('home')" class="block px-4 py-2.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-200 transition-colors mt-12 text-sm">
                     &larr; 사이트로 돌아가기
                 </Link>

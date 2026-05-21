@@ -8,6 +8,7 @@ import LoginModal from '@/Components/LoginModal.vue';
 import RelatedPosts from '@/Components/RelatedPosts.vue';
 import { ref, computed } from 'vue';
 import { useToast } from '@/Composables/useToast';
+import ReportModal from '@/Components/ReportModal.vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -126,6 +127,9 @@ const postUrl = computed(() => {
 const descriptionText = computed(() =>
     Array.isArray(props.post.summary) ? props.post.summary.join(' ') : (props.post.summary || '')
 );
+
+// 신고 모달
+const showReportModal = ref(false);
 
 // 비로그인 유도 모달 관련
 const showLoginModal = ref(false);
@@ -358,7 +362,17 @@ const jsonLdBreadcrumb = computed(() => {
                     <Link :href="route('posts.edit', post.id)" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-bold border border-gray-200 transition-colors shadow-sm">수정</Link>
                     <Link :href="route('posts.destroy', post.id)" method="delete" as="button" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm" preserve-scroll @click="(e) => { if(!confirm('이 게시글을 정말 삭제하시겠습니까?\n달려있는 댓글도 연쇄적으로 지워집니다.')) e.preventDefault() }">삭제</Link>
                 </div>
-                <div v-else class="order-3 w-[100px] hidden sm:block"></div>
+                <!-- 비작성자 로그인 유저: 신고 버튼 -->
+                <div class="order-3 w-[100px] flex justify-end">
+                    <button v-if="user && user.id !== post.user_id"
+                        @click="showReportModal = true"
+                        class="text-xs text-gray-300 hover:text-red-400 transition font-medium flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21V5a2 2 0 012-2h9l5 5v13M9 21v-6h6v6"/>
+                        </svg>
+                        신고
+                    </button>
+                </div>
             </div>
 
             <!-- 공유 버튼 섹션 -->
@@ -424,10 +438,18 @@ const jsonLdBreadcrumb = computed(() => {
     </MainLayout>
 
     <!-- 로그인 유도 모달 -->
-    <LoginModal 
-        :show="showLoginModal" 
+    <LoginModal
+        :show="showLoginModal"
         :title="loginModalText.title"
         :description="loginModalText.description"
-        @close="showLoginModal = false" 
+        @close="showLoginModal = false"
+    />
+
+    <!-- 게시글 신고 모달 -->
+    <ReportModal
+        v-if="showReportModal"
+        reportable-type="post"
+        :reportable-id="post.id"
+        @close="showReportModal = false"
     />
 </template>

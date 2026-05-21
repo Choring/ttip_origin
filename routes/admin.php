@@ -46,6 +46,11 @@ Route::get('/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryControlle
 Route::post('/inquiries/{inquiry}/answer', [\App\Http\Controllers\Admin\InquiryController::class, 'answer'])->name('inquiries.answer');
 Route::delete('/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryController::class, 'destroy'])->name('inquiries.destroy');
 
+// Reports Management
+Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+Route::patch('/reports/{report}/resolve', [\App\Http\Controllers\Admin\ReportController::class, 'resolve'])->name('reports.resolve');
+Route::patch('/reports/{report}/dismiss', [\App\Http\Controllers\Admin\ReportController::class, 'dismiss'])->name('reports.dismiss');
+
 // Notice Management
 Route::get('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'index'])->name('notices.index');
 Route::get('/notices/create', [\App\Http\Controllers\Admin\NoticeController::class, 'create'])->name('notices.create');

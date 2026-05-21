@@ -23,6 +23,14 @@ class PostController extends Controller
 
     public function show(Post $post)
     {
+        // 블라인드 처리된 게시글: 관리자만 접근 가능
+        if ($post->is_hidden) {
+            $user = auth()->user();
+            if (!$user || !in_array($user->role, ['admin', 'master'])) {
+                abort(403, '관리자에 의해 블라인드 처리된 게시글입니다.');
+            }
+        }
+
         // 조회수 어뷰징 방지: 한 세션(브라우저 접속) 당 게시글별로 1회만 카운트되도록 처리
         $sessionKey = 'post_viewed_' . $post->id;
         if (!session()->has($sessionKey)) {
@@ -47,7 +55,8 @@ class PostController extends Controller
         $tags = $post->tags ?: [];
         
         // 1순위: 같은 카테고리 + 태그가 하나라도 겹치는 글
-        $relatedByTags = Post::where('category_id', $post->category_id)
+        $relatedByTags = Post::visible()
+            ->where('category_id', $post->category_id)
             ->where('id', '!=', $post->id)
             ->where('type', 'general')
             ->where(function ($query) use ($tags) {
@@ -64,7 +73,8 @@ class PostController extends Controller
         // 2순위: 태그 매칭이 부족할 경우 같은 카테고리 최신글로 보충
         $relatedPosts = $relatedByTags;
         if ($relatedPosts->count() < 4) {
-            $fallbacks = Post::where('category_id', $post->category_id)
+            $fallbacks = Post::visible()
+                ->where('category_id', $post->category_id)
                 ->where('id', '!=', $post->id)
                 ->whereNotIn('id', $relatedIds)
                 ->where('type', 'general')
@@ -76,7 +86,11 @@ class PostController extends Controller
         }
 
         return \Inertia\Inertia::render('Post/Show', [
-            'post' => $post->load(['user.tier', 'comments.user.tier', 'category']),
+            'post' => $post->load([
+                'user.tier',
+                'category',
+                'comments' => fn($q) => $q->where('is_hidden', false)->with('user.tier'),
+            ]),
             'isLiked' => $isLiked,
             'isBookmarked' => $isBookmarked,
             'likedCommentIds' => $likedCommentIds,

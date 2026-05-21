@@ -74,6 +74,7 @@ const forceDelete = (id) => {
                                     <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold w-fit">{{ post.category?.name || '미분류' }}</span>
                                     <span v-if="post.type === 'pinned'" class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[10px] font-black w-fit">📌 상단고정</span>
                                     <span v-else-if="post.type === 'notice'" class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[10px] font-black w-fit">📢 공지</span>
+                                    <span v-if="post.is_hidden" class="px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-[10px] font-black w-fit">🚫 블라인드</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">

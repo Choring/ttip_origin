@@ -40,6 +40,7 @@ class Post extends Model
         'type',
         'tags',
         'is_pinned',
+        'is_hidden',
     ];
 
     /**
@@ -54,7 +55,16 @@ class Post extends Model
             'extra_info' => 'array',
             'tags' => 'array',
             'is_pinned' => 'boolean',
+            'is_hidden' => 'boolean',
         ];
+    }
+
+    /**
+     * 블라인드 처리되지 않은 게시글만 조회
+     */
+    public function scopeVisible($query)
+    {
+        return $query->where('is_hidden', false);
     }
 
     /**
@@ -110,6 +120,11 @@ class Post extends Model
     public function bookmarks()
     {
         return $this->hasMany(PostBookmark::class);
+    }
+
+    public function reports()
+    {
+        return $this->morphMany(Report::class, 'reportable');
     }
 
 

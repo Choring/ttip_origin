@@ -11,6 +11,7 @@ class HomeController extends Controller
         // ── 1. 상단 고정 공지 조회 (is_pinned=true, type=notice|pinned) ──────────
         $pinnedNotices = \App\Models\Post::with(['user.tier', 'category'])
             ->withCount(['comments', 'likes'])
+            ->visible()
             ->pinnedNotice()          // scopePinnedNotice: type IN(notice,pinned) AND is_pinned=true
             ->latest()
             ->take(3)
@@ -47,6 +48,7 @@ class HomeController extends Controller
         // - notice/pinned 타입 전체 제외 → 공지는 위 섹션에서만 보이도록
         $query = \App\Models\Post::with(['user.tier', 'category'])
             ->withCount(['comments', 'likes'])
+            ->visible()
             ->whereNotIn('id', $pinnedIds)
             ->whereNotIn('type', ['notice', 'pinned']) // 공지는 피드에서 제외
             ->latest();
@@ -147,7 +149,7 @@ class HomeController extends Controller
 
     public function popular()
     {
-        $posts = \App\Models\Post::with(['user', 'category'])->orderBy('view_count', 'desc')->get()->map(function ($post) {
+        $posts = \App\Models\Post::visible()->with(['user', 'category'])->orderBy('view_count', 'desc')->get()->map(function ($post) {
             $isBookmarked = auth()->check() ? $post->bookmarks()->where('user_id', auth()->id())->exists() : false;
             return [
             'id' => $post->id,
@@ -186,7 +188,8 @@ class HomeController extends Controller
         }
 
         $userId = auth()->id();
-        $bookmarkedPosts = \App\Models\Post::whereHas('bookmarks', function($query) use ($userId) {
+        $bookmarkedPosts = \App\Models\Post::visible()
+        ->whereHas('bookmarks', function($query) use ($userId) {
             $query->where('user_id', $userId);
         })
         ->with(['user', 'category'])
