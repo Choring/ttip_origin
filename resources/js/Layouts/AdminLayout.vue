@@ -39,6 +39,13 @@ function tryCatchRoute(name) {
                 <Link :href="tryCatchRoute('admin.restaurants.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/restaurants'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/restaurants')}">
                     맛집 관리
                 </Link>
+                <Link :href="tryCatchRoute('admin.inquiries.index')" class="flex items-center justify-between px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/inquiries'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/inquiries')}">
+                    <span>문의 관리</span>
+                    <span v-if="$page.props.pendingInquiryCount > 0"
+                        class="text-[10px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded-full">
+                        {{ $page.props.pendingInquiryCount }}
+                    </span>
+                </Link>
                 <Link :href="tryCatchRoute('home')" class="block px-4 py-2.5 rounded-lg text-gray-500 hover:bg-gray-800 hover:text-gray-200 transition-colors mt-12 text-sm">
                     &larr; 사이트로 돌아가기
                 </Link>

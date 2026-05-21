@@ -40,6 +40,12 @@ Route::get('/restaurants/{restaurant}/edit', [\App\Http\Controllers\Admin\Restau
 Route::put('/restaurants/{restaurant}', [\App\Http\Controllers\Admin\RestaurantController::class, 'update'])->name('restaurants.update');
 Route::delete('/restaurants/{restaurant}', [\App\Http\Controllers\Admin\RestaurantController::class, 'destroy'])->name('restaurants.destroy');
 
+// Inquiry Management
+Route::get('/inquiries', [\App\Http\Controllers\Admin\InquiryController::class, 'index'])->name('inquiries.index');
+Route::get('/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryController::class, 'show'])->name('inquiries.show');
+Route::post('/inquiries/{inquiry}/answer', [\App\Http\Controllers\Admin\InquiryController::class, 'answer'])->name('inquiries.answer');
+Route::delete('/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryController::class, 'destroy'])->name('inquiries.destroy');
+
 // Notice Management
 Route::get('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'index'])->name('notices.index');
 Route::get('/notices/create', [\App\Http\Controllers\Admin\NoticeController::class, 'create'])->name('notices.create');

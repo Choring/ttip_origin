@@ -30,6 +30,8 @@ Route::middleware('throttle:global')->group(function () {
     Route::get('/notices', [\App\Http\Controllers\NoticeController::class, 'index'])->name('notices.index');
     Route::inertia('/terms', 'Legal/Terms')->name('terms');
     Route::inertia('/privacy', 'Legal/Privacy')->name('privacy');
+    Route::get('/inquiry', [\App\Http\Controllers\InquiryController::class, 'create'])->name('inquiry.create');
+    Route::post('/inquiry', [\App\Http\Controllers\InquiryController::class, 'store'])->name('inquiry.store')->middleware('throttle:write');
     Route::get('/posts/{post}', [PostController::class, 'show'])->name('posts.show')->whereNumber('post');
 });
 

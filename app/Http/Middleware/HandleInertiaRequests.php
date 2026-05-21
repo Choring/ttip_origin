@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Inquiry;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -70,6 +71,10 @@ class HandleInertiaRequests extends Middleware
                     ->take(3)
                     ->get();
             }),
+            // 어드민 사이드바 미답변 문의 수
+            'pendingInquiryCount' => $request->user()?->role === 'admin'
+                ? \Illuminate\Support\Facades\Cache::remember('pending_inquiry_count', 60, fn() => Inquiry::where('status', 'pending')->count())
+                : 0,
         ];
     }
 }
