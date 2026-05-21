@@ -77,6 +77,23 @@ class SEOController extends Controller
         ])->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 
+    public function rss()
+    {
+        $posts = Post::with(['user', 'category'])
+            ->whereIn('type', ['general'])
+            ->latest('id')
+            ->take(50)
+            ->get();
+
+        return response()->view('seo.rss', [
+            'posts'       => $posts,
+            'siteUrl'     => config('app.url'),
+            'siteName'    => 'ttip',
+            'description' => '대구의 일상과 정보를 나누는 커뮤니티, ttip',
+            'buildDate'   => now()->toRfc2822String(),
+        ])->header('Content-Type', 'application/rss+xml; charset=UTF-8');
+    }
+
     public function robots()
     {
         $content = "User-agent: *\nAllow: /\n\nSitemap: " . url('/sitemap.xml');
