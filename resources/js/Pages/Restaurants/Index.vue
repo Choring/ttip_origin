@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
+
+const SESSION_KEY = 'restaurant_list_state';
 
 const props = defineProps({
     restaurants: { type: Array, default: () => [] }
@@ -22,9 +24,14 @@ const FILTERS = [
 
 const activeFilter = ref('all');
 
+// 셔플된 목록 (페이지 진입마다 랜덤 순서)
+const shuffledRestaurants = ref([]);
+const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
 const filteredRestaurants = computed(() => {
-    if (activeFilter.value === 'all') return props.restaurants;
-    return props.restaurants.filter(r => r.category === activeFilter.value);
+    const base = shuffledRestaurants.value.length ? shuffledRestaurants.value : props.restaurants;
+    if (activeFilter.value === 'all') return base;
+    return base.filter(r => r.category === activeFilter.value);
 });
 
 // ── 더보기 ───────────────────────────────────────────────────────
@@ -84,8 +91,55 @@ const showScrollTop = ref(false);
 const handleScroll = () => { showScrollTop.value = window.scrollY > 150; };
 const scrollToTop  = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-onMounted(()  => window.addEventListener('scroll', handleScroll, { passive: true }));
-onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+// ── 뒤로가기 상태 복원 ──────────────────────────────────────────
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) {
+        // 뒤로가기: 저장된 셔플 순서 + 상태 그대로 복원
+        sessionStorage.removeItem(SESSION_KEY);
+        try {
+            const state = JSON.parse(raw);
+            if (state.shuffledIds?.length) {
+                const map = Object.fromEntries(props.restaurants.map(r => [String(r.content_id), r]));
+                shuffledRestaurants.value = state.shuffledIds.map(id => map[id]).filter(Boolean);
+            } else {
+                shuffledRestaurants.value = shuffleArray(props.restaurants);
+            }
+            activeFilter.value = state.activeFilter ?? 'all';
+            visibleCount.value = state.visibleCount  ?? 12;
+            nextTick(() => {
+                window.scrollTo({ top: state.scrollY ?? 0, behavior: 'instant' });
+            });
+        } catch {
+            shuffledRestaurants.value = shuffleArray(props.restaurants);
+        }
+    } else {
+        // 새 진입: 랜덤 셔플
+        shuffledRestaurants.value = shuffleArray(props.restaurants);
+    }
+});
+
+// 맛집 상세로 이동할 때만 상태 저장, 다른 페이지로 이동 시 제거
+const stopRouterListener = router.on('before', (event) => {
+    const href = event.detail?.visit?.url?.href ?? event.detail?.visit?.url ?? '';
+    if (/\/restaurants\/[^/]+/.test(href)) {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+            activeFilter: activeFilter.value,
+            visibleCount: visibleCount.value,
+            scrollY:      window.scrollY,
+            shuffledIds:  shuffledRestaurants.value.map(r => String(r.content_id)),
+        }));
+    } else {
+        sessionStorage.removeItem(SESSION_KEY);
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+    stopRouterListener();
+});
 </script>
 
 <template>
