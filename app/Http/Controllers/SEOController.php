@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CulturalEvent;
 use App\Models\Post;
 use App\Models\Category;
 use App\Models\Restaurant;
@@ -53,6 +54,17 @@ class SEOController extends Controller
 
         return response()->view('seo.sitemap-spots', [
             'spots' => $spots,
+        ])->header('Content-Type', 'application/xml; charset=UTF-8');
+    }
+
+    public function sitemapEvents()
+    {
+        $events = CulturalEvent::select('event_seq', 'image', 'updated_at')
+            ->where('end_date', '>=', now()->subYear()->toDateString())
+            ->get();
+
+        return response()->view('seo.sitemap-events', [
+            'events' => $events,
         ])->header('Content-Type', 'application/xml; charset=UTF-8');
     }
 

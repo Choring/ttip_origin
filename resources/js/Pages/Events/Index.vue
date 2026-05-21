@@ -1,6 +1,8 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+
+const SESSION_KEY = 'event_list_state';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
@@ -79,8 +81,41 @@ const showScrollTop = ref(false);
 const handleScroll = () => { showScrollTop.value = window.scrollY > 150; };
 const scrollToTop  = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-onMounted(()  => window.addEventListener('scroll', handleScroll, { passive: true }));
-onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+// ── 뒤로가기 상태 복원 ──────────────────────────────────────────
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) {
+        sessionStorage.removeItem(SESSION_KEY);
+        try {
+            const state = JSON.parse(raw);
+            activeFilter.value = state.activeFilter ?? 'all';
+            visibleCount.value = state.visibleCount  ?? 9;
+            nextTick(() => {
+                window.scrollTo({ top: state.scrollY ?? 0, behavior: 'instant' });
+            });
+        } catch { /* 복원 실패 시 기본값 유지 */ }
+    }
+});
+
+const stopRouterListener = router.on('before', (event) => {
+    const href = event.detail?.visit?.url?.href ?? event.detail?.visit?.url ?? '';
+    if (/\/events\/[^/]+/.test(href)) {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+            activeFilter: activeFilter.value,
+            visibleCount: visibleCount.value,
+            scrollY:      window.scrollY,
+        }));
+    } else {
+        sessionStorage.removeItem(SESSION_KEY);
+    }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+    stopRouterListener();
+});
 </script>
 
 <template>
@@ -128,17 +163,12 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
 
             <!-- 카드 그리드 -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <a
+                <Link
                     v-for="event in visibleEvents"
                     :key="event.event_seq"
-                    :href="event.homepage || undefined"
-                    :target="event.homepage ? '_blank' : undefined"
-                    rel="noopener noreferrer"
-                    class="group relative overflow-hidden rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col"
-                    :class="[
-                        event.homepage ? 'cursor-pointer' : 'cursor-default',
-                        getDday(event.start_date, event.end_date)?.type === 'ended' ? 'opacity-60 hover:opacity-90' : ''
-                    ]"
+                    :href="route('events.show', event.event_seq)"
+                    class="group relative overflow-hidden rounded-3xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col cursor-pointer"
+                    :class="getDday(event.start_date, event.end_date)?.type === 'ended' ? 'opacity-60 hover:opacity-90' : ''"
                     style="min-height: 280px;"
                 >
                     <!-- 이미지가 있는 경우 -->
@@ -247,14 +277,14 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll));
                                         </svg>
                                         {{ event.place }}
                                     </p>
-                                    <p v-if="event.homepage" class="text-white/60 text-xs font-semibold mt-2">
+                                    <p class="text-white/60 text-xs font-semibold mt-2">
                                         자세히 보기 →
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </template>
-                </a>
+                </Link>
             </div>
 
             <!-- 더보기 버튼 -->

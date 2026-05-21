@@ -12,6 +12,12 @@
         <lastmod>{{ now()->toAtomString() }}</lastmod>
     </sitemap>
 
+    <!-- 문화행사 -->
+    <sitemap>
+        <loc>{{ url('/sitemap-events.xml') }}</loc>
+        <lastmod>{{ now()->toAtomString() }}</lastmod>
+    </sitemap>
+
     <!-- 맛집 -->
     <sitemap>
         <loc>{{ url('/sitemap-restaurants.xml') }}</loc>
