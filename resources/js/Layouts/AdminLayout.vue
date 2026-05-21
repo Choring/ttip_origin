@@ -33,6 +33,9 @@ function tryCatchRoute(name) {
                 <Link :href="tryCatchRoute('admin.posts.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/posts'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/posts')}">
                     게시글 관리
                 </Link>
+                <Link :href="tryCatchRoute('admin.tiers.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/tiers'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/tiers')}">
+                    티어 관리
+                </Link>
                 <Link :href="tryCatchRoute('admin.tourist-spots.index')" class="block px-4 py-2.5 rounded-lg transition-colors font-medium text-sm" :class="{'bg-indigo-600 text-white shadow': $page.url.startsWith('/admin/tourist-spots'), 'text-gray-400 hover:bg-gray-800 hover:text-white': !$page.url.startsWith('/admin/tourist-spots')}">
                     관광지 관리
                 </Link>

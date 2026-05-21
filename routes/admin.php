@@ -46,6 +46,12 @@ Route::get('/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryControlle
 Route::post('/inquiries/{inquiry}/answer', [\App\Http\Controllers\Admin\InquiryController::class, 'answer'])->name('inquiries.answer');
 Route::delete('/inquiries/{inquiry}', [\App\Http\Controllers\Admin\InquiryController::class, 'destroy'])->name('inquiries.destroy');
 
+// Tier Management
+Route::get('/tiers', [\App\Http\Controllers\Admin\TierController::class, 'index'])->name('tiers.index');
+Route::post('/tiers', [\App\Http\Controllers\Admin\TierController::class, 'store'])->name('tiers.store');
+Route::put('/tiers/{tier}', [\App\Http\Controllers\Admin\TierController::class, 'update'])->name('tiers.update');
+Route::delete('/tiers/{tier}', [\App\Http\Controllers\Admin\TierController::class, 'destroy'])->name('tiers.destroy');
+
 // Reports Management
 Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
 Route::patch('/reports/{report}/resolve', [\App\Http\Controllers\Admin\ReportController::class, 'resolve'])->name('reports.resolve');
