@@ -237,6 +237,14 @@ class PostController extends Controller
             $message = '이 글에 강렬한 띱 👍을 날렸습니다!';
         }
 
+        if (request()->expectsJson()) {
+            $post->refresh();
+            return response()->json([
+                'liked'       => !$existingLike, // existingLike가 있었으면 취소된 것
+                'likes_count' => $post->likes_count,
+            ]);
+        }
+
         return back()->with('success', $message);
     }
 

@@ -77,6 +77,26 @@ const onCommentLiked = ({ id, liked, likes_count }) => {
     }
 };
 
+// ── 게시글 좋아요 ────────────────────────────────────────────────
+const localIsLiked    = ref(props.isLiked);
+const localLikesCount = ref(props.post.likes_count || 0);
+const isLiking        = ref(false);
+
+const toggleLike = async () => {
+    if (!user) { openLoginModal('like'); return; }
+    if (isLiking.value) return;
+    isLiking.value = true;
+    try {
+        const res = await axios.post(route('posts.like', props.post.id));
+        localIsLiked.value    = res.data.liked;
+        localLikesCount.value = res.data.likes_count;
+    } catch (e) {
+        console.error(e);
+    } finally {
+        isLiking.value = false;
+    }
+};
+
 // ── 댓글 작성 ────────────────────────────────────────────────────
 const commentContent  = ref('');
 const isSubmitting    = ref(false);
@@ -352,14 +372,14 @@ const jsonLdBreadcrumb = computed(() => {
                 </Link>
                 
                 <div class="order-1 sm:order-2 flex-1 flex justify-center">
-                    <Link v-if="user" :href="route('posts.like', post.id)" method="post" as="button" preserve-scroll class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-md border-2" :class="isLiked ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'">
-                        <span>띱 👍</span>
-                        <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border" :class="isLiked ? 'border-indigo-200' : 'border-gray-100'">{{ post.likes_count || 0 }}</span>
-                    </Link>
-                    <!-- 비로그인 띱 버튼 -->
-                    <button v-else @click="openLoginModal('like')" class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg bg-white border-2 border-gray-200 text-gray-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all transform hover:-translate-y-0.5 shadow-md">
-                        <span>띱 👍</span>
-                        <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border border-gray-100">{{ post.likes_count || 0 }}</span>
+                    <!-- 로그인 유저: axios 동적 처리 -->
+                    <button @click="toggleLike"
+                        :disabled="isLiking"
+                        class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-md border-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        :class="localIsLiked ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'">
+                        <span>{{ isLiking ? '...' : '띱 👍' }}</span>
+                        <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border transition-all"
+                            :class="localIsLiked ? 'border-indigo-200' : 'border-gray-100'">{{ localLikesCount }}</span>
                     </button>
                 </div>
 
