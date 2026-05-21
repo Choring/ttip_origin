@@ -48,6 +48,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/profile/points', [\App\Http\Controllers\PointHistoryController::class, 'index'])->name('profile.points');
 });
 
 // 이메일 인증 필요한 라우트
