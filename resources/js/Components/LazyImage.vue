@@ -4,9 +4,10 @@
  *
  * - viewport 400px 전에 미리 src를 세팅하여 자연스럽게 로드
  * - 로드 완료 전: opacity-0 (부모 배경색이 skeleton 역할)
- * - 로드 완료 후: opacity-100 으로 fade-in
+ * - 로드 완료 후: CSS @keyframes fade-in 애니메이션
  * - inheritAttrs: false → 호출부의 class/style이 <img> 에 직접 머지됨
  *   (absolute inset-0, w-full h-full 등 레이아웃 클래스를 그대로 유지)
+ * - transition-all 대신 @keyframes 사용: 호출부의 transition-transform 과 충돌 없음
  */
 import { ref, onMounted, onUnmounted } from 'vue';
 
@@ -25,7 +26,6 @@ let observer;
 
 onMounted(() => {
     if (!props.src) {
-        // src 없으면 즉시 표시 (렌더링은 하되 로드 완료 처리)
         shouldLoad.value = true;
         loaded.value     = true;
         return;
@@ -47,22 +47,27 @@ onUnmounted(() => observer?.disconnect());
 </script>
 
 <template>
-    <!--
-        v-bind="$attrs" : 호출부 class/style 그대로 전달
-        :class          : 로드 전후 opacity 제어 (호출부 class와 자동 머지됨)
-        transition-all  : opacity 및 transform(hover scale) 모두 커버
-    -->
     <img
         ref="imgEl"
         v-bind="$attrs"
         :src="shouldLoad ? src : undefined"
         :alt="alt"
         loading="lazy"
-        :class="[
-            'transition-all duration-500',
-            loaded ? 'opacity-100' : 'opacity-0',
-        ]"
+        :class="loaded ? 'lazy-img-loaded' : 'lazy-img-loading'"
         @load="loaded = true"
         @error="loaded = true"
     />
 </template>
+
+<style>
+.lazy-img-loading {
+    opacity: 0;
+}
+.lazy-img-loaded {
+    animation: lazyFadeIn 0.5s ease forwards;
+}
+@keyframes lazyFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+</style>

@@ -4,6 +4,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import AppHeader from '@/Components/AppHeader.vue';
 import AppFooter from '@/Components/AppFooter.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
+import LazyImage from '@/Components/LazyImage.vue';
 
 const props = defineProps({
     restaurant:         { type: Object, required: true },
@@ -205,7 +206,7 @@ const infoItems = computed(() => {
                 class="flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all"
                 :class="activeImage === img ? 'border-primary' : 'border-transparent opacity-60 hover:opacity-100'"
             >
-                <img :src="img" class="w-full h-full object-cover" />
+                <LazyImage :src="img" class="w-full h-full object-cover" />
             </button>
         </div>
 
@@ -387,7 +388,7 @@ const infoItems = computed(() => {
                         class="relative overflow-hidden rounded-2xl group border-2 border-transparent transition-all"
                         style="aspect-ratio: 4/3;"
                     >
-                        <img :src="img" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <LazyImage :src="img" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                             <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
@@ -411,7 +412,7 @@ const infoItems = computed(() => {
                         class="group relative overflow-hidden rounded-2xl bg-gray-200 border border-black/5 transition-all hover:shadow-lg hover:-translate-y-1"
                         style="min-height: 180px;"
                     >
-                        <img
+                        <LazyImage
                             v-if="s.image"
                             :src="s.image"
                             :alt="s.title"
@@ -448,7 +449,7 @@ const infoItems = computed(() => {
                         class="group relative overflow-hidden rounded-2xl bg-gray-200 border border-black/5 transition-all hover:shadow-lg hover:-translate-y-1"
                         style="min-height: 200px;"
                     >
-                        <img
+                        <LazyImage
                             v-if="r.image"
                             :src="r.image"
                             :alt="r.title"
