@@ -166,6 +166,11 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, Post $post)
     {
+        // 공지사항은 어드민 전용 라우트에서만 수정 가능
+        if ($post->type === 'notice') {
+            abort(403, '공지사항은 어드민 페이지에서만 수정할 수 있습니다.');
+        }
+
         Gate::authorize('update', $post);
 
         $validated = $request->validated();
@@ -196,6 +201,11 @@ class PostController extends Controller
 
     public function destroy(Post $post, \App\Services\PointService $pointService)
     {
+        // 공지사항은 어드민 전용 라우트에서만 삭제 가능
+        if ($post->type === 'notice') {
+            abort(403, '공지사항은 어드민 페이지에서만 삭제할 수 있습니다.');
+        }
+
         Gate::authorize('delete', $post);
 
         // 게시글 관련 포인트 회수 (삭제 전에 실행)

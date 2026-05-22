@@ -34,17 +34,21 @@ class PostPolicy
 
     /**
      * Determine whether the user can update the model.
+     * 공지사항(notice)은 일반 Post 수정 라우트로 변경 불가 — 어드민 전용
      */
     public function update(User $user, Post $post): bool
     {
+        if ($post->type === 'notice') return false;
         return $user->id === $post->user_id;
     }
 
     /**
      * Determine whether the user can delete the model.
+     * 공지사항(notice)은 일반 Post 삭제 라우트로 삭제 불가 — 어드민 전용
      */
     public function delete(User $user, Post $post): bool
     {
+        if ($post->type === 'notice') return false;
         return $user->id === $post->user_id;
     }
 
@@ -53,6 +57,7 @@ class PostPolicy
      */
     public function restore(User $user, Post $post): bool
     {
+        if ($post->type === 'notice') return false;
         return $user->id === $post->user_id;
     }
 
@@ -61,6 +66,7 @@ class PostPolicy
      */
     public function forceDelete(User $user, Post $post): bool
     {
+        if ($post->type === 'notice') return false;
         return $user->id === $post->user_id;
     }
 }
