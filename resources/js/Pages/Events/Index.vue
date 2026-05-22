@@ -119,7 +119,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="대구 문화행사" />
+    <Head>
+        <title>대구 문화행사 - ttip</title>
+        <meta head-key="description"    name="description"    content="대구에서 열리는 공연, 전시, 축제 등 최신 문화행사 정보를 확인하세요." />
+        <meta head-key="og:type"        property="og:type"        content="website" />
+        <meta head-key="og:site_name"   property="og:site_name"   content="ttip" />
+        <meta head-key="og:title"       property="og:title"       content="대구 문화행사 - ttip" />
+        <meta head-key="og:description" property="og:description" content="대구에서 열리는 공연, 전시, 축제 등 최신 문화행사 정보를 확인하세요." />
+    </Head>
 
     <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
         <AppHeader />

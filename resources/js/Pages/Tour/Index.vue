@@ -116,7 +116,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="대구 관광" />
+    <Head>
+        <title>대구 관광 - ttip</title>
+        <meta head-key="description"    name="description"    content="대구의 숨겨진 관광지를 발견하세요. 중구, 수성구, 달성군 등 대구 전역의 관광 명소를 소개합니다." />
+        <meta head-key="og:type"        property="og:type"        content="website" />
+        <meta head-key="og:site_name"   property="og:site_name"   content="ttip" />
+        <meta head-key="og:title"       property="og:title"       content="대구 관광 - ttip" />
+        <meta head-key="og:description" property="og:description" content="대구의 숨겨진 관광지를 발견하세요. 중구, 수성구, 달성군 등 대구 전역의 관광 명소를 소개합니다." />
+    </Head>
 
     <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
         <AppHeader />

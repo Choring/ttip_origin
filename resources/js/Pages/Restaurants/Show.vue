@@ -75,6 +75,19 @@ const stripHtml = (str) => str ? str.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, 
 
 const cleanOverview = computed(() => stripHtml(props.restaurant.overview ?? ''));
 
+// OG / SEO
+const pageUrl = computed(() => {
+    try { return route('restaurants.show', props.restaurant.content_id); }
+    catch { return typeof window !== 'undefined' ? window.location.href : ''; }
+});
+
+const ogDescription = computed(() => {
+    if (cleanOverview.value) return cleanOverview.value.slice(0, 160);
+    return [props.restaurant.category, props.restaurant.address].filter(Boolean).join(' · ') || '대구 맛집 정보';
+});
+
+const ogImage = computed(() => props.restaurant.image || null);
+
 // ── 카테고리 스타일 ─────────────────────────────────────────────
 const categoryStyle = (cat) => {
     const map = {
@@ -131,7 +144,27 @@ const infoItems = computed(() => {
 </script>
 
 <template>
-    <Head :title="`${restaurant.title} - 대구 맛집`" />
+    <Head>
+        <title>{{ `${restaurant.title} - 대구 맛집 | ttip` }}</title>
+        <meta head-key="description" name="description" :content="ogDescription" />
+
+        <!-- Open Graph -->
+        <meta head-key="og:type"        property="og:type"        content="website" />
+        <meta head-key="og:site_name"   property="og:site_name"   content="ttip" />
+        <meta head-key="og:title"       property="og:title"       :content="`${restaurant.title} - 대구 맛집 | ttip`" />
+        <meta head-key="og:description" property="og:description" :content="ogDescription" />
+        <meta head-key="og:url"         property="og:url"         :content="pageUrl" />
+        <meta v-if="ogImage" head-key="og:image" property="og:image" :content="ogImage" />
+
+        <!-- Twitter Card -->
+        <meta head-key="twitter:card"        name="twitter:card"        :content="ogImage ? 'summary_large_image' : 'summary'" />
+        <meta head-key="twitter:title"       name="twitter:title"       :content="`${restaurant.title} - 대구 맛집 | ttip`" />
+        <meta head-key="twitter:description" name="twitter:description" :content="ogDescription" />
+        <meta v-if="ogImage" head-key="twitter:image" name="twitter:image" :content="ogImage" />
+
+        <!-- Canonical -->
+        <link head-key="canonical" rel="canonical" :href="pageUrl" />
+    </Head>
 
     <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
         <AppHeader />

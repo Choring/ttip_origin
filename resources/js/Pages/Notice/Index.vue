@@ -10,7 +10,14 @@ const props = defineProps({
 </script>
 
 <template>
-  <Head title="ttip - 공지사항" />
+  <Head>
+    <title>공지사항 - ttip</title>
+    <meta head-key="description"    name="description"    content="ttip 서비스 공지사항을 확인하세요." />
+    <meta head-key="og:type"        property="og:type"        content="website" />
+    <meta head-key="og:site_name"   property="og:site_name"   content="ttip" />
+    <meta head-key="og:title"       property="og:title"       content="공지사항 - ttip" />
+    <meta head-key="og:description" property="og:description" content="ttip 서비스 공지사항을 확인하세요." />
+  </Head>
 
   <MainLayout>
     <div class="space-y-6">

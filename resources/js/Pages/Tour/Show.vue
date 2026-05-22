@@ -95,6 +95,20 @@ const cleanOverview = computed(() => {
     return props.spot.overview.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
 });
 
+// OG / SEO
+const pageUrl = computed(() => {
+    try { return route('tour.show', props.spot.contentId); }
+    catch { return typeof window !== 'undefined' ? window.location.href : ''; }
+});
+
+const ogDescription = computed(() => {
+    if (cleanOverview.value) return cleanOverview.value.slice(0, 160);
+    const parts = [props.spot.addr1, props.spot.addr2].filter(Boolean);
+    return parts.join(' ') || '대구 관광지 정보';
+});
+
+const ogImage = computed(() => props.spot.image || props.spot.thumbnail || null);
+
 // 이용 정보 항목 (값이 있는 것만 표시)
 const infoItems = computed(() => {
     const items = [
@@ -110,7 +124,27 @@ const infoItems = computed(() => {
 </script>
 
 <template>
-    <Head :title="`${spot.title} - 대구 관광`" />
+    <Head>
+        <title>{{ `${spot.title} - 대구 관광 | ttip` }}</title>
+        <meta head-key="description" name="description" :content="ogDescription" />
+
+        <!-- Open Graph -->
+        <meta head-key="og:type"        property="og:type"        content="website" />
+        <meta head-key="og:site_name"   property="og:site_name"   content="ttip" />
+        <meta head-key="og:title"       property="og:title"       :content="`${spot.title} - 대구 관광 | ttip`" />
+        <meta head-key="og:description" property="og:description" :content="ogDescription" />
+        <meta head-key="og:url"         property="og:url"         :content="pageUrl" />
+        <meta v-if="ogImage" head-key="og:image" property="og:image" :content="ogImage" />
+
+        <!-- Twitter Card -->
+        <meta head-key="twitter:card"        name="twitter:card"        :content="ogImage ? 'summary_large_image' : 'summary'" />
+        <meta head-key="twitter:title"       name="twitter:title"       :content="`${spot.title} - 대구 관광 | ttip`" />
+        <meta head-key="twitter:description" name="twitter:description" :content="ogDescription" />
+        <meta v-if="ogImage" head-key="twitter:image" name="twitter:image" :content="ogImage" />
+
+        <!-- Canonical -->
+        <link head-key="canonical" rel="canonical" :href="pageUrl" />
+    </Head>
 
     <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
         <AppHeader />
