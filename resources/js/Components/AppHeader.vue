@@ -42,6 +42,25 @@ const showNotifications = ref(false);
 const notifications = ref([]);
 const loadingNotifications = ref(false);
 
+// 알림 타입별 아이콘
+const notificationIcon = (type) => {
+    if (type?.includes('LikedNotification')) return '👍';
+    if (type?.includes('PostCommented'))     return '💬';
+    if (type?.includes('CommentReplied'))    return '↩️';
+    return '🔔';
+};
+
+// 상대 시간 표시
+const timeAgo = (dateStr) => {
+    if (!dateStr) return '';
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    if (diff < 60)     return '방금 전';
+    if (diff < 3600)   return `${Math.floor(diff / 60)}분 전`;
+    if (diff < 86400)  return `${Math.floor(diff / 3600)}시간 전`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}일 전`;
+    return new Date(dateStr).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+};
+
 const fetchNotifications = async () => {
     if (!user.value) return;
     loadingNotifications.value = true;
@@ -65,13 +84,10 @@ const toggleNotifications = () => {
 const markAsRead = async (notification) => {
     try {
         await axios.post(route('notifications.read', notification.id));
-        // 알림 목록에서 제거하거나 상태 변경
         notifications.value = notifications.value.filter(n => n.id !== notification.id);
-        // 헤더 뱃지 갱신을 위해 Inertia 리로드 (서버 사이드에서 unread_notifications_count를 같이 내려주기 때문)
         router.reload({ only: ['auth'] });
-        
-        // 해당 URL로 이동
         if (notification.data.url) {
+            showNotifications.value = false;
             router.visit(notification.data.url);
         }
     } catch (e) {
@@ -186,45 +202,58 @@ onMounted(() => {
 
             <!-- 알림 드롭다운 -->
             <Transition name="fade">
-                <div 
-                    v-if="showNotifications" 
-                    class="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 divide-y divide-gray-50 overflow-hidden z-[60]"
+                <div
+                    v-if="showNotifications"
+                    class="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-[60]"
                 >
-                    <div class="px-4 py-3 flex items-center justify-between bg-gray-50/50">
-                        <span class="text-sm font-bold text-gray-900">알림</span>
-                        <button 
+                    <!-- 헤더 -->
+                    <div class="px-4 py-3 flex items-center justify-between bg-gray-50 border-b border-gray-100">
+                        <span class="text-sm font-black text-gray-900">알림</span>
+                        <button
                             v-if="notifications.length > 0"
-                            @click="markAllAsRead" 
-                            class="text-xs text-indigo-600 hover:text-indigo-800 font-bold"
+                            @click="markAllAsRead"
+                            class="text-xs text-indigo-500 hover:text-indigo-700 font-bold transition-colors"
                         >
-                            모두 읽음
+                            모두 읽음 처리
                         </button>
                     </div>
 
-                    <div class="max-h-[400px] overflow-y-auto">
-                        <div v-if="loadingNotifications" class="p-8 text-center">
-                            <div class="inline-block animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent"></div>
+                    <!-- 목록 -->
+                    <div class="max-h-[420px] overflow-y-auto divide-y divide-gray-50">
+                        <!-- 로딩 -->
+                        <div v-if="loadingNotifications" class="p-8 flex justify-center">
+                            <div class="animate-spin rounded-full h-5 w-5 border-2 border-indigo-400 border-t-transparent"></div>
                         </div>
+
+                        <!-- 알림 아이템 -->
                         <template v-else-if="notifications.length > 0">
-                            <div 
-                                v-for="notification in notifications" 
+                            <div
+                                v-for="notification in notifications"
                                 :key="notification.id"
                                 @click="markAsRead(notification)"
-                                class="px-4 py-4 hover:bg-indigo-50/30 cursor-pointer transition-colors flex gap-3 border-b border-gray-50 last:border-0"
+                                class="px-4 py-3.5 hover:bg-indigo-50/40 cursor-pointer transition-colors flex gap-3 items-start"
                             >
-                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500 font-bold text-xs">
-                                    {{ notification.data.user_name?.substring(0, 1) || 'T' }}
+                                <!-- 타입 아이콘 -->
+                                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-base leading-none">
+                                    {{ notificationIcon(notification.type) }}
                                 </div>
+                                <!-- 내용 -->
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-bold text-gray-900 truncate mb-0.5">{{ notification.data.title }}</p>
+                                    <p class="text-xs font-bold text-gray-800 mb-0.5">{{ notification.data.title }}</p>
                                     <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">{{ notification.data.message }}</p>
-                                    <span class="text-[10px] text-gray-300 mt-1 block">방금 전</span>
+                                    <span class="text-[10px] text-gray-300 mt-1.5 block">
+                                        {{ notification.data.user_name }} · {{ timeAgo(notification.created_at) }}
+                                    </span>
                                 </div>
+                                <!-- 읽지 않음 점 -->
+                                <div class="flex-shrink-0 w-2 h-2 rounded-full bg-indigo-400 mt-1.5"></div>
                             </div>
                         </template>
-                        <div v-else class="p-10 text-center text-gray-400">
-                            <svg class="w-10 h-10 mx-auto mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                            <p class="text-sm font-medium">새로운 알림이 없습니다.</p>
+
+                        <!-- 빈 상태 -->
+                        <div v-else class="py-12 text-center text-gray-400">
+                            <div class="text-4xl mb-3">🔔</div>
+                            <p class="text-sm font-medium text-gray-400">새로운 알림이 없습니다.</p>
                         </div>
                     </div>
                 </div>
