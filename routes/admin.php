@@ -61,5 +61,8 @@ Route::patch('/reports/{report}/dismiss', [\App\Http\Controllers\Admin\ReportCon
 Route::get('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'index'])->name('notices.index');
 Route::get('/notices/create', [\App\Http\Controllers\Admin\NoticeController::class, 'create'])->name('notices.create');
 Route::post('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'store'])->name('notices.store');
+Route::get('/notices/{post}/edit', [\App\Http\Controllers\Admin\NoticeController::class, 'edit'])->name('notices.edit');
+Route::put('/notices/{post}', [\App\Http\Controllers\Admin\NoticeController::class, 'update'])->name('notices.update');
+Route::delete('/notices/{post}', [\App\Http\Controllers\Admin\NoticeController::class, 'destroy'])->name('notices.destroy');
 Route::patch('/notices/{post}/toggle-pin', [\App\Http\Controllers\Admin\NoticeController::class, 'togglePin'])->name('notices.togglePin');
 

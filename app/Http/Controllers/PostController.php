@@ -146,6 +146,11 @@ class PostController extends Controller
 
     public function edit(Post $post)
     {
+        // 공지사항은 어드민 전용 수정 페이지로만 접근 가능
+        if ($post->type === 'notice') {
+            return redirect()->route('admin.notices.edit', $post->id);
+        }
+
         Gate::authorize('update', $post);
 
         $categories = \App\Models\Category::where('is_active', true)

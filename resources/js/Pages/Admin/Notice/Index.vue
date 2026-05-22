@@ -32,7 +32,7 @@ const togglePin = (id) => {
 
 const forceDelete = (id) => {
     if (confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
-        router.delete(route('admin.posts.destroy', id), { preserveScroll: true });
+        router.delete(route('admin.notices.destroy', id), { preserveScroll: true });
     }
 };
 </script>
@@ -102,7 +102,7 @@ const forceDelete = (id) => {
                             <td class="px-6 py-4 whitespace-nowrap text-gray-500 font-medium">{{ notice.view_count }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-gray-400 text-xs">{{ new Date(notice.created_at).toLocaleDateString() }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold flex space-x-2 justify-center">
-                                <Link :href="route('admin.posts.edit', notice.id)" class="text-gray-600 hover:text-indigo-600 font-bold px-2 py-1">
+                                <Link :href="route('admin.notices.edit', notice.id)" class="text-gray-600 hover:text-indigo-600 font-bold px-2 py-1">
                                     편집
                                 </Link>
                                 <button type="button" @click="forceDelete(notice.id)" class="text-red-500 hover:text-red-700 font-bold px-2 py-1">

@@ -6,6 +6,7 @@ use App\Helpers\FileUploadHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class NoticeController extends Controller
@@ -91,6 +92,95 @@ class NoticeController extends Controller
 
         return redirect()->route('admin.notices.index')
             ->with('success', '공지사항이 성공적으로 등록되었습니다.');
+    }
+
+    /**
+     * Show the form for editing a notice.
+     */
+    public function edit(Post $post)
+    {
+        if ($post->type !== 'notice') {
+            abort(404);
+        }
+
+        $noticeCategories = \App\Models\Category::where('is_active', true)
+            ->where(function ($q) {
+                $q->where('slug', 'all')
+                  ->orWhere('slug', 'like', 'notice%');
+            })
+            ->orderBy('sort_order')
+            ->get();
+
+        return Inertia::render('Admin/Notice/Edit', [
+            'notice'     => $post,
+            'categories' => $noticeCategories,
+        ]);
+    }
+
+    /**
+     * Update a notice.
+     */
+    public function update(Request $request, Post $post)
+    {
+        if ($post->type !== 'notice') {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'category_id' => [
+                'required',
+                'exists:categories,id',
+                function ($attribute, $value, $fail) {
+                    $cat = \App\Models\Category::find($value);
+                    if (!$cat || ($cat->slug !== 'all' && !str_starts_with($cat->slug, 'notice'))) {
+                        $fail('공지사항에는 공지 전용 카테고리만 선택할 수 있습니다.');
+                    }
+                },
+            ],
+            'title'     => 'required|string|max:255',
+            'content'   => 'required|string',
+            'tags'      => 'nullable|array',
+            'is_pinned' => 'boolean',
+            'image'     => 'nullable|image|max:5120',
+        ]);
+
+        $post->category_id = $validated['category_id'];
+        $post->title       = $validated['title'];
+        $post->content     = $validated['content'];
+        $post->tags        = $validated['tags'] ?? [];
+        $post->is_pinned   = $validated['is_pinned'] ?? false;
+
+        if ($request->hasFile('image')) {
+            // 기존 이미지 삭제
+            if ($post->card_image_path) {
+                Storage::disk('public')->delete($post->card_image_path);
+            }
+            $post->card_image_path = FileUploadHelper::upload($request->file('image'), 'posts');
+        }
+
+        $post->save();
+
+        return redirect()->route('admin.notices.index')
+            ->with('success', '공지사항이 성공적으로 수정되었습니다.');
+    }
+
+    /**
+     * Delete a notice.
+     */
+    public function destroy(Post $post)
+    {
+        if ($post->type !== 'notice') {
+            abort(404);
+        }
+
+        if ($post->card_image_path) {
+            Storage::disk('public')->delete($post->card_image_path);
+        }
+
+        $post->delete();
+
+        return redirect()->route('admin.notices.index')
+            ->with('success', '공지사항이 삭제되었습니다.');
     }
 
     /**

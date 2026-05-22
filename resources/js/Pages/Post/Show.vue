@@ -386,14 +386,42 @@ const jsonLdBreadcrumb = computed(() => {
                     </button>
                 </div>
 
-                <!-- 오른쪽: 수정/삭제(작성자) 또는 신고(비작성자) -->
+                <!-- 오른쪽: 수정/삭제(작성자 또는 관리자) 또는 신고(비작성자) -->
                 <div class="flex justify-end items-center gap-2">
                     <template v-if="user && user.id === post.user_id">
-                        <Link :href="route('posts.edit', post.id)"
+                        <!-- 관리자 + 공지사항 → 어드민 수정 페이지 -->
+                        <Link
+                            v-if="user.role === 'admin' && post.type === 'notice'"
+                            :href="route('admin.notices.edit', post.id)"
+                            class="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-sm font-bold border border-amber-200 transition-colors shadow-sm">
+                            수정
+                        </Link>
+                        <!-- 일반 게시글 수정 -->
+                        <Link
+                            v-else
+                            :href="route('posts.edit', post.id)"
                             class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-bold border border-gray-200 transition-colors shadow-sm">
                             수정
                         </Link>
-                        <Link :href="route('posts.destroy', post.id)" method="delete" as="button" type="button"
+                        <!-- 관리자 + 공지사항 → 어드민 삭제 -->
+                        <Link
+                            v-if="user.role === 'admin' && post.type === 'notice'"
+                            :href="route('admin.notices.destroy', post.id)"
+                            method="delete"
+                            as="button"
+                            type="button"
+                            class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm"
+                            preserve-scroll
+                            @click="(e) => { if(!confirm('이 공지사항을 정말 삭제하시겠습니까?')) e.preventDefault() }">
+                            삭제
+                        </Link>
+                        <!-- 일반 게시글 삭제 -->
+                        <Link
+                            v-else
+                            :href="route('posts.destroy', post.id)"
+                            method="delete"
+                            as="button"
+                            type="button"
                             class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm"
                             preserve-scroll
                             @click="(e) => { if(!confirm('이 게시글을 정말 삭제하시겠습니까?\n달려있는 댓글도 연쇄적으로 지워집니다.')) e.preventDefault() }">
