@@ -362,17 +362,20 @@ const jsonLdBreadcrumb = computed(() => {
             </div>
 
 
-            <div class="prose prose-indigo prose-p:my-0 prose-li:my-0 max-w-none text-gray-800 leading-normal" v-html="post.content">
+            <div class="post-body prose prose-indigo prose-p:my-2 prose-li:my-0.5 max-w-none text-gray-800 leading-relaxed" v-html="post.content">
             </div>
 
-            <!-- Like Action Bar -->
-            <div class="mt-8 pb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <Link :href="route('home')" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors order-2 sm:order-1">
-                    &larr; 목록으로 돌아가기
-                </Link>
-                
-                <div class="order-1 sm:order-2 flex-1 flex justify-center">
-                    <!-- 로그인 유저: axios 동적 처리 -->
+            <!-- Like Action Bar: 3열 grid로 띱 버튼 정중앙 고정 -->
+            <div class="mt-8 pb-4 grid grid-cols-3 items-center gap-2">
+                <!-- 왼쪽: 목록으로 돌아가기 -->
+                <div class="flex justify-start">
+                    <Link :href="route('home')" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors text-sm whitespace-nowrap">
+                        &larr; 목록으로 돌아가기
+                    </Link>
+                </div>
+
+                <!-- 가운데: 띱 버튼 -->
+                <div class="flex justify-center">
                     <button @click="toggleLike"
                         :disabled="isLiking"
                         class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-md border-2 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -383,13 +386,21 @@ const jsonLdBreadcrumb = computed(() => {
                     </button>
                 </div>
 
-                <div v-if="user && user.id === post.user_id" class="flex space-x-3 order-3">
-                    <Link :href="route('posts.edit', post.id)" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-bold border border-gray-200 transition-colors shadow-sm">수정</Link>
-                    <Link :href="route('posts.destroy', post.id)" method="delete" as="button" type="button" class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm" preserve-scroll @click="(e) => { if(!confirm('이 게시글을 정말 삭제하시겠습니까?\n달려있는 댓글도 연쇄적으로 지워집니다.')) e.preventDefault() }">삭제</Link>
-                </div>
-                <!-- 비작성자 로그인 유저: 신고 버튼 -->
-                <div class="order-3 w-[100px] flex justify-end">
-                    <button v-if="user && user.id !== post.user_id"
+                <!-- 오른쪽: 수정/삭제(작성자) 또는 신고(비작성자) -->
+                <div class="flex justify-end items-center gap-2">
+                    <template v-if="user && user.id === post.user_id">
+                        <Link :href="route('posts.edit', post.id)"
+                            class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-sm font-bold border border-gray-200 transition-colors shadow-sm">
+                            수정
+                        </Link>
+                        <Link :href="route('posts.destroy', post.id)" method="delete" as="button" type="button"
+                            class="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-bold border border-red-100 transition-colors shadow-sm"
+                            preserve-scroll
+                            @click="(e) => { if(!confirm('이 게시글을 정말 삭제하시겠습니까?\n달려있는 댓글도 연쇄적으로 지워집니다.')) e.preventDefault() }">
+                            삭제
+                        </Link>
+                    </template>
+                    <button v-else-if="user && user.id !== post.user_id"
                         @click="showReportModal = true"
                         class="text-xs text-gray-300 hover:text-red-400 transition font-medium flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -485,3 +496,14 @@ const jsonLdBreadcrumb = computed(() => {
         @close="tierUpgradeData = null"
     />
 </template>
+
+<style>
+/*
+ * v-html 렌더링 영역은 scoped CSS가 적용되지 않아 non-scoped 스타일 사용.
+ * 빈 <p></p> 단락은 높이가 0이라 CSS 마진 콜랩싱으로 줄바꿈이 무시됨.
+ * min-height를 주어 빈 단락이 시각적으로 한 줄 높이를 차지하도록 처리.
+ */
+.post-body p:empty {
+    min-height: 1.5em;
+}
+</style>

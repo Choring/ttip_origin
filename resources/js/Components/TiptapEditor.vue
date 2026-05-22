@@ -104,9 +104,9 @@
     </div>
 
     <!-- Editor Content -->
-    <editor-content 
-        :editor="editor" 
-        class="min-h-[300px] max-h-[600px] overflow-y-auto p-4 prose prose-indigo prose-p:my-0 prose-li:my-0 max-w-none focus:outline-none leading-normal" 
+    <editor-content
+        :editor="editor"
+        class="min-h-[300px] max-h-[600px] overflow-y-auto p-4 prose prose-indigo prose-p:my-2 prose-li:my-0.5 max-w-none focus:outline-none leading-relaxed"
     />
   </div>
 </template>
