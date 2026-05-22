@@ -2,12 +2,11 @@
 import { useForm, Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import TiptapEditor from '@/Components/TiptapEditor.vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
     categories: Array
 });
-
-import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const form = useForm({
     category_id: '',
@@ -17,7 +16,7 @@ const form = useForm({
     image: null,
     type: 'general',
     is_pinned: false,
-    extra_info: {}, // 카테고리별 정형 데이터를 담을 객체
+    extra_info: {},
 });
 
 // 카테고리별 필드 정의
@@ -77,18 +76,124 @@ const removeTag = (index) => {
     form.tags.splice(index, 1);
 };
 
-// 실제 값으로 직접 체크
 const hasUnsavedContent = computed(() => {
-    const hasTitle = form.title.trim() !== '';
+    const hasTitle   = form.title.trim() !== '';
     const hasContent = form.content !== '' && form.content !== '<p></p>';
-    const hasTags = form.tags.length > 0;
+    const hasTags    = form.tags.length > 0;
     return hasTitle || hasContent || hasTags;
 });
 
-// 취소 버튼 핸들러
+// ── 임시저장 (localStorage) ──────────────────────────────────────
+const DRAFT_KEY    = 'draft_post_create';
+const draftSavedAt = ref(null);   // Date 객체
+const hasDraft     = ref(false);  // 복원 배너 표시 여부
+
+// 저장된 시각을 "N분 전" 형식으로 변환
+const draftSavedLabel = computed(() => {
+    if (!draftSavedAt.value) return '';
+    const diff = Math.floor((Date.now() - draftSavedAt.value.getTime()) / 1000);
+    if (diff < 60)  return '방금 자동저장됨';
+    if (diff < 3600) return `${Math.floor(diff / 60)}분 전 자동저장됨`;
+    return `${Math.floor(diff / 3600)}시간 전 자동저장됨`;
+});
+
+// 임시저장 레이블 갱신용 타이머 (1분마다 갱신)
+let labelTimer = null;
+const labelTick = ref(0); // computed 재계산을 강제하기 위한 트리거
+
+// debounce 핸들러
+let saveTimer = null;
+const scheduleSave = () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+        if (!hasUnsavedContent.value) return;
+        const data = {
+            category_id: form.category_id,
+            title:       form.title,
+            content:     form.content,
+            tags:        [...form.tags],
+            extra_info:  { ...form.extra_info },
+            savedAt:     new Date().toISOString(),
+        };
+        try {
+            localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+            draftSavedAt.value = new Date();
+        } catch (e) {
+            // 저장 공간 부족 등 무시
+        }
+    }, 2000);
+};
+
+// form 필드 변경 감지 → 임시저장 예약
+watch(
+    () => ({
+        category_id: form.category_id,
+        title:       form.title,
+        content:     form.content,
+        tags:        [...form.tags],
+        extra_info:  { ...form.extra_info },
+    }),
+    scheduleSave,
+    { deep: true }
+);
+
+const clearDraft = () => {
+    clearTimeout(saveTimer);
+    localStorage.removeItem(DRAFT_KEY);
+    draftSavedAt.value = null;
+    hasDraft.value     = false;
+};
+
+const restoreDraft = () => {
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        form.category_id = data.category_id || '';
+        form.title       = data.title       || '';
+        form.content     = data.content     || '';
+        form.tags        = data.tags        || [];
+        form.extra_info  = data.extra_info  || {};
+        draftSavedAt.value = data.savedAt ? new Date(data.savedAt) : null;
+    } catch {
+        clearDraft();
+    } finally {
+        hasDraft.value = false;
+    }
+};
+
+const discardDraft = () => {
+    clearDraft();
+};
+
+onMounted(() => {
+    // 임시저장 확인
+    try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (raw) {
+            const data = JSON.parse(raw);
+            if (data.title?.trim() || (data.content && data.content !== '<p></p>')) {
+                hasDraft.value     = true;
+                draftSavedAt.value = data.savedAt ? new Date(data.savedAt) : null;
+            }
+        }
+    } catch {
+        clearDraft();
+    }
+
+    // 레이블 갱신 타이머
+    labelTimer = setInterval(() => { labelTick.value++; }, 60_000);
+});
+
+onUnmounted(() => {
+    clearTimeout(saveTimer);
+    clearInterval(labelTimer);
+});
+
+// 취소 버튼
 const handleCancel = () => {
     if (hasUnsavedContent.value) {
-        if (!confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?')) {
+        if (!confirm('작성 중인 내용이 있습니다. 정말 나가시겠습니까?\n(임시저장 내용은 유지됩니다)')) {
             return;
         }
     }
@@ -102,7 +207,7 @@ const submit = () => {
     form.post(route('posts.store'), {
         forceFormData: true,
         onSuccess: () => {
-            // 성공 시에는 이탈 방지 메시지가 뜨지 않도록 처리
+            clearDraft();
             form.reset();
         },
     });
@@ -115,14 +220,50 @@ const submit = () => {
     <MainLayout>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <h2 class="text-2xl font-bold mb-6">새 글 쓰기</h2>
-            
+
+            <!-- 임시저장 복원 배너 -->
+            <Transition name="draft-banner">
+                <div
+                    v-if="hasDraft"
+                    class="mb-6 flex items-center justify-between gap-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl"
+                >
+                    <div class="flex items-center gap-3">
+                        <svg class="w-5 h-5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-bold text-indigo-800">임시저장된 글이 있습니다</p>
+                            <p class="text-xs text-indigo-500 mt-0.5">
+                                {{ draftSavedAt ? new Date(draftSavedAt).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' 저장됨' : '이전에 작성하던 내용이 있습니다' }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button
+                            type="button"
+                            @click="restoreDraft"
+                            class="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 transition-colors"
+                        >
+                            이어서 작성
+                        </button>
+                        <button
+                            type="button"
+                            @click="discardDraft"
+                            class="px-4 py-2 bg-white text-gray-500 text-sm font-bold rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+                        >
+                            삭제
+                        </button>
+                    </div>
+                </div>
+            </Transition>
+
             <form @submit.prevent="submit" class="space-y-6">
                 <div>
                     <label for="category_id" class="block text-sm font-bold text-gray-700 mb-2">카테고리</label>
-                    <select 
-                        id="category_id" 
-                        v-model="form.category_id" 
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                    <select
+                        id="category_id"
+                        v-model="form.category_id"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         required
                     >
                         <option value="" disabled selected>게시글 분류를 선택하세요</option>
@@ -140,15 +281,15 @@ const submit = () => {
                         <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wider">주요 정보 입력</h3>
                         <span class="text-xs text-indigo-500 font-medium">(정형 데이터로 보관됩니다)</span>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div v-for="field in currentFields" :key="field.key">
                             <label :for="field.key" class="block text-xs font-bold text-indigo-700 mb-1.5 ml-1">{{ field.label }}</label>
-                            <input 
-                                :id="field.key" 
-                                v-model="form.extra_info[field.key]" 
-                                type="text" 
-                                class="w-full rounded-lg border-indigo-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white placeholder-gray-300 text-sm" 
+                            <input
+                                :id="field.key"
+                                v-model="form.extra_info[field.key]"
+                                type="text"
+                                class="w-full rounded-lg border-indigo-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 bg-white placeholder-gray-300 text-sm"
                                 :placeholder="field.placeholder"
                             />
                         </div>
@@ -157,11 +298,11 @@ const submit = () => {
 
                 <div>
                     <label for="title" class="block text-sm font-bold text-gray-700 mb-2">제목</label>
-                    <input 
-                        id="title" 
-                        v-model="form.title" 
-                        type="text" 
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                    <input
+                        id="title"
+                        v-model="form.title"
+                        type="text"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         placeholder="제목을 입력하세요"
                         required
                     />
@@ -188,8 +329,8 @@ const submit = () => {
                             class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             placeholder="태그 입력 후 엔터 또는 추가 버튼 클릭"
                         />
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             @click="addTag"
                             class="px-5 py-2 bg-indigo-50 text-indigo-700 rounded-md font-bold hover:bg-indigo-100 transition-colors shadow-sm"
                         >
@@ -201,9 +342,9 @@ const submit = () => {
 
                 <div>
                     <label for="content" class="block text-sm font-bold text-gray-700 mb-2">본문</label>
-                    <TiptapEditor 
-                        id="content" 
-                        v-model="form.content" 
+                    <TiptapEditor
+                        id="content"
+                        v-model="form.content"
                         required
                     />
                     <div v-if="form.errors.content" class="text-red-500 text-sm mt-1">{{ form.errors.content }}</div>
@@ -211,11 +352,11 @@ const submit = () => {
 
                 <div>
                     <label for="image" class="block text-sm font-bold text-gray-700 mb-2">썸네일 이미지 (목록용, 선택)</label>
-                    <input 
-                        id="image" 
-                        type="file" 
+                    <input
+                        id="image"
+                        type="file"
                         accept="image/*"
-                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 focus:outline-none" 
+                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 focus:outline-none"
                         @input="e => form.image = e.target.files[0]"
                     />
                     <div v-if="form.errors.image" class="text-red-500 text-sm mt-1">{{ form.errors.image }}</div>
@@ -224,7 +365,7 @@ const submit = () => {
                 <!-- Admin Only Section -->
                 <div v-if="['admin', 'master'].includes($page.props.auth.user.role)" class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">관리자 전용 설정</p>
-                    
+
                     <div class="flex flex-col sm:flex-row gap-6">
                         <div class="flex-1">
                             <label for="type" class="block text-sm font-bold text-gray-700 mb-2">게시글 타입</label>
@@ -232,7 +373,6 @@ const submit = () => {
                                 <option value="general">일반 게시글 (General)</option>
                                 <option value="ad">광고/홍보 (Ad)</option>
                             </select>
-
                         </div>
                         <div class="flex items-center pt-6">
                             <label class="inline-flex items-center cursor-pointer">
@@ -243,23 +383,57 @@ const submit = () => {
                     </div>
                 </div>
 
-                <div class="flex justify-end pt-4 space-x-3">
-                    <button
-                        type="button"
-                        @click="handleCancel"
-                        class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    >
-                        취소
-                    </button>
-                    <button 
-                        type="submit" 
-                        :disabled="form.processing"
-                        class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-                    >
-                        {{ form.processing ? '작성 중...' : '작성하기' }}
-                    </button>
+                <!-- 하단 버튼 + 임시저장 상태 표시 -->
+                <div class="flex justify-between items-center pt-4">
+                    <!-- 임시저장 상태 표시 -->
+                    <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                        <template v-if="draftSavedAt && !hasDraft">
+                            <svg class="w-3.5 h-3.5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>{{ draftSavedLabel }}</span>
+                            <button
+                                type="button"
+                                @click="clearDraft"
+                                class="ml-1 text-gray-300 hover:text-red-400 transition-colors"
+                                title="임시저장 삭제"
+                            >
+                                ✕
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- 버튼 그룹 -->
+                    <div class="flex gap-3">
+                        <button
+                            type="button"
+                            @click="handleCancel"
+                            class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                        >
+                            취소
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="form.processing"
+                            class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                            {{ form.processing ? '작성 중...' : '작성하기' }}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
     </MainLayout>
 </template>
+
+<style scoped>
+.draft-banner-enter-active,
+.draft-banner-leave-active {
+    transition: all 0.3s ease;
+}
+.draft-banner-enter-from,
+.draft-banner-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+</style>
