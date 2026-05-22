@@ -182,6 +182,10 @@ class PostController extends Controller
         }
 
         if ($request->hasFile('image')) {
+            // 기존 썸네일 삭제
+            if ($post->card_image_path) {
+                \Illuminate\Support\Facades\Storage::disk(config('filesystems.default'))->delete($post->card_image_path);
+            }
             $validated['card_image_path'] = \App\Helpers\FileUploadHelper::upload($request->file('image'), 'posts');
         }
 
