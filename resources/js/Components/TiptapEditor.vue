@@ -1,5 +1,14 @@
 <template>
-  <div v-if="editor" class="border border-gray-300 rounded-lg overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+  <div
+    v-if="editor"
+    class="border rounded-lg overflow-hidden flex flex-col transition-all focus-within:ring-2 focus-within:ring-indigo-500/20"
+    :class="isDraggingOver
+      ? 'border-indigo-400 ring-2 ring-indigo-300/50 bg-indigo-50/30'
+      : 'border-gray-300 focus-within:border-indigo-500'"
+    @dragover.prevent="isDraggingOver = true"
+    @dragleave.prevent="isDraggingOver = false"
+    @drop.prevent="isDraggingOver = false"
+  >
     
     <!-- Toolbar -->
     <div class="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1 sticky top-0 z-10">
@@ -129,7 +138,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const imageInput = ref(null);
+const imageInput   = ref(null);
+const isDraggingOver = ref(false);
 
 const editor = useEditor({
   content: props.modelValue,
@@ -154,6 +164,23 @@ const editor = useEditor({
   editorProps: {
     attributes: {
       class: 'focus:outline-none',
+    },
+    handlePaste(view, event) {
+      const items = Array.from(event.clipboardData?.items ?? []);
+      const imageItem = items.find(i => i.type.startsWith('image/'));
+      if (!imageItem) return false;
+      event.preventDefault();
+      uploadImageFile(imageItem.getAsFile());
+      return true;
+    },
+    handleDrop(view, event, slice, moved) {
+      if (moved) return false;
+      const files = Array.from(event.dataTransfer?.files ?? []);
+      const imageFile = files.find(f => f.type.startsWith('image/'));
+      if (!imageFile) return false;
+      event.preventDefault();
+      uploadImageFile(imageFile);
+      return true;
     },
   },
 });
@@ -186,8 +213,8 @@ const triggerImageUpload = () => {
   imageInput.value.click();
 };
 
-const handleImageUpload = async (event) => {
-  const file = event.target.files[0];
+/** 실제 업로드 + 에디터 삽입 공통 함수 */
+const uploadImageFile = async (file) => {
   if (!file) return;
 
   const formData = new FormData();
@@ -195,9 +222,7 @@ const handleImageUpload = async (event) => {
 
   try {
     const response = await axios.post('/api/upload-image', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     if (response.data.url) {
@@ -207,9 +232,12 @@ const handleImageUpload = async (event) => {
     console.error('이미지 업로드 실패:', error);
     const message = error.response?.data?.error || '이미지 업로드에 실패했습니다. (최대 5MB)';
     alert(message);
-  } finally {
-    event.target.value = ''; // Reset input
   }
+};
+
+const handleImageUpload = async (event) => {
+  await uploadImageFile(event.target.files[0]);
+  event.target.value = ''; // Reset input
 };
 </script>
 
