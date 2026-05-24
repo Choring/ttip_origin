@@ -83,10 +83,23 @@ onMounted(() => {
     if (observerTarget.value) {
         observer.observe(observerTarget.value);
     }
+
+    // JSON-LD 스키마 주입 (전체 피드 홈에서만)
+    if (props.currentCategory === 'all') {
+        schemaScriptEl = document.createElement('script');
+        schemaScriptEl.type = 'application/ld+json';
+        schemaScriptEl.id = 'jsonld-website';
+        schemaScriptEl.textContent = JSON.stringify(jsonLd.value);
+        document.head.appendChild(schemaScriptEl);
+    }
 });
 
 onUnmounted(() => {
     if (observer) observer.disconnect();
+    if (schemaScriptEl) {
+        schemaScriptEl.remove();
+        schemaScriptEl = null;
+    }
 });
 
 watch(() => props.posts, (newPosts) => {
@@ -125,22 +138,52 @@ const getCardComponent = (post) => {
 
 // 현재 페이지의 고유 URL (Canonical URL)
 const currentUrl = computed(() => {
-    try { 
-        return props.currentCategory === 'all' 
-            ? route('home') 
-            : route('home', { category: props.currentCategory }); 
+    try {
+        return props.currentCategory === 'all'
+            ? route('home')
+            : route('home', { category: props.currentCategory });
     }
-    catch { 
-        return typeof window !== 'undefined' ? window.location.href.split('?')[0] : ''; 
+    catch {
+        return typeof window !== 'undefined' ? window.location.href.split('?')[0] : '';
     }
 });
+
+// JSON-LD 스키마 (WebSite + SearchAction — 구글 사이트링크 검색 박스 활성화)
+const jsonLd = computed(() => {
+    const baseUrl = (() => {
+        try { return new URL(route('home')).origin; }
+        catch { return typeof window !== 'undefined' ? window.location.origin : ''; }
+    })();
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'ttip',
+        alternateName: '티팁',
+        description: '대구 관광, 맛집, 문화행사, 지역 정보를 한곳에서. 대구의 매력을 발견하는 플랫폼',
+        url: baseUrl,
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+                '@type': 'EntryPoint',
+                urlTemplate: `${baseUrl}/?search_keyword={search_term_string}&search_type=title`,
+            },
+            'query-input': 'required name=search_term_string',
+        },
+    };
+});
+let schemaScriptEl = null;
 </script>
 
 <template>
   <Head>
-    <title>{{ currentCategory === 'all' ? 'ttip - 특별한 팁이 가득한 공간' : `ttip - ${currentCategory} 카테고리` }}</title>
-    <meta head-key="description" name="description" :content="currentCategory === 'all' ? 'ttip은 당신의 일상에 특별한 팁을 더하는 커뮤니티 공간입니다. 유용한 정보와 즐거운 이야기를 나누어보세요.' : `${currentCategory}에 관한 유용한 정보와 꿀팁들을 ttip에서 확인해보세요.`">
-    <meta property="og:title" :content="currentCategory === 'all' ? 'ttip - 특별한 팁이 가득한 공간' : `ttip - ${currentCategory} 탐색`" />
+    <title>{{ currentCategory === 'all' ? 'ttip - 대구의 모든 것을 담다' : `ttip - 대구 ${currentCategory} 정보` }}</title>
+    <meta head-key="description" name="description" :content="currentCategory === 'all' ? '대구 관광지, 맛집, 문화행사 정보와 지역 커뮤니티. 대구의 매력을 ttip에서 발견하세요.' : `대구 ${currentCategory} 정보와 꿀팁을 ttip에서 확인해보세요.`">
+    <meta head-key="og:type" property="og:type" content="website" />
+    <meta head-key="og:title" property="og:title" :content="currentCategory === 'all' ? 'ttip - 대구의 모든 것을 담다' : `ttip - 대구 ${currentCategory} 정보`" />
+    <meta head-key="og:description" property="og:description" :content="currentCategory === 'all' ? '대구 관광지, 맛집, 문화행사 정보와 지역 커뮤니티. 대구의 매력을 ttip에서 발견하세요.' : `대구 ${currentCategory} 정보와 꿀팁을 ttip에서 확인해보세요.`" />
+    <meta head-key="og:url" property="og:url" :content="currentUrl" />
+    <meta head-key="og:image" property="og:image" content="/images/banner/tour-banner.jpg" />
+    <meta head-key="og:site_name" property="og:site_name" content="ttip" />
     <link head-key="canonical" rel="canonical" :href="currentUrl" />
   </Head>
 
@@ -156,9 +199,9 @@ const currentUrl = computed(() => {
         <div class="absolute -right-6 -top-6 w-28 h-28 bg-orange-100 rounded-full opacity-60"></div>
         <div class="absolute -right-2 bottom-0 w-16 h-16 bg-amber-100 rounded-full opacity-60"></div>
 
-        <p class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">대구 20-30대를 위한</p>
+        <p class="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">대구를 더 깊이 즐기고 싶다면</p>
         <h2 class="text-lg font-black leading-snug mb-3 text-orange-900">
-          광고 없는 깔끔한<br>대구 생활 정보 커뮤니티 🎯
+          관광·맛집·문화행사까지<br>대구의 모든 정보가 여기에 🗺️
         </h2>
         <button
           @click="showLoginModal = true"

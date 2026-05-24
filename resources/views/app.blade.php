@@ -125,7 +125,7 @@
                 $summary      = $post['summary'] ?? null;
                 $description  = $summary
                     ? (is_array($summary) ? implode(' ', $summary) : $summary)
-                    : 'ttip - 당신의 일상에 특별한 팁을 더하는 커뮤니티 공간입니다.';
+                    : '대구 관광지, 맛집, 문화행사 정보와 지역 커뮤니티. 대구의 매력을 ttip에서 발견하세요.';
                 $image        = $post['card_image_url'] ?? $defaultImg;
                 $url          = $siteUrl . '/posts/' . ($post['id'] ?? '');
                 $ogType       = 'article';

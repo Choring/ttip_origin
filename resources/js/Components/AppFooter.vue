@@ -24,8 +24,8 @@ const currentYear = new Date().getFullYear();
             <span class="text-primary font-extrabold text-2xl tracking-tighter">ttip</span>
           </Link>
           <p class="text-gray-500 text-sm font-medium leading-relaxed max-w-sm mb-6">
-            당신의 일상에 특별한 팁을 더하는 공간, ttip입니다.<br>
-            유용한 정보와 커뮤니티의 즐거움을 함께 나누어보세요.
+            대구의 관광, 맛집, 문화행사 정보를 한곳에서.<br>
+            대구의 매력을 ttip에서 발견하세요.
           </p>
           <p class="text-gray-400 text-xs font-semibold uppercase tracking-widest">
             &copy; {{ currentYear }} ttip. All rights reserved.
