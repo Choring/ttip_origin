@@ -12,6 +12,9 @@
         @if(!empty($spot->image))
         <image:image>
             <image:loc>{{ $spot->image }}</image:loc>
+            @if(!empty($spot->title))
+            <image:title>{{ htmlspecialchars($spot->title) }}</image:title>
+            @endif
         </image:image>
         @endif
     </url>

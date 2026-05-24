@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
@@ -18,18 +19,34 @@ class Post extends Model
                 ['date' => now()->toDateString()],
                 ['new_posts_count' => \Illuminate\Support\Facades\DB::raw('new_posts_count + 1')]
             );
-            // post_tags 동기화
             $post->syncPostTags();
+            self::flushSitemapCache();
         });
 
         static::updated(function ($post) {
-            // tags 컬럼이 변경된 경우에만 재동기화
             if ($post->wasChanged('tags')) {
                 $post->syncPostTags();
             }
+            // 제목·이미지·공개 여부가 바뀌면 사이트맵 갱신
+            if ($post->wasChanged(['title', 'card_image_path', 'is_hidden', 'type'])) {
+                self::flushSitemapCache();
+            }
         });
 
-        // deleted는 FK cascade로 자동 삭제되므로 별도 처리 불필요
+        static::deleted(function () {
+            self::flushSitemapCache();
+        });
+    }
+
+    /** 게시글 관련 사이트맵 캐시 무효화 */
+    protected static function flushSitemapCache(): void
+    {
+        Cache::forget('sitemap_post_pages');
+        Cache::forget('rss_feed');
+        // 최신 게시글이 담긴 1~3페이지만 무효화 (나머지는 TTL 자연 만료)
+        foreach (range(1, 3) as $p) {
+            Cache::forget("sitemap_posts_{$p}");
+        }
     }
 
     /**

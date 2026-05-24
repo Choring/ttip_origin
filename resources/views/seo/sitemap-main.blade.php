@@ -32,6 +32,14 @@
         <priority>0.9</priority>
     </url>
 
+    {{-- 공지사항 목록 --}}
+    <url>
+        <loc>{{ url('/notices') }}</loc>
+        <lastmod>{{ now()->toAtomString() }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+
     {{-- 카테고리 피드 (공지 카테고리 제외) --}}
     @foreach($categories as $category)
     <url>

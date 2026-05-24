@@ -12,6 +12,9 @@
         @if(!empty($event->image))
         <image:image>
             <image:loc>{{ $event->image }}</image:loc>
+            @if(!empty($event->title))
+            <image:title>{{ htmlspecialchars($event->title) }}</image:title>
+            @endif
         </image:image>
         @endif
     </url>
