@@ -108,4 +108,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PostLike::class);
     }
+
+    public function bookmarks()
+    {
+        return $this->hasMany(PostBookmark::class);
+    }
+
+    public function bookmarkedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_bookmarks')->withTimestamps();
+    }
 }

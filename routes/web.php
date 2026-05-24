@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/profile/points', [\App\Http\Controllers\PointHistoryController::class, 'index'])->name('profile.points');
+    Route::get('/profile/activity', [ProfileController::class, 'activity'])->name('profile.activity');
 });
 
 // 이메일 인증 필요한 라우트

@@ -38,6 +38,30 @@ const user = page.props.auth.user;
 
             <div class="space-y-6 px-2 sm:px-0">
 
+                <!-- 내 활동 (내가 쓴 글 / 북마크) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <Link
+                        :href="route('profile.activity', { tab: 'posts' })"
+                        class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-4 py-4 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all group"
+                    >
+                        <span class="text-2xl">✏️</span>
+                        <div>
+                            <p class="text-xs text-gray-400 font-semibold">내가 쓴 글</p>
+                            <p class="text-sm font-black text-gray-800 group-hover:text-indigo-600 transition-colors">게시글 보기 →</p>
+                        </div>
+                    </Link>
+                    <Link
+                        :href="route('profile.activity', { tab: 'bookmarks' })"
+                        class="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-4 py-4 shadow-sm hover:border-amber-200 hover:shadow-md transition-all group"
+                    >
+                        <span class="text-2xl">🔖</span>
+                        <div>
+                            <p class="text-xs text-gray-400 font-semibold">북마크</p>
+                            <p class="text-sm font-black text-gray-800 group-hover:text-amber-500 transition-colors">저장 목록 →</p>
+                        </div>
+                    </Link>
+                </div>
+
                 <!-- 포인트 / 티어 현황 카드 -->
                 <Link :href="route('profile.points')"
                     class="block bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 rounded-3xl p-5 shadow-md transition-all group">
