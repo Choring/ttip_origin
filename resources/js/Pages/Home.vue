@@ -30,6 +30,17 @@ const searchType = ref(props.filters?.search_type || 'title');
 const searchKeyword = ref(props.filters?.search_keyword || '');
 const isSearchVisible = ref(!!props.filters?.search_keyword); // 검색어가 있으면 열어둠
 
+const searchPlaceholder = computed(() => {
+    const map = {
+        title:         '제목으로 검색...',
+        title_content: '제목 또는 본문 내용으로 검색...',
+        content:       '본문 내용으로 검색...',
+        tags:          '#태그명으로 검색...',
+        author:        '작성자 닉네임으로 검색...',
+    };
+    return map[searchType.value] ?? '검색어를 입력하세요...';
+});
+
 const toggleSearch = () => {
     isSearchVisible.value = !isSearchVisible.value;
 };
@@ -314,6 +325,8 @@ let schemaScriptEl = null;
              class="border-gray-200 text-gray-700 font-medium rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 w-40 text-sm"
           >
               <option value="title">제목</option>
+              <option value="title_content">제목+본문</option>
+              <option value="content">본문</option>
               <option value="tags">해시태그</option>
               <option value="author">작성자</option>
           </select>
@@ -321,8 +334,8 @@ let schemaScriptEl = null;
               <input 
                  v-model="searchKeyword" 
                  @keydown.enter="executeSearch"
-                 type="text" 
-                 placeholder="검색어를 입력하세요..." 
+                 type="text"
+                 :placeholder="searchPlaceholder"
                  class="w-full border-gray-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-12 text-sm"
               />
               <button @click="executeSearch" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-50 text-indigo-600 rounded-md hover:bg-indigo-600 hover:text-white transition-colors">
@@ -365,6 +378,8 @@ let schemaScriptEl = null;
                class="border-gray-200 text-gray-700 font-medium rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 flex-1 text-sm py-2"
             >
                 <option value="title">제목</option>
+                <option value="title_content">제목+본문</option>
+                <option value="content">본문</option>
                 <option value="tags">태그</option>
                 <option value="author">작성자</option>
             </select>
@@ -373,8 +388,8 @@ let schemaScriptEl = null;
               <input 
                  v-model="searchKeyword" 
                  @keydown.enter="executeSearch"
-                 type="text" 
-                 placeholder="검색어를 입력하세요..." 
+                 type="text"
+                 :placeholder="searchPlaceholder"
                  class="w-full border-gray-200 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 pr-12 text-sm py-2"
               />
               <button @click="executeSearch" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-indigo-600 text-white rounded-md transition-colors shadow-sm">
@@ -442,6 +457,7 @@ let schemaScriptEl = null;
               :extra_info="post.extra_info"
               :card_image_path="post.card_image_path"
               :card_image_url="post.card_image_url"
+              :content-excerpt="post.contentExcerpt"
             />
 
             <!-- Mobile Injection: Widgets only for 'all' or specific indices -->

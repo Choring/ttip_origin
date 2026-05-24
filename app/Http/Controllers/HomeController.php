@@ -65,8 +65,15 @@ class HomeController extends Controller
             $type = $request->input('search_type', 'title');
 
             if ($type === 'title') {
+                $query->where('title', 'like', "%{$keyword}%");
+            } elseif ($type === 'content') {
+                // 본문 검색 — HTML 태그를 우회해 텍스트 키워드 매칭
+                $query->where('content', 'like', "%{$keyword}%");
+            } elseif ($type === 'title_content') {
+                // 제목 + 본문 통합 검색
                 $query->where(function ($q) use ($keyword) {
-                    $q->where('title', 'like', "%{$keyword}%");
+                    $q->where('title', 'like', "%{$keyword}%")
+                      ->orWhere('content', 'like', "%{$keyword}%");
                 });
             } elseif ($type === 'tags') {
                 $cleanKeyword = mb_strtolower(ltrim($keyword, '#'));
@@ -83,8 +90,29 @@ class HomeController extends Controller
 
         $paginator = $query->paginate(10)->appends($request->query());
 
-        $posts = $paginator->getCollection()->map(function ($post) {
+        // 본문 검색 시 매칭 위치 excerpt 추출
+        $searchType    = $request->input('search_type', 'title');
+        $searchKeyword = $request->input('search_keyword', '');
+        $needsExcerpt  = $searchKeyword && in_array($searchType, ['content', 'title_content']);
+
+        $posts = $paginator->getCollection()->map(function ($post) use ($needsExcerpt, $searchKeyword) {
             $isBookmarked = auth()->check() ? $post->bookmarks()->where('user_id', auth()->id())->exists() : false;
+
+            // 본문 매칭 excerpt 생성 (검색어 앞뒤 60자)
+            $contentExcerpt = null;
+            if ($needsExcerpt) {
+                $plainText = strip_tags($post->content ?? '');
+                $plainText = html_entity_decode(preg_replace('/\s+/', ' ', $plainText));
+                $pos = mb_stripos($plainText, $searchKeyword);
+                if ($pos !== false) {
+                    $start = max(0, $pos - 60);
+                    $end   = min(mb_strlen($plainText), $pos + mb_strlen($searchKeyword) + 60);
+                    $contentExcerpt = ($start > 0 ? '...' : '')
+                        . mb_substr($plainText, $start, $end - $start)
+                        . ($end < mb_strlen($plainText) ? '...' : '');
+                }
+            }
+
             return [
                 'id'             => $post->id,
                 'authorName'     => $post->user->name ?? '탈퇴한 사용자',
@@ -103,9 +131,10 @@ class HomeController extends Controller
                 'extra_info'     => $post->extra_info,
                 'card_image_path' => $post->card_image_path,
                 'card_image_url'  => $post->card_image_url,
-                'isBookmarked'   => $isBookmarked,
-                'authorTierName' => $post->user->tier->name ?? '씨앗',
-                'authorTierIcon' => $post->user->tier->icon_url ?? '🌱',
+                'isBookmarked'    => $isBookmarked,
+                'authorTierName'  => $post->user->tier->name ?? '씨앗',
+                'authorTierIcon'  => $post->user->tier->icon_url ?? '🌱',
+                'contentExcerpt'  => $contentExcerpt,
             ];
         });
 

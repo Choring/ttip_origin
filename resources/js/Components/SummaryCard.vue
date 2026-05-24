@@ -54,8 +54,12 @@
         {{ title }}
       </h2>
 
-      <!-- 한줄 요약 (있을 때만) -->
-      <p v-if="summary && summary.length > 0" class="text-xs text-gray-400 line-clamp-1 mb-3">
+      <!-- 본문 검색 매칭 excerpt (본문/제목+본문 검색 시) -->
+      <p v-if="contentExcerpt" class="text-xs text-indigo-500 bg-indigo-50 rounded-lg px-2.5 py-1.5 line-clamp-2 mb-3 leading-relaxed">
+        🔍 {{ contentExcerpt }}
+      </p>
+      <!-- 한줄 요약 (있을 때만, excerpt 없을 때) -->
+      <p v-else-if="summary && summary.length > 0" class="text-xs text-gray-400 line-clamp-1 mb-3">
         {{ summary[0] }}
       </p>
 
@@ -140,6 +144,7 @@ const props = defineProps({
    isBookmarked: { type: Boolean, default: false },
    authorTierName: { type: String, default: '' },
    authorTierIcon: { type: String, default: '' },
+   contentExcerpt: { type: String, default: null },
  });
 
 
