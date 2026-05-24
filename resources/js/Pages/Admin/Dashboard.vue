@@ -1,19 +1,20 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  PointElement, 
-  LineElement, 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
   BarElement,
-  Title, 
-  Tooltip, 
+  ArcElement,
+  Title,
+  Tooltip,
   Legend,
   Filler,
 } from 'chart.js';
-import { Line, Bar } from 'vue-chartjs';
+import { Line, Bar, Doughnut } from 'vue-chartjs';
 import { computed, ref } from 'vue';
 
 ChartJS.register(
@@ -22,6 +23,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -29,9 +31,12 @@ ChartJS.register(
 );
 
 const props = defineProps({
-    stats:   Object,
-    chart7:  Object,
-    chart30: Object,
+    stats:         Object,
+    chart7:        Object,
+    chart30:       Object,
+    categoryStats: Array,
+    topPosts:      Array,
+    tierStats:     Array,
 });
 
 // ── 탭 상태 ──────────────────────────────────────────────────
@@ -117,6 +122,63 @@ const getTrend = (today, yesterday) => {
 
 const userTrend = computed(() => getTrend(props.stats.new_users_today, props.stats.new_users_yesterday));
 const postTrend = computed(() => getTrend(props.stats.new_posts_today, props.stats.new_posts_yesterday));
+
+// ── 카테고리 도넛 차트 ────────────────────────────────────────
+const CATEGORY_COLORS = [
+    '#6366f1', '#f59e0b', '#10b981', '#3b82f6',
+    '#ec4899', '#8b5cf6', '#14b8a6', '#f97316',
+];
+
+const categoryChartData = computed(() => ({
+    labels: (props.categoryStats || []).map(c => c.name),
+    datasets: [{
+        data: (props.categoryStats || []).map(c => c.count),
+        backgroundColor: CATEGORY_COLORS,
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 6,
+    }],
+}));
+
+// ── 티어 도넛 차트 ────────────────────────────────────────────
+const TIER_COLORS = ['#fbbf24', '#a78bfa', '#34d399', '#60a5fa', '#f87171', '#94a3b8'];
+
+const tierChartData = computed(() => ({
+    labels: (props.tierStats || []).map(t => `${t.icon} ${t.name}`),
+    datasets: [{
+        data: (props.tierStats || []).map(t => t.count),
+        backgroundColor: TIER_COLORS,
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 6,
+    }],
+}));
+
+const doughnutOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: {
+        legend: {
+            position: 'bottom',
+            labels: {
+                font: { size: 11, weight: 'bold' },
+                usePointStyle: true,
+                padding: 12,
+            },
+        },
+        tooltip: {
+            backgroundColor: '#1e1b4b',
+            titleFont: { size: 12, weight: 'bold' },
+            bodyFont: { size: 12 },
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+                label: (ctx) => ` ${ctx.label}: ${ctx.parsed}개 (${Math.round(ctx.parsed / ctx.dataset.data.reduce((a, b) => a + b, 0) * 100)}%)`,
+            },
+        },
+    },
+};
 
 // ── 숫자 포맷 ────────────────────────────────────────────────
 const formatNum = (n) => n?.toLocaleString('ko-KR') ?? '0';
@@ -282,6 +344,129 @@ const formatNum = (n) => n?.toLocaleString('ko-KR') ?? '0';
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- 카테고리 분포 & 회원 등급 분포 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+            <!-- 카테고리별 게시글 분포 -->
+            <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-base font-black text-gray-800 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-indigo-400 rounded-full"></span>
+                        카테고리별 게시글 분포
+                    </h3>
+                    <span class="text-xs font-black text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
+                        전체 누적
+                    </span>
+                </div>
+                <div v-if="categoryStats && categoryStats.length > 0" class="h-[260px]">
+                    <Doughnut :data="categoryChartData" :options="doughnutOptions" />
+                </div>
+                <div v-else class="h-[260px] flex items-center justify-center text-gray-300 text-sm font-bold">
+                    데이터 없음
+                </div>
+                <!-- 카테고리별 수치 나열 -->
+                <div class="mt-4 pt-4 border-t border-gray-50 grid grid-cols-2 gap-2">
+                    <div
+                        v-for="(cat, idx) in (categoryStats || [])"
+                        :key="cat.name"
+                        class="flex items-center gap-2"
+                    >
+                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: CATEGORY_COLORS[idx % CATEGORY_COLORS.length] }"></span>
+                        <span class="text-xs text-gray-500 font-bold truncate">{{ cat.name }}</span>
+                        <span class="text-xs font-black text-gray-700 ml-auto">{{ formatNum(cat.count) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 회원 등급 분포 -->
+            <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-base font-black text-gray-800 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-amber-400 rounded-full"></span>
+                        회원 등급 분포
+                    </h3>
+                    <span class="text-xs font-black text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
+                        전체 회원 {{ formatNum(stats.total_users) }}명
+                    </span>
+                </div>
+                <div v-if="tierStats && tierStats.length > 0" class="h-[260px]">
+                    <Doughnut :data="tierChartData" :options="doughnutOptions" />
+                </div>
+                <div v-else class="h-[260px] flex items-center justify-center text-gray-300 text-sm font-bold">
+                    데이터 없음
+                </div>
+                <!-- 등급별 수치 나열 -->
+                <div class="mt-4 pt-4 border-t border-gray-50 grid grid-cols-2 gap-2">
+                    <div
+                        v-for="(tier, idx) in (tierStats || [])"
+                        :key="tier.name"
+                        class="flex items-center gap-2"
+                    >
+                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ backgroundColor: TIER_COLORS[idx % TIER_COLORS.length] }"></span>
+                        <span class="text-xs text-gray-500 font-bold truncate">{{ tier.icon }} {{ tier.name }}</span>
+                        <span class="text-xs font-black text-gray-700 ml-auto">{{ formatNum(tier.count) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 인기 게시글 TOP 5 -->
+        <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-base font-black text-gray-800 flex items-center gap-2">
+                    <span class="w-2 h-6 bg-rose-400 rounded-full"></span>
+                    🔥 인기 게시글 TOP 5
+                </h3>
+                <span class="text-xs font-black text-rose-500 bg-rose-50 px-3 py-1 rounded-full">조회수 기준</span>
+            </div>
+            <div v-if="topPosts && topPosts.length > 0" class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left border-b border-gray-100">
+                            <th class="pb-3 text-[11px] font-black text-gray-400 uppercase tracking-wider w-8">#</th>
+                            <th class="pb-3 text-[11px] font-black text-gray-400 uppercase tracking-wider">제목</th>
+                            <th class="pb-3 text-[11px] font-black text-gray-400 uppercase tracking-wider w-20 text-center">카테고리</th>
+                            <th class="pb-3 text-[11px] font-black text-gray-400 uppercase tracking-wider w-20 text-right">조회수</th>
+                            <th class="pb-3 text-[11px] font-black text-gray-400 uppercase tracking-wider w-20 text-right">좋아요</th>
+                            <th class="pb-3 text-[11px] font-black text-gray-400 uppercase tracking-wider w-16 text-right">작성일</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr
+                            v-for="(post, idx) in topPosts"
+                            :key="post.id"
+                            class="hover:bg-gray-50 transition-colors group"
+                        >
+                            <td class="py-3.5 pr-3">
+                                <span
+                                    class="w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-black"
+                                    :class="idx === 0 ? 'bg-amber-100 text-amber-600' : idx === 1 ? 'bg-gray-100 text-gray-500' : idx === 2 ? 'bg-orange-50 text-orange-400' : 'bg-gray-50 text-gray-400'"
+                                >{{ idx + 1 }}</span>
+                            </td>
+                            <td class="py-3.5 pr-4">
+                                <a
+                                    :href="route('posts.show', post.id)"
+                                    target="_blank"
+                                    class="font-bold text-gray-800 hover:text-indigo-600 transition-colors line-clamp-1 group-hover:underline"
+                                >{{ post.title }}</a>
+                            </td>
+                            <td class="py-3.5 text-center">
+                                <span class="text-[11px] font-black px-2 py-1 bg-indigo-50 text-indigo-500 rounded-lg">{{ post.category }}</span>
+                            </td>
+                            <td class="py-3.5 text-right">
+                                <span class="font-black text-gray-700">{{ formatNum(post.views) }}</span>
+                            </td>
+                            <td class="py-3.5 text-right">
+                                <span class="font-black text-rose-500">♥ {{ formatNum(post.likes) }}</span>
+                            </td>
+                            <td class="py-3.5 text-right text-gray-400 font-medium text-xs">{{ post.createdAt }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div v-else class="text-center py-10 text-gray-300 text-sm font-bold">데이터 없음</div>
         </div>
 
         <!-- 하단 배너 -->

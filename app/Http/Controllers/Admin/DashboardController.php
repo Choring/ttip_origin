@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\User;
 use App\Models\Post;
 use App\Models\DailyStatistic;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -66,10 +68,56 @@ class DashboardController extends Controller
             ];
         };
 
+        // ── 3. 카테고리별 게시글 분포 ────────────────────────────────────────
+        $categoryStats = Category::withCount('posts')
+            ->whereNotIn('slug', ['all', 'notice'])
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn($c) => [
+                'name'  => $c->name,
+                'count' => $c->posts_count,
+            ])
+            ->filter(fn($c) => $c['count'] > 0)
+            ->values();
+
+        // ── 4. 인기 게시글 TOP 5 ─────────────────────────────────────────────
+        $topPosts = Post::visible()
+            ->select('id', 'title', 'view_count', 'category_id', 'created_at')
+            ->withCount('likes')
+            ->with('category:id,name')
+            ->orderByDesc('view_count')
+            ->take(5)
+            ->get()
+            ->map(fn($p) => [
+                'id'        => $p->id,
+                'title'     => $p->title,
+                'category'  => $p->category->name ?? '일반',
+                'views'     => $p->view_count,
+                'likes'     => $p->likes_count ?? 0,
+                'createdAt' => $p->created_at->format('m/d'),
+            ]);
+
+        // ── 5. 회원 등급 분포 ─────────────────────────────────────────────────
+        $tierStats = User::select('tier_id', DB::raw('count(*) as count'))
+            ->groupBy('tier_id')
+            ->with('tier:id,name,icon_url')
+            ->get()
+            ->map(fn($u) => [
+                'name'  => $u->tier->name ?? '등급 없음',
+                'icon'  => $u->tier->icon_url ?? '🌱',
+                'count' => $u->count,
+            ])
+            ->sortByDesc('count')
+            ->values();
+
         return Inertia::render('Admin/Dashboard', [
-            'stats'   => $stats,
-            'chart7'  => $buildChart(7),
-            'chart30' => $buildChart(30),
+            'stats'         => $stats,
+            'chart7'        => $buildChart(7),
+            'chart30'       => $buildChart(30),
+            'categoryStats' => $categoryStats,
+            'topPosts'      => $topPosts,
+            'tierStats'     => $tierStats,
         ]);
     }
 }
