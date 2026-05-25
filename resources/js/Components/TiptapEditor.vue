@@ -83,13 +83,20 @@
       </button>
 
       <!-- Image -->
-      <button 
+      <button
         type="button"
-        @click="triggerImageUpload" 
-        class="p-2 rounded hover:bg-gray-200 transition-colors text-gray-700"
+        @click="triggerImageUpload"
+        :disabled="isUploading"
+        class="p-2 rounded hover:bg-gray-200 transition-colors text-gray-700 relative disabled:opacity-50 disabled:cursor-not-allowed"
         title="이미지 업로드"
       >
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        <!-- 스피너 -->
+        <svg v-if="isUploading" class="w-4 h-4 animate-spin text-indigo-500" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
+        <!-- 기본 아이콘 -->
+        <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
       </button>
       <input 
         type="file" 
@@ -113,10 +120,28 @@
     </div>
 
     <!-- Editor Content -->
-    <editor-content
-        :editor="editor"
-        class="min-h-[300px] max-h-[600px] overflow-y-auto p-4 prose prose-indigo prose-p:my-2 prose-li:my-0.5 max-w-none focus:outline-none leading-relaxed"
-    />
+    <div class="relative">
+      <editor-content
+          :editor="editor"
+          class="min-h-[300px] max-h-[600px] overflow-y-auto p-4 prose prose-indigo prose-p:my-2 prose-li:my-0.5 max-w-none focus:outline-none leading-relaxed"
+          :class="{ 'pointer-events-none select-none': isUploading }"
+      />
+      <!-- 업로드 중 오버레이 -->
+      <Transition name="fade">
+        <div
+          v-if="isUploading"
+          class="absolute inset-0 bg-white/60 flex items-center justify-center rounded-b-lg"
+        >
+          <div class="flex items-center gap-2 bg-white shadow-md rounded-xl px-4 py-2.5 text-sm text-indigo-600 font-semibold">
+            <svg class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+            이미지 업로드 중...
+          </div>
+        </div>
+      </Transition>
+    </div>
   </div>
 </template>
 
@@ -138,8 +163,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue']);
 
-const imageInput   = ref(null);
+const imageInput     = ref(null);
 const isDraggingOver = ref(false);
+const isUploading    = ref(false);
 
 const editor = useEditor({
   content: props.modelValue,
@@ -215,8 +241,9 @@ const triggerImageUpload = () => {
 
 /** 실제 업로드 + 에디터 삽입 공통 함수 */
 const uploadImageFile = async (file) => {
-  if (!file) return;
+  if (!file || isUploading.value) return;
 
+  isUploading.value = true;
   const formData = new FormData();
   formData.append('image', file);
 
@@ -232,6 +259,8 @@ const uploadImageFile = async (file) => {
     console.error('이미지 업로드 실패:', error);
     const message = error.response?.data?.error || '이미지 업로드에 실패했습니다. (최대 5MB)';
     alert(message);
+  } finally {
+    isUploading.value = false;
   }
 };
 
@@ -242,6 +271,9 @@ const handleImageUpload = async (event) => {
 </script>
 
 <style>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
 /* Tiptap Placeholder or basic styles if needed */
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
