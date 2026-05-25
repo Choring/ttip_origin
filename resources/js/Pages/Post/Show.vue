@@ -365,29 +365,30 @@ const jsonLdBreadcrumb = computed(() => {
             <div class="post-body prose prose-indigo prose-p:my-2 prose-li:my-0.5 max-w-none text-gray-800 leading-relaxed" v-html="post.content">
             </div>
 
-            <!-- Like Action Bar: 3열 grid로 띱 버튼 정중앙 고정 -->
-            <div class="mt-8 pb-4 grid grid-cols-3 items-center gap-2">
-                <!-- 왼쪽: 목록으로 돌아가기 -->
-                <div class="flex justify-start">
+            <!-- Like Action Bar -->
+            <div class="mt-8 pb-4 flex flex-col items-center gap-6">
+                <!-- 띱 버튼 (중앙) -->
+                <div class="flex justify-center">
+                    <button @click="toggleLike"
+                        :disabled="isLiking"
+                        class="flex items-center gap-2 px-8 py-3.5 rounded-full font-black text-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-md border-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        :class="localIsLiked ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'">
+                        <span>{{ isLiking ? '...' : '띱 👍' }}</span>
+                        <span class="bg-white px-2 py-0.5 rounded-full text-base border transition-all"
+                            :class="localIsLiked ? 'border-indigo-200' : 'border-gray-100'">{{ localLikesCount }}</span>
+                    </button>
+                </div>
+
+                <!-- 목록으로 / 신고 -->
+                <div class="w-full flex justify-between items-center">
+                <div>
                     <Link :href="route('home')" class="text-indigo-600 hover:text-indigo-800 font-medium transition-colors text-sm whitespace-nowrap">
                         &larr; 목록으로 돌아가기
                     </Link>
                 </div>
 
-                <!-- 가운데: 띱 버튼 -->
-                <div class="flex justify-center">
-                    <button @click="toggleLike"
-                        :disabled="isLiking"
-                        class="flex items-center space-x-2 px-8 py-3.5 rounded-full font-black text-lg transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-md border-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                        :class="localIsLiked ? 'bg-indigo-50 border-indigo-600 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'">
-                        <span>{{ isLiking ? '...' : '띱 👍' }}</span>
-                        <span class="ml-1 bg-white px-2 py-0.5 rounded-full text-base border transition-all"
-                            :class="localIsLiked ? 'border-indigo-200' : 'border-gray-100'">{{ localLikesCount }}</span>
-                    </button>
-                </div>
-
                 <!-- 오른쪽: 수정/삭제(작성자 또는 관리자) 또는 신고(비작성자) -->
-                <div class="flex justify-end items-center gap-2">
+                <div class="flex justify-end items-center gap-2 flex-wrap">
                     <template v-if="user && user.id === post.user_id">
                         <!-- 관리자 + 공지사항 → 어드민 수정 페이지 -->
                         <Link
@@ -436,6 +437,7 @@ const jsonLdBreadcrumb = computed(() => {
                         </svg>
                         신고
                     </button>
+                </div>
                 </div>
             </div>
 
