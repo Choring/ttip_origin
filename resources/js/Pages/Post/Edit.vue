@@ -21,6 +21,32 @@ const form = useForm({
     image: null, // 새 썸네일 이미지
 });
 
+// ── 썸네일 드래그&드롭 ─────────────────────────────────────────
+const thumbnailInputRef = ref(null);
+const thumbnailPreview  = ref(null);
+const thumbnailDragOver = ref(false);
+
+const applyThumbnailFile = (file) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    form.image = file;
+    thumbnailPreview.value = URL.createObjectURL(file);
+};
+
+const handleThumbnailSelect = (e) => {
+    applyThumbnailFile(e.target.files[0]);
+};
+
+const handleThumbnailDrop = (e) => {
+    thumbnailDragOver.value = false;
+    applyThumbnailFile(e.dataTransfer.files[0]);
+};
+
+const removeThumbnail = () => {
+    form.image = null;
+    thumbnailPreview.value = null;
+    if (thumbnailInputRef.value) thumbnailInputRef.value.value = '';
+};
+
 // 카테고리별 필드 정의 (Create.vue와 동일)
 const categoryFields = {
     'restaurant': [
@@ -231,18 +257,64 @@ const submit = () => {
                     <div v-if="form.errors.content" class="text-red-500 text-sm mt-1">{{ form.errors.content }}</div>
                 </div>
 
+                <!-- 썸네일 이미지 드래그&드롭 업로드 -->
                 <div>
-                    <label for="image" class="block text-sm font-bold text-gray-700 mb-2">썸네일 이미지 수정 (선택)</label>
-                    <div v-if="post.card_image_url" class="mb-3">
-                        <p class="text-xs text-gray-400 mb-1">현재 썸네일:</p>
-                        <img :src="post.card_image_url" class="w-32 h-20 object-cover rounded-lg border border-gray-200" alt="Current thumbnail" />
+                    <label class="block text-sm font-bold text-gray-700 mb-2">썸네일 이미지 수정 (선택)</label>
+
+                    <!-- 새 이미지 미리보기 -->
+                    <div v-if="thumbnailPreview" class="relative group rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                        <img :src="thumbnailPreview" alt="새 썸네일 미리보기" class="w-full max-h-56 object-cover" />
+                        <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                            <button type="button" @click="thumbnailInputRef.click()"
+                                class="bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-gray-100 transition">
+                                이미지 변경
+                            </button>
+                            <button type="button" @click="removeThumbnail"
+                                class="bg-red-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow hover:bg-red-600 transition">
+                                삭제
+                            </button>
+                        </div>
                     </div>
-                    <input 
-                        id="image" 
-                        type="file" 
+
+                    <!-- 기존 썸네일 + 드롭존 -->
+                    <div v-else>
+                        <!-- 기존 썸네일 표시 -->
+                        <div v-if="post.card_image_url" class="mb-3">
+                            <p class="text-xs text-gray-400 mb-1">현재 썸네일:</p>
+                            <img :src="post.card_image_url" class="w-32 h-20 object-cover rounded-lg border border-gray-200" alt="현재 썸네일" />
+                        </div>
+
+                        <!-- 드롭존 -->
+                        <div
+                            @dragover.prevent="thumbnailDragOver = true"
+                            @dragleave.prevent="thumbnailDragOver = false"
+                            @drop.prevent="handleThumbnailDrop"
+                            @click="thumbnailInputRef.click()"
+                            :class="[
+                                'cursor-pointer border-2 border-dashed rounded-xl p-8 text-center transition-all',
+                                thumbnailDragOver
+                                    ? 'border-indigo-400 bg-indigo-50'
+                                    : 'border-gray-300 bg-gray-50 hover:border-indigo-300 hover:bg-indigo-50/50'
+                            ]"
+                        >
+                            <svg class="mx-auto w-10 h-10 text-gray-300 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <p class="text-sm font-semibold text-gray-500">
+                                {{ post.card_image_url ? '새 이미지로 교체하려면 드래그하거나 클릭' : '이미지를 드래그하거나 클릭하여 업로드' }}
+                            </p>
+                            <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP, GIF · 최대 5MB</p>
+                        </div>
+                    </div>
+
+                    <input
+                        ref="thumbnailInputRef"
+                        type="file"
                         accept="image/*"
-                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 focus:outline-none" 
-                        @input="e => form.image = e.target.files[0]"
+                        class="hidden"
+                        @change="handleThumbnailSelect"
                     />
                     <div v-if="form.errors.image" class="text-red-500 text-sm mt-1">{{ form.errors.image }}</div>
                 </div>
