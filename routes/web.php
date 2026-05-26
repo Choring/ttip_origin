@@ -9,6 +9,7 @@ use App\Http\Controllers\NoticeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\QuizController;
 
 Route::middleware('throttle:global')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -21,6 +22,7 @@ Route::middleware('throttle:global')->group(function () {
     Route::get('/robots.txt', [SEOController::class, 'robots']);
     Route::get('/rss.xml', [SEOController::class, 'rss']);
     Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
+    Route::get('/quiz', [QuizController::class, 'index'])->name('quiz');
     Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');
     Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
     Route::get('/events/{eventSeq}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.show');

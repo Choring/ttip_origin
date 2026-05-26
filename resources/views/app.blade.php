@@ -198,6 +198,16 @@
         </script>
         @endif
 
+        <!-- Kakao SDK -->
+        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"
+                integrity="sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4"
+                crossorigin="anonymous"></script>
+        <script>
+            if (window.Kakao && !window.Kakao.isInitialized()) {
+                window.Kakao.init('{{ env('KAKAO_JS_KEY') }}');
+            }
+        </script>
+
         <!-- Google AdSense -->
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8069193438069319"
              crossorigin="anonymous"></script>

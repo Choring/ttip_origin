@@ -12,6 +12,7 @@ const user = computed(() => page.props.auth.user);
 
 const navItems = [
   { name: '탐색', route: 'home', requiresAuth: false },
+  { name: '사투리퀴즈 🗣️', route: 'quiz', requiresAuth: false },
   { name: '공지사항', route: 'notices.index', requiresAuth: false },
   { name: '인기글', route: 'popular', requiresAuth: false },
   { name: '북마크', route: 'bookmarks', requiresAuth: true },
