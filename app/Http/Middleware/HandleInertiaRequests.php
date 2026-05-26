@@ -50,28 +50,30 @@ class HandleInertiaRequests extends Middleware
                 'tier_upgrade' => session('tier_upgrade'), // ['name' => '새싹', 'icon' => '🌿']
             ],
 
-            'categories' => \Illuminate\Support\Facades\Cache::remember('active_categories', 600, function () {
-                return \App\Models\Category::where('is_active', true)->whereNotIn('slug', ['all', 'notice'])->orderBy('sort_order')->get();
-            }),
-            'popular_posts' => \Illuminate\Support\Facades\Cache::remember('popular_posts_sidebar', 60, function () {
-                return \App\Models\Post::select('id', 'title', 'view_count', 'likes_count')
-                    ->orderByRaw('(view_count + likes_count) DESC')
-                    ->take(5)
-                    ->get()
-                    ->map(function ($post) {
-                        return [
-                            'id' => $post->id,
-                            'title' => $post->title,
-                            'score' => $post->view_count + $post->likes_count,
-                        ];
-                    });
-            }),
-            'hall_of_fame' => \Illuminate\Support\Facades\Cache::remember('hall_of_fame_sidebar', 60, function () {
-                return \App\Models\User::select('id', 'name', 'current_points')
-                    ->orderBy('current_points', 'desc')
-                    ->take(3)
-                    ->get();
-            }),
+            ...($request->routeIs('login', 'register', 'password.*', 'verification.*') ? [] : [
+                'categories' => \Illuminate\Support\Facades\Cache::remember('active_categories', 600, function () {
+                    return \App\Models\Category::where('is_active', true)->whereNotIn('slug', ['all', 'notice'])->orderBy('sort_order')->get();
+                }),
+                'popular_posts' => \Illuminate\Support\Facades\Cache::remember('popular_posts_sidebar', 60, function () {
+                    return \App\Models\Post::select('id', 'title', 'view_count', 'likes_count')
+                        ->orderByRaw('(view_count + likes_count) DESC')
+                        ->take(5)
+                        ->get()
+                        ->map(function ($post) {
+                            return [
+                                'id' => $post->id,
+                                'title' => $post->title,
+                                'score' => $post->view_count + $post->likes_count,
+                            ];
+                        });
+                }),
+                'hall_of_fame' => \Illuminate\Support\Facades\Cache::remember('hall_of_fame_sidebar', 60, function () {
+                    return \App\Models\User::select('id', 'name', 'current_points')
+                        ->orderBy('current_points', 'desc')
+                        ->take(3)
+                        ->get();
+                }),
+            ]),
             // 어드민 사이드바 미답변 문의 수
             'pendingInquiryCount' => $request->user()?->role === 'admin'
                 ? \Illuminate\Support\Facades\Cache::remember('pending_inquiry_count', 60, fn() => Inquiry::where('status', 'pending')->count())
