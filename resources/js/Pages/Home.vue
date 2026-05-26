@@ -261,6 +261,41 @@ let schemaScriptEl = null;
         </Link>
       </div>
 
+      <!-- 사투리 퀴즈 프로모 배너 -->
+      <Link
+        v-if="currentCategory === 'all'"
+        :href="route('quiz')"
+        class="block relative overflow-hidden rounded-2xl group"
+        style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6d28d9 100%);"
+      >
+        <!-- 배경 장식 -->
+        <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full"></div>
+        <div class="absolute -right-2 bottom-0 w-24 h-24 bg-white/5 rounded-full"></div>
+        <div class="absolute left-1/2 -top-4 w-20 h-20 bg-purple-400/20 rounded-full"></div>
+
+        <div class="relative px-5 py-5 flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <p class="text-xs font-black tracking-widest text-indigo-200 uppercase mb-1">NEW 🎉 대구 사투리 퀴즈</p>
+            <h3 class="text-white font-black text-lg leading-snug mb-2">
+              나의 방언 레벨은? 🗣️
+            </h3>
+            <!-- 스탬프 -->
+            <div class="flex gap-1 mb-3">
+              <span v-for="icon in ['🗼','🍗','🌶️','🎵','🏔️']" :key="icon"
+                class="w-7 h-7 bg-white/15 rounded-lg flex items-center justify-center text-sm">
+                {{ icon }}
+              </span>
+            </div>
+            <span class="inline-flex items-center gap-1.5 bg-white text-indigo-700 text-xs font-black px-4 py-2 rounded-full shadow-lg group-hover:bg-indigo-50 transition-colors">
+              지금 도전하기 →
+            </span>
+          </div>
+          <div class="text-6xl flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+            🏆
+          </div>
+        </div>
+      </Link>
+
       <!-- Category Tabs (Horizontal Scroll) - Mobile Only -->
       <div v-if="categories && categories.length > 0" class="md:hidden -mx-4 px-4 relative">
         <!-- Scroll indicator gradient -->
