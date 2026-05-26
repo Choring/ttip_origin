@@ -57,6 +57,15 @@ Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'in
 Route::patch('/reports/{report}/resolve', [\App\Http\Controllers\Admin\ReportController::class, 'resolve'])->name('reports.resolve');
 Route::patch('/reports/{report}/dismiss', [\App\Http\Controllers\Admin\ReportController::class, 'dismiss'])->name('reports.dismiss');
 
+// Quiz Management
+Route::get('/quiz', [\App\Http\Controllers\Admin\QuizController::class, 'index'])->name('quiz.index');
+Route::get('/quiz/create', [\App\Http\Controllers\Admin\QuizController::class, 'create'])->name('quiz.create');
+Route::post('/quiz', [\App\Http\Controllers\Admin\QuizController::class, 'store'])->name('quiz.store');
+Route::get('/quiz/{quiz}/edit', [\App\Http\Controllers\Admin\QuizController::class, 'edit'])->name('quiz.edit');
+Route::put('/quiz/{quiz}', [\App\Http\Controllers\Admin\QuizController::class, 'update'])->name('quiz.update');
+Route::delete('/quiz/{quiz}', [\App\Http\Controllers\Admin\QuizController::class, 'destroy'])->name('quiz.destroy');
+Route::patch('/quiz/{quiz}/toggle-active', [\App\Http\Controllers\Admin\QuizController::class, 'toggleActive'])->name('quiz.toggleActive');
+
 // Notice Management
 Route::get('/notices', [\App\Http\Controllers\Admin\NoticeController::class, 'index'])->name('notices.index');
 Route::get('/notices/create', [\App\Http\Controllers\Admin\NoticeController::class, 'create'])->name('notices.create');

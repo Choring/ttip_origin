@@ -204,7 +204,7 @@
                 crossorigin="anonymous"></script>
         <script>
             if (window.Kakao && !window.Kakao.isInitialized()) {
-                window.Kakao.init('{{ env('KAKAO_JS_KEY') }}');
+                window.Kakao.init('{{ config('services.kakao.js_key') }}');
             }
         </script>
 
