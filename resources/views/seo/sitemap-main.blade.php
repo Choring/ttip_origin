@@ -32,6 +32,14 @@
         <priority>0.9</priority>
     </url>
 
+    {{-- 사투리 퀴즈 --}}
+    <url>
+        <loc>{{ url('/quiz') }}</loc>
+        <lastmod>{{ now()->toAtomString() }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+
     {{-- 공지사항 목록 --}}
     <url>
         <loc>{{ url('/notices') }}</loc>
