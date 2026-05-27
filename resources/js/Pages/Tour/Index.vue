@@ -53,12 +53,6 @@ const extractDistrict = (addr) => {
     return match ? match[0] : '';
 };
 
-// 스크롤 상단 버튼
-const showScrollTop = ref(false);
-const handleScroll = () => {
-    showScrollTop.value = (window.scrollY || document.documentElement.scrollTop) > 150;
-};
-const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
 // ── 뒤로가기 상태 복원 ──────────────────────────────────────────
 onMounted(() => {
@@ -228,16 +222,6 @@ onUnmounted(() => {
             </div>
         </main>
 
-        <!-- 스크롤 상단 버튼 -->
-        <button
-            @click="scrollToTop"
-            class="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-primary text-white shadow-xl hover:bg-[#E65300] hover:-translate-y-1 transition-all duration-300"
-            :class="showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'"
-        >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
-            </svg>
-        </button>
 
         <AppFooter />
         <ToastNotification />
