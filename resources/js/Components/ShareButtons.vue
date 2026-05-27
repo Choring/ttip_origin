@@ -42,13 +42,12 @@ const shareTwitter = () => {
 
 // ── 카카오톡 공유 ─────────────────────────────────────────
 const shareKakao = () => {
-    if (!window.Kakao?.isInitialized()) {
-        // Kakao SDK 없으면 kakaolink로 fallback
-        const encodedUrl = encodeURIComponent(pageUrl.value);
-        window.open(`https://sharer.kakao.com/talk/friends/picker/link?app_key=KAKAO_APP_KEY&validation_action=custom&validation_params={"url":"${encodedUrl}"}`, '_blank');
+    if (!window.Kakao?.Share) {
+        // Kakao SDK 없으면 링크 복사로 fallback
+        copyLink();
         return;
     }
-    window.Kakao.Link.sendDefault({
+    window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
             title: props.title,
