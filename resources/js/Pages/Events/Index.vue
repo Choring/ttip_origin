@@ -21,10 +21,26 @@ const FILTERS = [
 ];
 
 const activeFilter = ref('all');
+const searchQuery  = ref('');
 
 const filteredEvents = computed(() => {
-    if (activeFilter.value === 'all') return props.events;
-    return props.events.filter(e => e.event_gubun === activeFilter.value);
+    let list = props.events;
+
+    // 카테고리 필터
+    if (activeFilter.value !== 'all') {
+        list = list.filter(e => e.event_gubun === activeFilter.value);
+    }
+
+    // 검색어 필터 (제목 + 장소)
+    const q = searchQuery.value.trim().toLowerCase();
+    if (q) {
+        list = list.filter(e =>
+            e.subject?.toLowerCase().includes(q) ||
+            e.place?.toLowerCase().includes(q)
+        );
+    }
+
+    return list;
 });
 
 // ── 더보기 ───────────────────────────────────────────────────────
@@ -34,6 +50,11 @@ const loadMore = () => { visibleCount.value += 9; };
 
 const setFilter = (key) => {
     activeFilter.value = key;
+    visibleCount.value = 9;
+};
+
+const clearSearch = () => {
+    searchQuery.value = '';
     visibleCount.value = 9;
 };
 
@@ -86,6 +107,7 @@ onMounted(() => {
             const state = JSON.parse(raw);
             activeFilter.value = state.activeFilter ?? 'all';
             visibleCount.value = state.visibleCount  ?? 9;
+            searchQuery.value  = state.searchQuery   ?? '';
             nextTick(() => {
                 window.scrollTo({ top: state.scrollY ?? 0, behavior: 'instant' });
             });
@@ -100,6 +122,7 @@ const stopRouterListener = router.on('before', (event) => {
             activeFilter: activeFilter.value,
             visibleCount: visibleCount.value,
             scrollY:      window.scrollY,
+            searchQuery:  searchQuery.value,
         }));
     } else {
         sessionStorage.removeItem(SESSION_KEY);
@@ -136,6 +159,29 @@ onUnmounted(() => {
                 </p>
             </div>
 
+            <!-- 검색창 -->
+            <div class="mb-6 relative">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input
+                    v-model="searchQuery"
+                    @input="visibleCount = 9"
+                    type="text"
+                    placeholder="공연명, 장소로 검색..."
+                    class="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary shadow-sm"
+                />
+                <button
+                    v-if="searchQuery"
+                    @click="clearSearch"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
             <!-- 필터 탭 -->
             <div class="mb-10 -mx-4 px-4 md:mx-0 md:px-0 relative">
                 <div class="md:hidden absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-10"></div>
@@ -157,8 +203,17 @@ onUnmounted(() => {
             <!-- 빈 상태 -->
             <div v-if="filteredEvents.length === 0" class="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
                 <div class="text-6xl mb-4">🎭</div>
-                <h3 class="text-xl font-bold text-gray-900 mb-2">현재 진행 중인 행사가 없습니다</h3>
-                <p class="text-gray-500">잠시 후 다시 확인해주세요.</p>
+                <template v-if="searchQuery">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">"{{ searchQuery }}" 검색 결과가 없습니다</h3>
+                    <p class="text-gray-500 mb-4">다른 키워드로 검색해보세요.</p>
+                    <button @click="clearSearch" class="px-5 py-2 bg-primary text-white rounded-full text-sm font-bold hover:bg-orange-600 transition-colors">
+                        검색 초기화
+                    </button>
+                </template>
+                <template v-else>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">현재 진행 중인 행사가 없습니다</h3>
+                    <p class="text-gray-500">잠시 후 다시 확인해주세요.</p>
+                </template>
             </div>
 
             <!-- 카드 그리드 -->
