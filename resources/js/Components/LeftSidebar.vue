@@ -17,14 +17,6 @@ const currentCategory = computed(() => {
     return null;
 });
 
-const categoryIcons = {
-    'restaurant':   '🍽️',
-    'cafe':         '☕',
-    'solo-dining':  '🥢',
-    'spot':         '🎯',
-    'daily-log':    '📝',
-    'daeguinfo':    '📍',
-};
 </script>
 
 <template>
@@ -38,7 +30,6 @@ const categoryIcons = {
           class="group flex items-center gap-2 px-3 py-2 text-sm rounded-r-xl rounded-l-sm transition-colors"
           :class="currentCategory === 'all' ? 'bg-gray-50 border-l-4 border-indigo-600 text-indigo-700 font-bold' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 font-semibold'"
         >
-          <span class="text-base">📋</span>
           <span class="truncate">전체 피드</span>
         </Link>
         <Link
@@ -48,7 +39,6 @@ const categoryIcons = {
           class="group flex items-center gap-2 px-3 py-2 text-sm rounded-r-xl rounded-l-sm transition-colors"
           :class="currentCategory === cat.slug ? 'bg-gray-50 border-l-4 border-indigo-600 text-indigo-700 font-bold' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 font-semibold'"
         >
-          <span class="text-base">{{ categoryIcons[cat.slug] || '📌' }}</span>
           <span class="truncate">{{ cat.name }}</span>
         </Link>
       </nav>
