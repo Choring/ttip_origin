@@ -42,4 +42,8 @@ return [
         'js_key' => env('KAKAO_JS_KEY'),
     ],
 
+    'kopis' => [
+        'api_key' => env('KOPIS_API_KEY'),
+    ],
+
 ];

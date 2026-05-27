@@ -9,5 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('app:fetch-cultural-events')->dailyAt('03:00');
+Schedule::command('app:fetch-kopis-events')->dailyAt('03:30');
 Schedule::command('app:fetch-tourist-spots')->dailyAt('04:00');
 Schedule::command('app:fetch-restaurants')->weeklyOn(1, '05:00'); // 매주 월요일
