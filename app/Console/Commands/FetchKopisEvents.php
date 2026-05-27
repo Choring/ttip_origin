@@ -140,16 +140,26 @@ class FetchKopisEvents extends Command
 
             $db = $xml->db;
 
-            // 홈페이지: relate 배열 중 첫 번째 URL
-            $homepage = null;
+            // homepage: 예매 링크 우선, 없으면 첫 번째 URL
+            $homepage       = null;
+            $firstUrl       = null;
+            $ticketKeywords = ['interpark', 'yes24', 'ticketlink', 'melon', 'naver.com/ticket', 'ticket'];
+
             if (isset($db->relate)) {
                 foreach ($db->relate as $rel) {
                     $relateurl = trim((string) ($rel->relateurl ?? ''));
-                    if ($relateurl) {
-                        $homepage = $relateurl;
-                        break;
+                    if (!$relateurl) continue;
+
+                    if ($firstUrl === null) $firstUrl = $relateurl;
+
+                    foreach ($ticketKeywords as $keyword) {
+                        if (str_contains(strtolower($relateurl), $keyword)) {
+                            $homepage = $relateurl;
+                            break 2;
+                        }
                     }
                 }
+                if (!$homepage) $homepage = $firstUrl;
             }
 
             return [
