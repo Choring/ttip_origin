@@ -28,6 +28,8 @@ defineProps({
         :title="post.title"
         :summary="post.summary"
         :likes="post.likes"
+        :comments="post.comments"
+        :views="post.views"
       />
 
       <div v-if="!posts || posts.length === 0" class="text-center py-10 text-gray-500">
