@@ -40,11 +40,13 @@
           <span class="text-[11px] font-bold px-2 py-0.5 rounded-full" :class="categoryStyle.badge">
             {{ category }}
           </span>
-          <span
+          <Link
             v-for="t in (tags || []).slice(0, 2)"
             :key="t"
-            class="text-[11px] text-gray-400 font-medium"
-          >#{{ t }}</span>
+            :href="route('tags.show', t)"
+            @click.stop
+            class="text-[11px] text-gray-400 font-medium hover:text-indigo-500 transition-colors"
+          >#{{ t }}</Link>
         </div>
         <span class="text-[11px] text-gray-300 flex-shrink-0 ml-2">{{ timeAgo }}</span>
       </div>

@@ -220,6 +220,49 @@ class HomeController extends Controller
         ]);
     }
 
+    public function tag(string $tag)
+    {
+        $posts = \App\Models\Post::visible()
+            ->with(['user.tier', 'category'])
+            ->withCount(['comments', 'likes'])
+            ->whereHas('postTags', fn($q) => $q->where('tag', $tag))
+            ->latest()
+            ->paginate(20);
+
+        $mapped = $posts->getCollection()->map(function ($post) {
+            $isBookmarked = auth()->check() ? $post->bookmarks()->where('user_id', auth()->id())->exists() : false;
+            return [
+                'id'              => $post->id,
+                'authorName'      => $post->user->name ?? '탈퇴한 사용자',
+                'authorAvatar'    => 'https://ui-avatars.com/api/?name=' . urlencode($post->user->name ?? '?') . '&background=random',
+                'timeAgo'         => $post->created_at->diffForHumans(),
+                'category'        => $post->category->name ?? '일반',
+                'categorySlug'    => $post->category->slug ?? 'general',
+                'tags'            => $post->tags ?? [],
+                'title'           => $post->title,
+                'summary'         => $post->summary,
+                'likes'           => $post->likes_count ?? 0,
+                'comments'        => $post->comments_count ?? 0,
+                'views'           => $post->view_count ?? 0,
+                'extra_info'      => $post->extra_info,
+                'card_image_path' => $post->card_image_path,
+                'isBookmarked'    => $isBookmarked,
+                'authorTierName'  => $post->user->tier->name ?? '',
+                'authorTierIcon'  => $post->user->tier->icon_url ?? '',
+            ];
+        });
+
+        return \Inertia\Inertia::render('Tag', [
+            'tag'        => $tag,
+            'posts'      => $mapped,
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'last_page'    => $posts->lastPage(),
+                'total'        => $posts->total(),
+            ],
+        ]);
+    }
+
     public function bookmarks()
     {
         if (!auth()->check()) {

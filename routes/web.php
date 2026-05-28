@@ -22,6 +22,7 @@ Route::middleware('throttle:global')->group(function () {
     Route::get('/robots.txt', [SEOController::class, 'robots']);
     Route::get('/rss.xml', [SEOController::class, 'rss']);
     Route::get('/popular', [HomeController::class, 'popular'])->name('popular');
+    Route::get('/tags/{tag}', [HomeController::class, 'tag'])->name('tags.show');
     Route::get('/quiz', [QuizController::class, 'index'])->name('quiz');
     Route::get('/bookmarks', [HomeController::class, 'bookmarks'])->name('bookmarks');
     Route::get('/events', [\App\Http\Controllers\EventController::class, 'index'])->name('events.index');
