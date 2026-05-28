@@ -90,18 +90,42 @@ const currentFields = computed(() => {
     return categoryFields[currentCategorySlug.value] || [];
 });
 
-const tagInput = ref('');
-const isComposing = ref(false);
-const addTag = () => {
-    if (isComposing.value) return;
-    const val = tagInput.value.trim();
-    if (val && !form.tags.includes(val) && form.tags.length < 3) {
-        form.tags.push(val);
+const tagInput        = ref('');
+const isComposing     = ref(false);
+const tagSuggestions  = ref([]);
+const showSuggestions = ref(false);
+let suggestTimer = null;
+
+const addTag = (val = null) => {
+    if (!val && isComposing.value) return;
+    const v = (val ?? tagInput.value).trim();
+    if (v && !form.tags.includes(v) && form.tags.length < 3) {
+        form.tags.push(v);
     }
     tagInput.value = '';
+    tagSuggestions.value = [];
+    showSuggestions.value = false;
 };
 const removeTag = (index) => {
     form.tags.splice(index, 1);
+};
+
+const onTagInput = () => {
+    clearTimeout(suggestTimer);
+    const q = tagInput.value.trim();
+    if (!q) { tagSuggestions.value = []; showSuggestions.value = false; return; }
+    suggestTimer = setTimeout(async () => {
+        try {
+            const res = await fetch(`/api/tags/suggest?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            tagSuggestions.value = data.filter(s => !form.tags.includes(s.tag));
+            showSuggestions.value = tagSuggestions.value.length > 0;
+        } catch { tagSuggestions.value = []; }
+    }, 250);
+};
+
+const hideSuggestions = () => {
+    setTimeout(() => { showSuggestions.value = false; }, 150);
 };
 
 // 내비게이션 보호: 수정 중 이탈 방지
@@ -217,7 +241,9 @@ const submit = () => {
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">해시태그 (필수, 최대 3개)</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                        해시태그 <span class="text-gray-400 font-medium">(선택, 최대 3개)</span>
+                    </label>
                     <div class="flex flex-wrap gap-2 mb-2">
                         <span v-for="(t, index) in form.tags" :key="index" class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm font-bold flex items-center shadow-sm">
                             #{{ t }}
@@ -226,24 +252,44 @@ const submit = () => {
                             </button>
                         </span>
                     </div>
-                    <div v-if="form.tags.length < 3" class="flex gap-2">
-                        <input
-                            v-model="tagInput"
-                            @keydown.enter.prevent="addTag"
-                            @compositionstart="isComposing = true"
-                            @compositionend="isComposing = false"
-                            type="text"
-                            class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            placeholder="태그 입력 후 엔터 또는 추가 버튼 클릭"
-                        />
-                        <button 
-                            type="button" 
-                            @click="addTag"
-                            class="px-5 py-2 bg-indigo-50 text-indigo-700 rounded-md font-bold hover:bg-indigo-100 transition-colors shadow-sm"
+                    <div v-if="form.tags.length < 3" class="relative">
+                        <div class="flex gap-2">
+                            <input
+                                v-model="tagInput"
+                                @input="onTagInput"
+                                @keydown.enter.prevent="addTag()"
+                                @keydown.escape="showSuggestions = false"
+                                @compositionstart="isComposing = true"
+                                @compositionend="isComposing = false; onTagInput()"
+                                @blur="hideSuggestions"
+                                type="text"
+                                class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                placeholder="태그 입력 후 엔터 (예: 대구맛집)"
+                            />
+                            <button
+                                type="button"
+                                @click="addTag()"
+                                class="px-5 py-2 bg-indigo-50 text-indigo-700 rounded-md font-bold hover:bg-indigo-100 transition-colors shadow-sm"
+                            >
+                                추가
+                            </button>
+                        </div>
+                        <div
+                            v-if="showSuggestions"
+                            class="absolute z-50 left-0 right-12 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
                         >
-                            추가
-                        </button>
+                            <button
+                                v-for="s in tagSuggestions"
+                                :key="s.tag"
+                                type="button"
+                                @mousedown.prevent="addTag(s.tag)"
+                                class="w-full flex items-center justify-between px-4 py-2.5 hover:bg-indigo-50 transition-colors text-left"
+                            >
+                                <span class="text-sm font-bold text-gray-800">#{{ s.tag }}</span>
+                            </button>
+                        </div>
                     </div>
+                    <p class="text-xs text-gray-400 mt-1">태그를 달면 관련 글 추천에 노출됩니다.</p>
                     <div v-if="form.errors.tags" class="text-red-500 text-sm mt-1">{{ form.errors.tags }}</div>
                 </div>
 

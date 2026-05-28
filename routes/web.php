@@ -42,6 +42,9 @@ Route::middleware('throttle:global')->group(function () {
 // 에디터 이미지 업로드
 Route::post('/api/upload-image', [ImageController::class, 'upload'])->middleware(['auth', 'verified'])->name('image.upload');
 
+// 태그 자동완성
+Route::get('/api/tags/suggest', [\App\Http\Controllers\TagController::class, 'suggest'])->name('tags.suggest');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
