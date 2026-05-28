@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\RegisterVerificationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\KakaoController;
 use App\Http\Controllers\Auth\SocialRegisterController;
@@ -26,6 +27,11 @@ Route::middleware('guest')->group(function () {
         ->name('register');
 
     Route::post('register', [RegisteredUserController::class, 'store']);
+
+    // 회원가입 중 이메일 OTP 인증
+    Route::post('register/send-code',    [RegisterVerificationController::class, 'sendCode'])->name('register.send-code');
+    Route::post('register/verify-code',  [RegisterVerificationController::class, 'verifyCode'])->name('register.verify-code');
+    Route::get('register/check-nickname', [RegisterVerificationController::class, 'checkNickname'])->name('register.check-nickname');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

@@ -52,6 +52,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'kakao_id',
         'avatar',
+        'terms_agreed_at',
+        'privacy_agreed_at',
+        'agreed_ip',
     ];
 
     /**
@@ -72,10 +75,12 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_banned' => 'boolean',
-            'last_login_at' => 'datetime',
+            'email_verified_at'  => 'datetime',
+            'password'           => 'hashed',
+            'is_banned'          => 'boolean',
+            'last_login_at'      => 'datetime',
+            'terms_agreed_at'    => 'datetime',
+            'privacy_agreed_at'  => 'datetime',
         ];
     }
 
