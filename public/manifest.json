@@ -1,0 +1,53 @@
+{
+  "name": "ttip - 대구를 더 잘 알고 싶다면",
+  "short_name": "ttip",
+  "description": "대구 관광지, 맛집, 문화행사 정보와 대구 시민 커뮤니티",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "lang": "ko",
+  "categories": ["lifestyle", "travel", "social"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "맛집 찾기",
+      "url": "/restaurants",
+      "description": "대구 맛집 정보"
+    },
+    {
+      "name": "문화행사",
+      "url": "/events",
+      "description": "대구 공연·전시·축제"
+    },
+    {
+      "name": "커뮤니티",
+      "url": "/?tab=community",
+      "description": "대구 시민 커뮤니티"
+    }
+  ]
+}

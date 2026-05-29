@@ -34,6 +34,9 @@
       @close="tierUpgradeData = null"
     />
 
+    <!-- PWA 홈화면 추가 안내 -->
+    <PwaInstallPrompt />
+
   </div>
 </template>
 
@@ -47,6 +50,7 @@ import RightSidebar from '@/Components/RightSidebar.vue';
 import ToastNotification from '@/Components/ToastNotification.vue';
 import TierUpgradeModal from '@/Components/TierUpgradeModal.vue';
 import AppFooter from '@/Components/AppFooter.vue';
+import PwaInstallPrompt from '@/Components/PwaInstallPrompt.vue';
 
 const { showToast, showPointToast } = useToast();
 const page = usePage();

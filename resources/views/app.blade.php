@@ -212,8 +212,22 @@
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8069193438069319"
              crossorigin="anonymous"></script>
 
+        <!-- PWA Manifest -->
+        <link rel="manifest" href="/manifest.json">
+        <meta name="theme-color" content="#f97316">
+        <meta name="mobile-web-app-capable" content="yes">
+
+        <!-- iOS PWA -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="ttip">
+        <link rel="apple-touch-icon" href="/icons/icon-180.png">
+
         <!-- Favicon -->
-        <link rel="shortcut icon" href="/favicon.ico">
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+        <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
+        <link rel="shortcut icon" href="/icons/icon-32.png">
 
         <!-- Scripts -->
         @routes
@@ -223,4 +237,16 @@
     <body class="font-sans antialiased">
         @inertia
     </body>
+
+    <!-- Service Worker 등록 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js')
+                    .catch(function (err) {
+                        console.warn('[ttip SW] 등록 실패:', err);
+                    });
+            });
+        }
+    </script>
 </html>
