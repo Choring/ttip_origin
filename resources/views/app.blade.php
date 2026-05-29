@@ -234,6 +234,49 @@
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>
+    <!-- PWA 스플래시 스크린 -->
+    <div id="pwa-splash" style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: #ffffff;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        opacity: 1;
+        transition: opacity 0.4s ease;
+    ">
+        <img src="/icons/icon-192.png" alt="ttip" style="width: 96px; height: 96px; border-radius: 22px;">
+        <div style="text-align: center; line-height: 1.5;">
+            <p style="font-size: 1.5rem; font-weight: 900; color: #f97316; margin: 0;">ttip<span style="font-size: 1rem; color: #9ca3af;">(띱)</span></p>
+            <p style="font-size: 0.875rem; color: #6b7280; margin: 4px 0 0;">대구를 더 깊이 즐기고 싶다면</p>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var isStandalone =
+                window.navigator.standalone === true ||
+                window.matchMedia('(display-mode: standalone)').matches;
+
+            if (isStandalone) {
+                var splash = document.getElementById('pwa-splash');
+                splash.style.display = 'flex';
+
+                window.addEventListener('load', function () {
+                    setTimeout(function () {
+                        splash.style.opacity = '0';
+                        setTimeout(function () {
+                            splash.style.display = 'none';
+                        }, 400);
+                    }, 1200);
+                });
+            }
+        })();
+    </script>
+
     <body class="font-sans antialiased">
         @inertia
     </body>
