@@ -252,10 +252,15 @@ class HomeController extends Controller
             ];
         });
 
+        $isSubscribed = auth()->check()
+            ? \App\Models\TagSubscription::where('user_id', auth()->id())->where('tag', $tag)->exists()
+            : false;
+
         return \Inertia\Inertia::render('Tag', [
-            'tag'        => $tag,
-            'posts'      => $mapped,
-            'pagination' => [
+            'tag'          => $tag,
+            'posts'        => $mapped,
+            'isSubscribed' => $isSubscribed,
+            'pagination'   => [
                 'current_page' => $posts->currentPage(),
                 'last_page'    => $posts->lastPage(),
                 'total'        => $posts->total(),

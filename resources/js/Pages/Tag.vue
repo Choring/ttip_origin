@@ -1,13 +1,51 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import SummaryCard from '@/Components/SummaryCard.vue';
+import { useToast } from '@/Composables/useToast';
+
+const { showToast } = useToast();
+const page = usePage();
 
 const props = defineProps({
-    tag:        { type: String, required: true },
-    posts:      { type: Array,  default: () => [] },
-    pagination: { type: Object, default: () => ({}) },
+    tag:          { type: String,  required: true },
+    posts:        { type: Array,   default: () => [] },
+    pagination:   { type: Object,  default: () => ({}) },
+    isSubscribed: { type: Boolean, default: false },
 });
+
+const subscribed = ref(props.isSubscribed);
+const subscribing = ref(false);
+
+const toggleSubscribe = () => {
+    if (!page.props.auth?.user) {
+        showToast('로그인 후 이용할 수 있어요.', 'error');
+        return;
+    }
+
+    subscribing.value = true;
+
+    router.post(route('tags.subscribe', props.tag), {}, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: (page) => {
+            // 서버 응답 대신 낙관적 토글
+            subscribed.value = !subscribed.value;
+            showToast(
+                subscribed.value
+                    ? `#${props.tag} 관심 태그에 추가했어요! 🔔`
+                    : `#${props.tag} 관심 태그에서 제거했어요.`,
+            );
+        },
+        onError: () => {
+            showToast('구독 처리에 실패했습니다. 다시 시도해 주세요.', 'error');
+        },
+        onFinish: () => {
+            subscribing.value = false;
+        },
+    });
+};
 
 const loadMore = () => {
     if (props.pagination.current_page < props.pagination.last_page) {
@@ -33,9 +71,33 @@ const loadMore = () => {
                 <span class="text-xs text-gray-300">/</span>
                 <span class="text-xs text-gray-400">태그</span>
             </div>
-            <div class="flex items-center gap-3">
-                <span class="text-2xl font-black text-gray-900">#{{ tag }}</span>
-                <span class="text-sm text-gray-400 font-medium">{{ pagination.total?.toLocaleString() }}개의 게시글</span>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl font-black text-gray-900">#{{ tag }}</span>
+                    <span class="text-sm text-gray-400 font-medium">{{ pagination.total?.toLocaleString() }}개의 게시글</span>
+                </div>
+
+                <!-- 구독 버튼 -->
+                <button
+                    @click="toggleSubscribe"
+                    :disabled="subscribing"
+                    class="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 active:scale-95"
+                    :class="subscribed
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                        : 'bg-white border border-gray-200 text-gray-600 hover:border-indigo-400 hover:text-indigo-600'"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        viewBox="0 0 24 24"
+                        :fill="subscribed ? 'currentColor' : 'none'"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    {{ subscribed ? '구독 중' : '구독' }}
+                </button>
             </div>
         </div>
 

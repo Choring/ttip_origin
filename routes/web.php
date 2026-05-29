@@ -10,6 +10,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\TagSubscriptionController;
 
 Route::middleware('throttle:global')->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -44,6 +45,10 @@ Route::post('/api/upload-image', [ImageController::class, 'upload'])->middleware
 
 // 태그 자동완성
 Route::get('/api/tags/suggest', [\App\Http\Controllers\TagController::class, 'suggest'])->name('tags.suggest');
+
+// 태그 구독 (로그인 필요)
+Route::post('/tags/{tag}/subscribe', [TagSubscriptionController::class, 'toggle'])->middleware('auth')->name('tags.subscribe');
+Route::get('/api/tags/subscribed', [TagSubscriptionController::class, 'index'])->middleware('auth')->name('tags.subscribed');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

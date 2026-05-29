@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Inquiry;
+use App\Models\TagSubscription;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -74,6 +75,13 @@ class HandleInertiaRequests extends Middleware
                         ->get();
                 }),
             ]),
+            // 구독 태그 목록 (로그인 유저만)
+            'subscribed_tags' => $request->user()
+                ? TagSubscription::where('user_id', $request->user()->id)
+                    ->orderBy('created_at', 'desc')
+                    ->pluck('tag')
+                : [],
+
             // 어드민 사이드바 미답변 문의 수
             'pendingInquiryCount' => $request->user()?->role === 'admin'
                 ? \Illuminate\Support\Facades\Cache::remember('pending_inquiry_count', 60, fn() => Inquiry::where('status', 'pending')->count())
