@@ -41,7 +41,7 @@
             {{ category }}
           </span>
           <Link
-            v-for="t in (tags || []).slice(0, 2)"
+            v-for="t in (tags || [])"
             :key="t"
             :href="route('tags.show', t)"
             @click.stop
