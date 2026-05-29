@@ -248,7 +248,6 @@
         opacity: 1;
         transition: opacity 0.4s ease;
     ">
-        <img src="/icons/icon-192.png" alt="ttip" style="width: 100px; height: 100px; border-radius: 24px;">
         <div style="text-align: center; line-height: 1.6;">
             <p style="font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0; letter-spacing: -0.5px;">ttip<span style="font-size: 1rem; font-weight: 400; opacity: 0.85;">(띱)</span></p>
             <p style="font-size: 0.875rem; color: rgba(255,255,255,0.85); margin: 4px 0 0;">대구를 더 깊이 즐기고 싶다면</p>
