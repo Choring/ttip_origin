@@ -240,7 +240,7 @@
         position: fixed;
         inset: 0;
         z-index: 9999;
-        background: #ffffff;
+        background: #f97316;
         flex-direction: column;
         align-items: center;
         justify-content: center;
@@ -248,10 +248,10 @@
         opacity: 1;
         transition: opacity 0.4s ease;
     ">
-        <img src="/icons/icon-192.png" alt="ttip" style="width: 96px; height: 96px; border-radius: 22px;">
-        <div style="text-align: center; line-height: 1.5;">
-            <p style="font-size: 1.5rem; font-weight: 900; color: #f97316; margin: 0;">ttip<span style="font-size: 1rem; color: #9ca3af;">(띱)</span></p>
-            <p style="font-size: 0.875rem; color: #6b7280; margin: 4px 0 0;">대구를 더 깊이 즐기고 싶다면</p>
+        <img src="/icons/icon-192.png" alt="ttip" style="width: 100px; height: 100px; border-radius: 24px;">
+        <div style="text-align: center; line-height: 1.6;">
+            <p style="font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0; letter-spacing: -0.5px;">ttip<span style="font-size: 1rem; font-weight: 400; opacity: 0.85;">(띱)</span></p>
+            <p style="font-size: 0.875rem; color: rgba(255,255,255,0.85); margin: 4px 0 0;">대구를 더 깊이 즐기고 싶다면</p>
         </div>
     </div>
 
