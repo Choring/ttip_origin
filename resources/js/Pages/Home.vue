@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, computed, ref } from 'vue';
 import { Head } from '@inertiajs/vue3';
-import MainLayout from '@/Layouts/MainLayout.vue';
+import PortalLayout from '@/Layouts/PortalLayout.vue';
 import LoginModal from '@/Components/LoginModal.vue';
 import HeroBanner from '@/Components/HeroBanner.vue';
 import EventsSection from '@/Components/EventsSection.vue';
@@ -61,7 +61,7 @@ onUnmounted(() => {
     <meta head-key="og:description" property="og:description" content="대구 관광지, 맛집, 문화행사 정보와 지역 커뮤니티. 대구의 매력을 ttip에서 발견하세요." />
   </Head>
 
-  <MainLayout>
+  <PortalLayout>
     <div class="space-y-8">
       <!-- 오늘의 대구 히어로 배너 -->
       <HeroBanner :hero-event="heroEvent" />
@@ -78,7 +78,7 @@ onUnmounted(() => {
       <!-- 커뮤니티 최신글 -->
       <CommunitySection :posts="recentPosts" />
     </div>
-  </MainLayout>
+  </PortalLayout>
 
   <LoginModal :show="showLoginModal" @close="showLoginModal = false" />
 </template>
