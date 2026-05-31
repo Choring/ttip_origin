@@ -168,6 +168,28 @@ class HomeController extends Controller
                 ];
             });
 
+        // ── 이번 주 공연·행사 섹션 ────────────────────────────────────────────
+        $today     = now()->format('Ymd');
+        $nextMonth = now()->addMonth()->format('Ymd');
+
+        $upcomingEvents = \App\Models\CulturalEvent::whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
+            ->whereRaw("REPLACE(start_date, '.', '') <= ?", [$nextMonth])
+            ->whereNotNull('image')
+            ->where('image', '!=', '')
+            ->orderByRaw("REPLACE(start_date, '.', '') ASC")
+            ->take(10)
+            ->get()
+            ->map(fn($e) => [
+                'event_seq'  => $e->event_seq,
+                'subject'    => $e->subject,
+                'place'      => $e->place,
+                'start_date' => $e->start_date,
+                'end_date'   => $e->end_date,
+                'image'      => $e->image,
+                'event_gubun'=> $e->event_gubun,
+                'pay'        => $e->pay,
+            ]);
+
         // ── 히어로 배너용 오늘의 행사 ──────────────────────────────────────────
         $today = now()->format('Ymd');
         $heroEvent = \App\Models\CulturalEvent::whereRaw("REPLACE(start_date, '.', '') <= ?", [$today])
@@ -193,6 +215,7 @@ class HomeController extends Controller
             'currentCategory' => $request->category ?? 'all',
             'filters'         => $request->only(['search_type', 'search_keyword']),
             'rankings'        => $rankings,
+            'upcomingEvents'  => $upcomingEvents,
             'heroEvent'       => $heroEvent ? [
                 'subject'    => $heroEvent->subject,
                 'place'      => $heroEvent->place,
