@@ -168,6 +168,24 @@ class HomeController extends Controller
                 ];
             });
 
+        // ── 히어로 배너용 오늘의 행사 ──────────────────────────────────────────
+        $today = now()->format('Ymd');
+        $heroEvent = \App\Models\CulturalEvent::whereRaw("REPLACE(start_date, '.', '') <= ?", [$today])
+            ->whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
+            ->whereNotNull('image')
+            ->where('image', '!=', '')
+            ->inRandomOrder()
+            ->first();
+
+        // 진행 중인 행사 없으면 곧 시작하는 행사
+        if (!$heroEvent) {
+            $heroEvent = \App\Models\CulturalEvent::whereRaw("REPLACE(start_date, '.', '') > ?", [$today])
+                ->whereNotNull('image')
+                ->where('image', '!=', '')
+                ->orderByRaw("REPLACE(start_date, '.', '') ASC")
+                ->first();
+        }
+
         return \Inertia\Inertia::render('Home', [
             'posts'           => $paginatedData,
             'categories'      => $categories,
@@ -175,6 +193,14 @@ class HomeController extends Controller
             'currentCategory' => $request->category ?? 'all',
             'filters'         => $request->only(['search_type', 'search_keyword']),
             'rankings'        => $rankings,
+            'heroEvent'       => $heroEvent ? [
+                'subject'    => $heroEvent->subject,
+                'place'      => $heroEvent->place,
+                'start_date' => $heroEvent->start_date,
+                'end_date'   => $heroEvent->end_date,
+                'image'      => $heroEvent->image,
+                'event_seq'  => $heroEvent->event_seq,
+            ] : null,
         ]);
     }
 

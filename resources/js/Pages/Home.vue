@@ -17,6 +17,7 @@ const showLoginModal = ref(false);
 import PlaceCard from '@/Components/Categories/PlaceCard.vue';
 import JobCard from '@/Components/Categories/JobCard.vue';
 import GymCard from '@/Components/Categories/GymCard.vue';
+import HeroBanner from '@/Components/HeroBanner.vue';
 
 const props = defineProps({
   posts: Object,
@@ -24,6 +25,7 @@ const props = defineProps({
   pinnedNotices: Array,
   currentCategory: String,
   filters: Object,
+  heroEvent: { type: Object, default: null },
 });
 
 const searchType = ref(props.filters?.search_type || 'title');
@@ -200,6 +202,9 @@ let schemaScriptEl = null;
 
   <MainLayout>
     <div class="space-y-6">
+
+      <!-- 오늘의 대구 히어로 배너 (전체 피드일 때만) -->
+      <HeroBanner v-if="currentCategory === 'all'" :hero-event="heroEvent" />
 
       <!-- 웰컴 배너 (전체 피드 + 비로그인 시만 표시) -->
       <div
