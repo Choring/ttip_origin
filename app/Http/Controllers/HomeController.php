@@ -168,6 +168,26 @@ class HomeController extends Controller
                 ];
             });
 
+        // ── 대구 관광지 섹션 ──────────────────────────────────────────────────
+        $featuredSpots = \Illuminate\Support\Facades\Cache::remember('home_featured_spots', 3600, function () {
+            return \App\Models\TouristSpot::select('content_id', 'title', 'addr1', 'image', 'thumbnail')
+                ->where(function ($q) {
+                    $q->whereNotNull('image')->where('image', '!=', '')
+                      ->orWhere(function ($q2) {
+                          $q2->whereNotNull('thumbnail')->where('thumbnail', '!=', '');
+                      });
+                })
+                ->inRandomOrder()
+                ->take(8)
+                ->get()
+                ->map(fn($s) => [
+                    'contentId' => $s->content_id,
+                    'title'     => $s->title,
+                    'addr1'     => $s->addr1,
+                    'image'     => $s->image ?: $s->thumbnail,
+                ]);
+        });
+
         // ── 추천 맛집 섹션 ────────────────────────────────────────────────────
         $featuredRestaurants = \Illuminate\Support\Facades\Cache::remember('home_featured_restaurants', 3600, function () {
             return \App\Models\Restaurant::select('content_id', 'title', 'category', 'address', 'image')
@@ -234,6 +254,7 @@ class HomeController extends Controller
             'rankings'        => $rankings,
             'upcomingEvents'        => $upcomingEvents,
             'featuredRestaurants'   => $featuredRestaurants,
+            'featuredSpots'         => $featuredSpots,
             'heroEvent'       => $heroEvent ? [
                 'subject'    => $heroEvent->subject,
                 'place'      => $heroEvent->place,

@@ -20,6 +20,7 @@ import GymCard from '@/Components/Categories/GymCard.vue';
 import HeroBanner from '@/Components/HeroBanner.vue';
 import EventsSection from '@/Components/EventsSection.vue';
 import RestaurantsSection from '@/Components/RestaurantsSection.vue';
+import SpotsSection from '@/Components/SpotsSection.vue';
 
 const props = defineProps({
   posts: Object,
@@ -30,6 +31,7 @@ const props = defineProps({
   heroEvent: { type: Object, default: null },
   upcomingEvents:       { type: Array, default: () => [] },
   featuredRestaurants:  { type: Array, default: () => [] },
+  featuredSpots:        { type: Array, default: () => [] },
 });
 
 const searchType = ref(props.filters?.search_type || 'title');
@@ -215,6 +217,9 @@ let schemaScriptEl = null;
 
       <!-- 추천 맛집 -->
       <RestaurantsSection v-if="currentCategory === 'all'" :restaurants="featuredRestaurants" />
+
+      <!-- 대구 관광지 -->
+      <SpotsSection v-if="currentCategory === 'all'" :spots="featuredSpots" />
 
       <!-- 웰컴 배너 (전체 피드 + 비로그인 시만 표시) -->
       <div
