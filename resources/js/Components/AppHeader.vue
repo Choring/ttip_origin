@@ -11,15 +11,21 @@ const page = usePage();
 const user = computed(() => page.props.auth.user);
 
 const navItems = [
-  { name: '탐색', route: 'home', requiresAuth: false },
-  { name: '사투리퀴즈 🗣️', route: 'quiz', requiresAuth: false },
-  { name: '공지사항', route: 'notices.index', requiresAuth: false },
-  { name: '인기글', route: 'popular', requiresAuth: false },
-  { name: '북마크', route: 'bookmarks', requiresAuth: true },
-  { name: '문화행사', route: 'events.index', requiresAuth: false },
-  { name: '맛집', route: 'restaurants.index', requiresAuth: false },
-  { name: '관광지', route: 'tour.index', requiresAuth: false }
+  { name: '탐색',     route: 'home',              requiresAuth: false },
+  { name: '공연·행사', route: 'events.index',       requiresAuth: false },
+  { name: '맛집',     route: 'restaurants.index',  requiresAuth: false },
+  { name: '관광지',   route: 'tour.index',          requiresAuth: false },
+  { name: '커뮤니티', route: 'home',                requiresAuth: false },
 ];
+
+// 헤더 검색
+const searchQuery = ref('');
+const submitSearch = () => {
+  const q = searchQuery.value.trim();
+  if (!q) return;
+  router.get(route('home'), { search_keyword: q, search_type: 'title' });
+  searchQuery.value = '';
+};
 
 function isActive(routeName) {
   try {
@@ -177,8 +183,22 @@ onMounted(() => {
           </nav>
         </div>
 
-        <!-- Spacer (데스크탑) -->
-        <div class="hidden md:block flex-1"></div>
+        <!-- 검색창 (데스크탑 중앙) -->
+        <div class="hidden md:flex flex-1 max-w-sm mx-6">
+          <form @submit.prevent="submitSearch" class="w-full relative">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="대구 검색..."
+              class="w-full pl-4 pr-10 py-2 text-sm bg-gray-100 rounded-full border border-transparent focus:outline-none focus:border-orange-300 focus:bg-white transition-all"
+            />
+            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
 
         <!-- ===== 우측 영역 ===== -->
         <div v-if="user" class="flex items-center space-x-3">
@@ -364,6 +384,23 @@ onMounted(() => {
             </Link>
           </template>
         </nav>
+
+        <!-- 모바일 검색창 -->
+        <div class="px-4 py-3 border-b border-gray-100">
+          <form @submit.prevent="submitSearch; showMobileMenu = false" class="relative">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="대구 검색..."
+              class="w-full pl-4 pr-10 py-2.5 text-sm bg-gray-100 rounded-full border border-transparent focus:outline-none focus:border-orange-300 focus:bg-white transition-all"
+            />
+            <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </button>
+          </form>
+        </div>
 
         <!-- 문의하기 -->
         <div class="px-5 pb-2">
