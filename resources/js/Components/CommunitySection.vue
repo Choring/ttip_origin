@@ -5,7 +5,7 @@
       <h2 class="text-base font-black text-gray-900 flex items-center gap-2">
         💬 <span>커뮤니티 최신글</span>
       </h2>
-      <Link :href="route('home', { view: 'community' })" class="text-xs font-bold text-gray-400 hover:text-orange-500 transition-colors">
+      <Link :href="route('community')" class="text-xs font-bold text-gray-400 hover:text-orange-500 transition-colors">
         더보기 →
       </Link>
     </div>
@@ -58,7 +58,7 @@
     <!-- 더보기 버튼 -->
     <div class="mt-3 text-center">
       <Link
-        :href="route('home', { view: 'community' })"
+        :href="route('community')"
         class="inline-flex items-center gap-1.5 px-6 py-2.5 bg-white border border-gray-200 text-gray-600 text-sm font-bold rounded-full hover:border-orange-300 hover:text-orange-500 transition-all shadow-sm"
       >
         커뮤니티 글 더보기 →

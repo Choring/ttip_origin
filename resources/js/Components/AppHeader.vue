@@ -15,7 +15,7 @@ const navItems = [
   { name: '공연·행사', route: 'events.index',       requiresAuth: false },
   { name: '맛집',     route: 'restaurants.index',  requiresAuth: false },
   { name: '관광지',   route: 'tour.index',          requiresAuth: false },
-  { name: '커뮤니티', route: 'home',                requiresAuth: false },
+  { name: '커뮤니티', route: 'community',           requiresAuth: false },
 ];
 
 // 헤더 검색
