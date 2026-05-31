@@ -1,8 +1,8 @@
 <template>
   <Link
     :href="heroEvent ? route('events.show', heroEvent.event_seq) : route('events.index')"
-    class="block relative overflow-hidden rounded-2xl group"
-    style="height: 220px;"
+    class="block relative overflow-hidden group"
+    style="height: 400px;"
   >
     <!-- 배경 이미지 -->
     <img
