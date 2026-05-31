@@ -21,6 +21,7 @@ import HeroBanner from '@/Components/HeroBanner.vue';
 import EventsSection from '@/Components/EventsSection.vue';
 import RestaurantsSection from '@/Components/RestaurantsSection.vue';
 import SpotsSection from '@/Components/SpotsSection.vue';
+import CommunitySection from '@/Components/CommunitySection.vue';
 
 const props = defineProps({
   posts: Object,
@@ -220,6 +221,9 @@ let schemaScriptEl = null;
 
       <!-- 대구 관광지 -->
       <SpotsSection v-if="currentCategory === 'all'" :spots="featuredSpots" />
+
+      <!-- 커뮤니티 최신글 -->
+      <CommunitySection v-if="currentCategory === 'all'" :posts="postList" />
 
       <!-- 웰컴 배너 (전체 피드 + 비로그인 시만 표시) -->
       <div
