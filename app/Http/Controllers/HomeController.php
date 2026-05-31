@@ -168,6 +168,23 @@ class HomeController extends Controller
                 ];
             });
 
+        // ── 추천 맛집 섹션 ────────────────────────────────────────────────────
+        $featuredRestaurants = \Illuminate\Support\Facades\Cache::remember('home_featured_restaurants', 3600, function () {
+            return \App\Models\Restaurant::select('content_id', 'title', 'category', 'address', 'image')
+                ->whereNotNull('image')
+                ->where('image', '!=', '')
+                ->inRandomOrder()
+                ->take(10)
+                ->get()
+                ->map(fn($r) => [
+                    'contentId' => $r->content_id,
+                    'title'     => $r->title,
+                    'category'  => $r->category,
+                    'address'   => $r->address,
+                    'image'     => $r->image,
+                ]);
+        });
+
         // ── 이번 주 공연·행사 섹션 ────────────────────────────────────────────
         $today     = now()->format('Ymd');
         $nextMonth = now()->addMonth()->format('Ymd');
@@ -215,7 +232,8 @@ class HomeController extends Controller
             'currentCategory' => $request->category ?? 'all',
             'filters'         => $request->only(['search_type', 'search_keyword']),
             'rankings'        => $rankings,
-            'upcomingEvents'  => $upcomingEvents,
+            'upcomingEvents'        => $upcomingEvents,
+            'featuredRestaurants'   => $featuredRestaurants,
             'heroEvent'       => $heroEvent ? [
                 'subject'    => $heroEvent->subject,
                 'place'      => $heroEvent->place,

@@ -19,6 +19,7 @@ import JobCard from '@/Components/Categories/JobCard.vue';
 import GymCard from '@/Components/Categories/GymCard.vue';
 import HeroBanner from '@/Components/HeroBanner.vue';
 import EventsSection from '@/Components/EventsSection.vue';
+import RestaurantsSection from '@/Components/RestaurantsSection.vue';
 
 const props = defineProps({
   posts: Object,
@@ -27,7 +28,8 @@ const props = defineProps({
   currentCategory: String,
   filters: Object,
   heroEvent: { type: Object, default: null },
-  upcomingEvents: { type: Array, default: () => [] },
+  upcomingEvents:       { type: Array, default: () => [] },
+  featuredRestaurants:  { type: Array, default: () => [] },
 });
 
 const searchType = ref(props.filters?.search_type || 'title');
@@ -210,6 +212,9 @@ let schemaScriptEl = null;
 
       <!-- 이번 주 공연·행사 -->
       <EventsSection v-if="currentCategory === 'all'" :events="upcomingEvents" />
+
+      <!-- 추천 맛집 -->
+      <RestaurantsSection v-if="currentCategory === 'all'" :restaurants="featuredRestaurants" />
 
       <!-- 웰컴 배너 (전체 피드 + 비로그인 시만 표시) -->
       <div
