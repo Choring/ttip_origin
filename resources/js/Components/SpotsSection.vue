@@ -3,7 +3,7 @@
     <!-- 섹션 헤더 -->
     <div class="flex items-center justify-between mb-3 px-1">
       <h2 class="text-lg font-black text-gray-900 flex items-center gap-2">
-        🏔️ <span>대구 관광지</span>
+        <span>대구 관광지</span>
       </h2>
       <Link :href="route('tour.index')" class="text-xs font-bold text-gray-400 hover:text-orange-500 transition-colors">
         전체보기 →
@@ -36,23 +36,26 @@
           :href="route('tour.show', spot.contentId)"
           class="flex-shrink-0 w-56 snap-start group"
         >
-          <!-- 이미지 (와이드 비율) -->
+          <!-- 이미지 -->
           <div class="relative w-full h-36 rounded-xl overflow-hidden mb-2 bg-gray-100">
             <img
               :src="spot.image"
               :alt="spot.title"
-              class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              class="w-full h-full object-cover"
               @error="e => e.target.src = '/images/banner/tour-banner.jpg'"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-            <!-- 제목 오버레이 -->
-            <p class="absolute bottom-2 left-2 right-2 text-white text-xs font-black line-clamp-1 drop-shadow">
-              {{ spot.title }}
-            </p>
           </div>
 
-          <!-- 주소 -->
-          <p class="text-xs text-gray-500 line-clamp-1 mt-1">📍 {{ shortAddr(spot.addr1) }}</p>
+          <!-- 제목 + 주소 -->
+          <p class="text-sm font-black text-gray-900 line-clamp-1 mb-0.5 group-hover:text-orange-500 transition-colors">
+            {{ spot.title }}
+          </p>
+          <p class="text-xs text-gray-500 line-clamp-1 flex items-center gap-1">
+            <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ shortAddr(spot.addr1) }}
+          </p>
         </Link>
 
         <!-- 더보기 카드 -->

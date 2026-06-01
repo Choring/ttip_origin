@@ -3,7 +3,7 @@
     <!-- 섹션 헤더 -->
     <div class="flex items-center justify-between mb-3 px-1">
       <h2 class="text-base font-black text-gray-900 flex items-center gap-2">
-        💬 <span>커뮤니티 최신글</span>
+        <span>커뮤니티 최신글</span>
       </h2>
       <Link :href="route('community')" class="text-xs font-bold text-gray-400 hover:text-orange-500 transition-colors">
         더보기 →

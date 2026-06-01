@@ -33,34 +33,42 @@ class HomeController extends Controller
         // DB 배너 없으면 KOPIS 데이터로 fallback
         $heroEvent = null;
         if ($dbBanners->isEmpty()) {
-            $heroEvent = CulturalEvent::whereRaw("REPLACE(start_date, '.', '') <= ?", [$today])
-                ->whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
+            $heroEvent = CulturalEvent::whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
                 ->whereNotNull('image')->where('image', '!=', '')
                 ->inRandomOrder()->first();
 
+            // 진행 중인 행사도 없으면 최근 등록된 데이터 사용
             if (!$heroEvent) {
-                $heroEvent = CulturalEvent::whereRaw("REPLACE(start_date, '.', '') > ?", [$today])
-                    ->whereNotNull('image')->where('image', '!=', '')
-                    ->orderByRaw("REPLACE(start_date, '.', '') ASC")->first();
+                $heroEvent = CulturalEvent::whereNotNull('image')->where('image', '!=', '')
+                    ->orderBy('created_at', 'desc')->first();
             }
         }
 
-        // 이번 주 공연·행사
-        $upcomingEvents = CulturalEvent::whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
-            ->whereRaw("REPLACE(start_date, '.', '') <= ?", [$nextMonth])
-            ->whereNotNull('image')->where('image', '!=', '')
+        // 이번 주 공연·행사 — 진행 중/예정 이벤트 우선, 없으면 최근 데이터 fallback
+        $eventQuery = CulturalEvent::whereNotNull('image')->where('image', '!=', '');
+
+        $upcomingEvents = (clone $eventQuery)
+            ->whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
             ->orderByRaw("REPLACE(start_date, '.', '') ASC")
-            ->take(10)->get()
-            ->map(fn($e) => [
-                'event_seq'   => $e->event_seq,
-                'subject'     => $e->subject,
-                'place'       => $e->place,
-                'start_date'  => $e->start_date,
-                'end_date'    => $e->end_date,
-                'image'       => $e->image,
-                'event_gubun' => $e->event_gubun,
-                'pay'         => $e->pay,
-            ]);
+            ->take(10)->get();
+
+        // 진행 중인 이벤트 없으면 최근 등록된 이벤트로 fallback
+        if ($upcomingEvents->isEmpty()) {
+            $upcomingEvents = (clone $eventQuery)
+                ->orderBy('created_at', 'desc')
+                ->take(10)->get();
+        }
+
+        $upcomingEvents = $upcomingEvents->map(fn($e) => [
+            'event_seq'   => $e->event_seq,
+            'subject'     => $e->subject,
+            'place'       => $e->place,
+            'start_date'  => $e->start_date,
+            'end_date'    => $e->end_date,
+            'image'       => $e->image,
+            'event_gubun' => $e->event_gubun,
+            'pay'         => $e->pay,
+        ]);
 
         // 추천 맛집
         $featuredRestaurants = Cache::remember('home_featured_restaurants', 3600, function () {

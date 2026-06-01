@@ -3,7 +3,7 @@
     <!-- 섹션 헤더 -->
     <div class="flex items-center justify-between mb-3 px-1">
       <h2 class="text-lg font-black text-gray-900 flex items-center gap-2">
-        🍽️ <span>추천 맛집</span>
+        <span>추천 맛집</span>
       </h2>
       <Link :href="route('restaurants.index')" class="text-xs font-bold text-gray-400 hover:text-orange-500 transition-colors">
         전체보기 →
