@@ -3,7 +3,7 @@
   <component
     :is="currentBanner.link_url ? Link : 'div'"
     :href="currentBanner.link_url || undefined"
-    class="block relative overflow-hidden group"
+    class="block relative overflow-hidden rounded-xl group"
     style="height: 400px;"
   >
     <!-- 배경 이미지 -->

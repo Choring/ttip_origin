@@ -63,12 +63,9 @@ onUnmounted(() => {
   </Head>
 
   <PortalLayout>
-    <!-- 풀 와이드 히어로 배너 -->
-    <template #hero>
-      <HeroBanner :banners="banners" :hero-event="heroEvent" />
-    </template>
-
     <div class="space-y-8">
+      <!-- 히어로 배너 -->
+      <HeroBanner :banners="banners" :hero-event="heroEvent" />
 
       <!-- 이번 주 공연·행사 -->
       <EventsSection :events="upcomingEvents" />

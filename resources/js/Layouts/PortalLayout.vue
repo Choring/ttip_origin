@@ -2,9 +2,6 @@
   <div class="min-h-screen bg-gray-50 font-sans text-gray-900">
     <AppHeader />
 
-    <!-- 풀 와이드 히어로 슬롯 -->
-    <slot name="hero" />
-
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <slot />
     </main>
