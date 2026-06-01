@@ -1,5 +1,9 @@
 <template>
-  <div class="relative overflow-hidden rounded-xl" style="height: 400px;">
+  <div class="relative overflow-hidden rounded-xl" style="height: 400px;"
+    @touchstart.passive="onTouchStart"
+    @touchmove.passive="onTouchMove"
+    @touchend="onTouchEnd"
+  >
 
     <!-- 슬라이드 목록 -->
     <div
@@ -139,6 +143,20 @@ const startTimer = () => {
   timer = setInterval(next, 5000);
 };
 const resetTimer = () => { clearInterval(timer); startTimer(); };
+
+// ── 터치 스와이프 ──────────────────────────────────────────────────────────
+let touchStartX = 0;
+let touchEndX   = 0;
+
+const onTouchStart = (e) => { touchStartX = e.touches[0].clientX; };
+const onTouchMove  = (e) => { touchEndX   = e.touches[0].clientX; };
+const onTouchEnd   = () => {
+  const diff = touchStartX - touchEndX;
+  if (Math.abs(diff) < 50) return; // 50px 미만은 무시
+  diff > 0 ? next() : prev();
+  touchStartX = 0;
+  touchEndX   = 0;
+};
 
 onMounted(startTimer);
 onUnmounted(() => clearInterval(timer));
