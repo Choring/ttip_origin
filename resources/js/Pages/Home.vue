@@ -12,6 +12,7 @@ import CommunitySection from '@/Components/CommunitySection.vue';
 const showLoginModal = ref(false);
 
 const props = defineProps({
+  banners:             { type: Array,  default: () => [] },
   heroEvent:           { type: Object, default: null },
   upcomingEvents:      { type: Array,  default: () => [] },
   featuredRestaurants: { type: Array,  default: () => [] },
@@ -64,7 +65,7 @@ onUnmounted(() => {
   <PortalLayout>
     <!-- 풀 와이드 히어로 배너 -->
     <template #hero>
-      <HeroBanner :hero-event="heroEvent" />
+      <HeroBanner :banners="banners" :hero-event="heroEvent" />
     </template>
 
     <div class="space-y-8">

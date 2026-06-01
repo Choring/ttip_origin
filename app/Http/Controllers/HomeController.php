@@ -19,16 +19,30 @@ class HomeController extends Controller
         $today     = now()->format('Ymd');
         $nextMonth = now()->addMonth()->format('Ymd');
 
-        // 히어로 배너 행사
-        $heroEvent = CulturalEvent::whereRaw("REPLACE(start_date, '.', '') <= ?", [$today])
-            ->whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
-            ->whereNotNull('image')->where('image', '!=', '')
-            ->inRandomOrder()->first();
+        // 히어로 배너 — DB 등록 배너 우선, 없으면 KOPIS 행사로 fallback
+        $dbBanners = \App\Models\MainBanner::active()->get()
+            ->map(fn($b) => [
+                'title'      => $b->title,
+                'subtitle'   => $b->subtitle,
+                'badge_text' => $b->badge_text,
+                'image_url'  => $b->image_url,
+                'link_url'   => $b->link_url,
+                'source'     => 'db',
+            ]);
 
-        if (!$heroEvent) {
-            $heroEvent = CulturalEvent::whereRaw("REPLACE(start_date, '.', '') > ?", [$today])
+        // DB 배너 없으면 KOPIS 데이터로 fallback
+        $heroEvent = null;
+        if ($dbBanners->isEmpty()) {
+            $heroEvent = CulturalEvent::whereRaw("REPLACE(start_date, '.', '') <= ?", [$today])
+                ->whereRaw("REPLACE(end_date, '.', '') >= ?", [$today])
                 ->whereNotNull('image')->where('image', '!=', '')
-                ->orderByRaw("REPLACE(start_date, '.', '') ASC")->first();
+                ->inRandomOrder()->first();
+
+            if (!$heroEvent) {
+                $heroEvent = CulturalEvent::whereRaw("REPLACE(start_date, '.', '') > ?", [$today])
+                    ->whereNotNull('image')->where('image', '!=', '')
+                    ->orderByRaw("REPLACE(start_date, '.', '') ASC")->first();
+            }
         }
 
         // 이번 주 공연·행사
@@ -87,6 +101,7 @@ class HomeController extends Controller
             ->map(fn($post) => $this->mapPost($post));
 
         return \Inertia\Inertia::render('Home', [
+            'banners'             => $dbBanners,
             'heroEvent'           => $heroEvent ? [
                 'subject'    => $heroEvent->subject,
                 'place'      => $heroEvent->place,
