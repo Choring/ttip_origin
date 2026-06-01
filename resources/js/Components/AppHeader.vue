@@ -183,8 +183,8 @@ onMounted(() => {
           </nav>
         </div>
 
-        <!-- 검색창 (데스크탑 중앙) -->
-        <div class="hidden md:flex flex-1 max-w-sm mx-6">
+        <!-- 검색창 (데스크탑 중앙) - TODO: 통합 검색 페이지 준비 후 활성화 -->
+        <div class="hidden flex-1 max-w-sm mx-6">
           <form @submit.prevent="submitSearch" class="w-full relative">
             <input
               v-model="searchQuery"
@@ -385,8 +385,8 @@ onMounted(() => {
           </template>
         </nav>
 
-        <!-- 모바일 검색창 -->
-        <div class="px-4 py-3 border-b border-gray-100">
+        <!-- 모바일 검색창 - TODO: 통합 검색 페이지 준비 후 활성화 -->
+        <div class="hidden px-4 py-3 border-b border-gray-100">
           <form @submit.prevent="submitSearch; showMobileMenu = false" class="relative">
             <input
               v-model="searchQuery"
