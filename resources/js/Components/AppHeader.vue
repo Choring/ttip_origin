@@ -5,6 +5,7 @@ const fabOpen = ref(false);
 const toggleFab = () => { fabOpen.value = !fabOpen.value; };
 import { Link, usePage, router } from '@inertiajs/vue3';
 import LoginModal from '@/Components/LoginModal.vue';
+import MobileBottomNav from '@/Components/MobileBottomNav.vue';
 import axios from 'axios';
 
 const page = usePage();
@@ -443,6 +444,9 @@ onMounted(() => {
     <LoginModal :show="showLoginModal" @close="showLoginModal = false" />
   </header>
 
+  <!-- 모바일 하단 네비게이션 -->
+  <MobileBottomNav />
+
   <!-- ===== 데스크탑 플로팅 문의 버튼 (md 이상) ===== -->
   <Link :href="tryCatchRoute('inquiry.create')"
       class="hidden md:flex fixed bottom-8 right-8 z-40 items-center gap-2 px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-full shadow-lg hover:shadow-xl hover:border-primary hover:text-primary transition-all duration-300 text-sm font-bold"
@@ -453,56 +457,6 @@ onMounted(() => {
       문의하기
   </Link>
 
-  <!-- ===== 모바일 스피드 다이얼 FAB (md 미만) ===== -->
-  <div class="md:hidden fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
-
-    <!-- 서브 버튼들 -->
-    <div
-      class="flex flex-col items-end gap-2 transition-all duration-200 origin-bottom-right"
-      :class="fabOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'"
-    >
-
-      <!-- 글쓰기 -->
-      <button
-          @click="fabOpen = false; user ? router.visit(route('posts.create')) : (showLoginModal = true)"
-          class="flex items-center gap-2.5 pl-4 pr-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-full shadow-md hover:shadow-lg hover:border-primary hover:text-primary transition-all duration-200 text-sm font-bold whitespace-nowrap">
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-          </svg>
-          글쓰기
-      </button>
-
-      <!-- 문의하기 -->
-      <Link :href="tryCatchRoute('inquiry.create')" @click="fabOpen = false"
-          class="flex items-center gap-2.5 pl-4 pr-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-full shadow-md hover:shadow-lg hover:border-primary hover:text-primary transition-all duration-200 text-sm font-bold whitespace-nowrap">
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-4 4-1-4z"/>
-          </svg>
-          문의하기
-      </Link>
-
-    </div>
-
-    <!-- 메인 FAB 버튼 (글로우 효과 포함) -->
-    <div class="relative group">
-      <div class="absolute -inset-1 bg-gradient-to-r from-primary to-orange-400 rounded-full blur opacity-40 group-hover:opacity-60 transition duration-300"></div>
-      <button @click="toggleFab"
-          class="relative w-14 h-14 rounded-full bg-primary text-white shadow-2xl hover:bg-orange-600 transition-all duration-300 flex items-center justify-center active:scale-95"
-          :class="fabOpen ? 'rotate-45' : ''"
-      >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-          </svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- FAB 열렸을 때 배경 딤 (모바일 전용) -->
-  <Transition name="fade">
-    <div v-if="fabOpen" @click="fabOpen = false"
-        class="md:hidden fixed inset-0 z-30 bg-black/10 backdrop-blur-[1px]">
-    </div>
-  </Transition>
 </template>
 
 <style scoped>
