@@ -128,7 +128,7 @@ const loadMore = () => {
         <div v-if="posts.length === 0" class="text-center py-16 text-gray-400">
             <div class="text-4xl mb-3">🏷️</div>
             <p class="font-bold text-gray-500">#{{ tag }} 태그 게시글이 없습니다.</p>
-            <Link :href="route('home')" class="mt-4 inline-block text-sm text-primary hover:underline font-medium">
+            <Link :href="route('community')" class="mt-4 inline-block text-sm text-primary hover:underline font-medium">
                 전체 피드 보기
             </Link>
         </div>

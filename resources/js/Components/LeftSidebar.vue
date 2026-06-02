@@ -10,15 +10,23 @@ const categories = computed(() => (page.props.categories || []).filter(cat => ca
 const subscribedTags = computed(() => page.props.subscribed_tags || []);
 const isLoggedIn = computed(() => !!page.props.auth?.user);
 
+const isCommunity = computed(() => route().current('community'));
+
 const currentCategory = computed(() => {
     if (route().current('posts.show')) {
         return page.props.post?.category?.slug || null;
     }
-    if (route().current('home')) {
+    if (route().current('home') || route().current('community')) {
         return page.props.currentCategory || 'all';
     }
     return null;
 });
+
+// 현재 페이지에 맞는 카테고리 라우트 반환
+const categoryRoute = (slug = null) => {
+    const r = isCommunity.value ? 'community' : 'community';
+    return slug ? route(r, { category: slug }) : route(r);
+};
 
 // ── 태그 추가 ──────────────────────────────────────────────────────────────
 const showTagInput  = ref(false);
@@ -122,7 +130,7 @@ const unsubscribeTag = (tag, e) => {
       <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">카테고리</h3>
       <nav class="space-y-1">
         <Link
-          :href="route('home')"
+          :href="categoryRoute()"
           class="group flex items-center gap-2 px-3 py-2 text-sm rounded-r-xl rounded-l-sm transition-colors"
           :class="currentCategory === 'all' ? 'bg-gray-50 border-l-4 border-indigo-600 text-indigo-700 font-bold' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 font-semibold'"
         >
@@ -131,7 +139,7 @@ const unsubscribeTag = (tag, e) => {
         <Link
           v-for="cat in categories"
           :key="cat.id"
-          :href="route('home', { category: cat.slug })"
+          :href="categoryRoute(cat.slug)"
           class="group flex items-center gap-2 px-3 py-2 text-sm rounded-r-xl rounded-l-sm transition-colors"
           :class="currentCategory === cat.slug ? 'bg-gray-50 border-l-4 border-indigo-600 text-indigo-700 font-bold' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 hover:text-gray-900 font-semibold'"
         >

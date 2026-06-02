@@ -24,7 +24,7 @@ const searchQuery = ref('');
 const submitSearch = () => {
   const q = searchQuery.value.trim();
   if (!q) return;
-  router.get(route('home'), { search_keyword: q, search_type: 'title' });
+  router.get(route('community'), { search_keyword: q, search_type: 'title' });
   searchQuery.value = '';
 };
 

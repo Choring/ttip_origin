@@ -215,7 +215,7 @@ const jsonLdBreadcrumb = computed(() => {
                 "@type": "ListItem",
                 "position": 2,
                 "name": props.post?.category?.name || "분류 없음",
-                "item": route('home', { category: props.post?.category?.slug || 'all' })
+                "item": route('community', { category: props.post?.category?.slug || 'all' })
             },
             {
                 "@type": "ListItem",
@@ -259,7 +259,7 @@ const jsonLdBreadcrumb = computed(() => {
             <!-- Breadcrumbs -->
             <Breadcrumbs :items="[
                 { label: '홈', href: route('home') },
-                { label: post.category?.name || '분류 없음', href: route('home', { category: post.category?.slug || 'all' }) },
+                { label: post.category?.name || '분류 없음', href: route('community', { category: post.category?.slug || 'all' }) },
                 { label: post.title }
             ]" />
 
