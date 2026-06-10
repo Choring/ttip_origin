@@ -149,6 +149,14 @@ class SEOController extends Controller
         # 검색 결과 페이지 파라미터 제한 (중복 콘텐츠 방지)
         Disallow: /*?*search_keyword=*
 
+        # Google AdSense 크롤러 명시적 허용
+        User-agent: Mediapartners-Google
+        Allow: /
+
+        # Googlebot 명시적 허용
+        User-agent: Googlebot
+        Allow: /
+
         Sitemap: {$sitemapUrl}
         ROBOTS;
 
